@@ -1,23 +1,6 @@
-const fs = require('fs').promises;
-
-class TXTConverter {
-  async convert(filePath) {
-    const lines = (await fs.readFile(filePath, 'utf8')).split('\n');
-    return lines.reduce((markdown, line, i) => {
-      line = line.trim();
-      if (!line) return markdown + '\n';
-      
-      const nextLine = lines[i + 1]?.trim();
-      if (nextLine?.match(/^={3,}$/)) lines[i + 1] = '';
-      if (nextLine?.match(/^-{3,}$/)) lines[i + 1] = '';
-      
-      return markdown + (
-        nextLine?.match(/^={3,}$/) ? `# ${line}\n` :
-        nextLine?.match(/^-{3,}$/) ? `## ${line}\n` :
-        `${line}\n`
-      );
-    }, '').trim();
+module.exports = class {
+  async convert(f) {
+    const l = (await require('fs').promises.readFile(f, 'utf8')).split('\n');
+    return l.reduce((m, c, i) => {let n = l[i + 1]?.trim(); return (c = c.trim(), n?.match(/^={3,}$/) && (l[i + 1] = ''), n?.match(/^-{3,}$/) && (l[i + 1] = ''), m + (!c ? '\n' : n?.match(/^={3,}$/) ? `# ${c}\n` : n?.match(/^-{3,}$/) ? `## ${c}\n` : `${c}\n`))}, '').trim();
   }
 }
-
-module.exports = TXTConverter;
