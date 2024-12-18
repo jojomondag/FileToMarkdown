@@ -1,11 +1,13 @@
 const CONVERTERS = {
   pdf: require('./converters/pdf'),
-  txt: require('./converters/txt')
+  txt: require('./converters/txt'),
+  docx: require('./converters/docx')
 };
 
 const CONVERTER_METHODS = {
   pdf: 'pdfTextConvert',
-  txt: 'convert'
+  txt: 'convert',
+  docx: 'convert'
 };
 
 async function convertToMarkdown(inputPath, outputPath) {

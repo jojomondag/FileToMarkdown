@@ -10,11 +10,12 @@ const fs = require('fs').promises;
 
     const tests = [
       { type: 'PDF', name: 'exampleGardening' },
-      { type: 'TXT', name: 'exampleTXT' }
+      { type: 'TXT', name: 'exampleTheDebuggingDuck' },
+      { type: 'DOCX', name: 'exampleMirjaSiri' }
     ];
 
     for (const { type, name } of tests) {
-      console.log(`Testing ${type} conversion...`);
+      console.log(`run ${type} conversion.`);
       await convertToMarkdown(
         path.join(exampleDir, `${name}.${type.toLowerCase()}`),
         path.join(outputDir, `${name}.md`)
