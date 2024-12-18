@@ -2,33 +2,21 @@ const fs = require('fs').promises;
 
 class TXTConverter {
   async convert(filePath) {
-    const content = await fs.readFile(filePath, 'utf8');
-    const lines = content.split('\n');
-    let markdown = '';
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) {
-        markdown += '\n';
-        continue;
-      }
-
-      // Handle headers
-      if (i < lines.length - 1) {
-        const nextLine = lines[i + 1].trim();
-        if (nextLine.match(/^={3,}$/)) {
-          markdown += `# ${line}\n`;
-          i++;
-          continue;
-        } else if (nextLine.match(/^-{3,}$/)) {
-          markdown += `## ${line}\n`;
-          i++;
-          continue;
-        }
-      }
-      markdown += `${line}\n`;
-    }
-    return markdown.trim();
+    const lines = (await fs.readFile(filePath, 'utf8')).split('\n');
+    return lines.reduce((markdown, line, i) => {
+      line = line.trim();
+      if (!line) return markdown + '\n';
+      
+      const nextLine = lines[i + 1]?.trim();
+      if (nextLine?.match(/^={3,}$/)) lines[i + 1] = '';
+      if (nextLine?.match(/^-{3,}$/)) lines[i + 1] = '';
+      
+      return markdown + (
+        nextLine?.match(/^={3,}$/) ? `# ${line}\n` :
+        nextLine?.match(/^-{3,}$/) ? `## ${line}\n` :
+        `${line}\n`
+      );
+    }, '').trim();
   }
 }
 

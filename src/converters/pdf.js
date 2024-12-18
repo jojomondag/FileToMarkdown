@@ -1,19 +1,18 @@
 const pdfjsLib = require('pdfjs-dist');
-const fs = require('fs').promises;
 
 class PDFConverter {
   async convert(filePath) {
-    const data = new Uint8Array(await fs.readFile(filePath));
-    const pdfDocument = await pdfjsLib.getDocument(data).promise;
-    
-    let markdown = '';
-    for (let i = 1; i <= pdfDocument.numPages; i++) {
-      const page = await pdfDocument.getPage(i);
-      const textContent = await page.getTextContent();
-      markdown += textContent.items.map(item => item.str).join(' ') + '\n\n';
-    }
-    
-    return markdown.trim();
+    const doc = await pdfjsLib.getDocument({
+      data: new Uint8Array(await require('fs').promises.readFile(filePath))
+    }).promise;
+
+    return (await Promise.all(
+      Array.from({ length: doc.numPages }, (_, i) => 
+        doc.getPage(i + 1)
+          .then(page => page.getTextContent())
+          .then(content => content.items.map(item => item.str).join(' '))
+      )
+    )).join('\n\n').trim();
   }
 }
 
