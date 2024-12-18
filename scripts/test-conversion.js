@@ -13,17 +13,27 @@ const fs = require('fs').promises;
       { type: 'TXT', name: 'exampleTheDebuggingDuck' },
       { type: 'DOCX', name: 'exampleMirjaSiri' },
       { type: 'PPTX', name: 'exampleBruceLee' },
-      { type: 'XLSX', name: 'exampleProgrammeringYearPlan' }
+      { type: 'XLSX', name: 'exampleProgrammeringYearPlan' },
+      { type: '7Z', name: 'exampleStudentWorks' }
     ];
 
     for (const { type, name } of tests) {
+      const inputFile = path.join(exampleDir, `${name}.${type.toLowerCase()}`);
+      const outputFile = path.join(outputDir, `${name}.md`);
+      
+      // Check if input file exists
+      try {
+        await fs.access(inputFile);
+      } catch (error) {
+        console.error(`Input file missing: ${inputFile}`);
+        continue;
+      }
+
       console.log(`run ${type} conversion.`);
-      await convertToMarkdown(
-        path.join(exampleDir, `${name}.${type.toLowerCase()}`),
-        path.join(outputDir, `${name}.md`)
-      );
+      await convertToMarkdown(inputFile, outputFile);
       console.log(`${type} Converted`);
     }
+
   } catch (error) {
     console.error('Failed:', error.message);
     process.exit(1);

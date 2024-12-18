@@ -1,7 +1,5 @@
 module.exports = class {
-  async convert(filePath) {
-    const mammoth = require('mammoth');
-    const result = await mammoth.extractRawText({path: filePath});
-    return result.value.trim();
+  async convert(f) {
+    return(await require('mammoth').extractRawText({path:f})).value.trim();
   }
 }

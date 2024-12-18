@@ -1,31 +1,32 @@
-const CONVERTERS = {
+const C = {
   pdf: require('./converters/pdf'),
   txt: require('./converters/txt'),
   docx: require('./converters/docx'),
   pptx: require('./converters/ppt'),
-  xlsx: require('./converters/xlsx')
+  xlsx: require('./converters/xlsx'),
+  '7z': require('./converters/7zip')
 };
 
-const CONVERTER_METHODS = {
+const M = {
   pdf: 'pdfTextConvert',
   txt: 'convert',
   docx: 'convert',
   pptx: 'convert',
-  xlsx: 'convert'
+  xlsx: 'convert',
+  '7z': 'convert'
 };
 
-async function convertToMarkdown(inputPath, outputPath) {
+async function convertToMarkdown(i, o) {
   try {
-    const fileType = inputPath.split('.').pop().toLowerCase();
-    if (!CONVERTERS[fileType]) throw new Error(`Unsupported file type: ${fileType}`);
-    
-    const converter = new CONVERTERS[fileType]();
-    const methodName = CONVERTER_METHODS[fileType];
-    const markdown = await converter[methodName](inputPath);
-    await require('fs').promises.writeFile(outputPath, markdown);
+    const t = i.split('.').pop().toLowerCase();
+    if (!C[t]) throw new Error(`Unsupported file type: ${t}`);
+    const c = new C[t]();
+    const m = M[t];
+    const k = await c[m](i);
+    await require('fs').promises.writeFile(o, k);
     return true;
-  } catch (error) {
-    throw new Error(`Conversion failed: ${error.message}`);
+  } catch (e) {
+    throw new Error(`Conversion failed: ${e.message}`);
   }
 }
 
