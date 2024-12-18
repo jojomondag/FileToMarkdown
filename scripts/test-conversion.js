@@ -11,7 +11,9 @@ const fs = require('fs').promises;
     const tests = [
       { type: 'PDF', name: 'exampleGardening' },
       { type: 'TXT', name: 'exampleTheDebuggingDuck' },
-      { type: 'DOCX', name: 'exampleMirjaSiri' }
+      { type: 'DOCX', name: 'exampleMirjaSiri' },
+      { type: 'PPTX', name: 'exampleBruceLee' },
+      { type: 'XLSX', name: 'exampleProgrammeringYearPlan' }
     ];
 
     for (const { type, name } of tests) {

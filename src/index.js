@@ -1,13 +1,17 @@
 const CONVERTERS = {
   pdf: require('./converters/pdf'),
   txt: require('./converters/txt'),
-  docx: require('./converters/docx')
+  docx: require('./converters/docx'),
+  pptx: require('./converters/ppt'),
+  xlsx: require('./converters/xlsx')
 };
 
 const CONVERTER_METHODS = {
   pdf: 'pdfTextConvert',
   txt: 'convert',
-  docx: 'convert'
+  docx: 'convert',
+  pptx: 'convert',
+  xlsx: 'convert'
 };
 
 async function convertToMarkdown(inputPath, outputPath) {
