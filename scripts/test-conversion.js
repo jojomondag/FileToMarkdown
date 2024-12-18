@@ -4,25 +4,26 @@ const fs = require('fs').promises;
 
 async function runTests() {
   try {
-    // Ensure output directory exists
-    const outputDir = path.join(__dirname, '../src/exampleFiles/outputAfterConversion');
+    // Define path
+    const exampleDir = path.join(__dirname, '../src/exampleFiles');
+    const outputDir = path.join(exampleDir, 'outputAfterConversion');
     await fs.mkdir(outputDir, { recursive: true });
 
-    // Test PDF conversion
-    console.log('Testing PDF conversion...');
-    await convertToMarkdown(
-      path.join(__dirname, '../src/exampleFiles/exampleGardening.pdf'),
-      path.join(outputDir, 'exampleGardening.md')
-    );
-    console.log('PDF conversion completed successfully');
+    // Define test cases - just filename without extension
+    const tests = [
+      { type: 'PDF', name: 'exampleGardening' },
+      { type: 'TXT', name: 'exampleTXT' }
+    ];
 
-    // Test TXT conversion
-    console.log('Testing TXT conversion...');
-    await convertToMarkdown(
-      path.join(__dirname, '../src/exampleFiles/exampleTXT.txt'),
-      path.join(outputDir, 'exampleTXT.md')
-    );
-    console.log('TXT conversion completed successfully');
+    // Run tests
+    for (const test of tests) {
+      console.log(`Testing ${test.type} conversion...`);
+      await convertToMarkdown(
+        path.join(exampleDir, `${test.name}.${test.type.toLowerCase()}`),
+        path.join(outputDir, `${test.name}.md`)
+      );
+      console.log(`${test.type} conversion completed successfully`);
+    }
 
   } catch (error) {
     console.error('Test failed:', error.message);
