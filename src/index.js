@@ -3,12 +3,19 @@ const CONVERTERS = {
   txt: require('./converters/txt')
 };
 
+const CONVERTER_METHODS = {
+  pdf: 'pdfTextConvert',
+  txt: 'convert'
+};
+
 async function convertToMarkdown(inputPath, outputPath) {
   try {
     const fileType = inputPath.split('.').pop().toLowerCase();
     if (!CONVERTERS[fileType]) throw new Error(`Unsupported file type: ${fileType}`);
     
-    const markdown = await new CONVERTERS[fileType]().convert(inputPath);
+    const converter = new CONVERTERS[fileType]();
+    const methodName = CONVERTER_METHODS[fileType];
+    const markdown = await converter[methodName](inputPath);
     await require('fs').promises.writeFile(outputPath, markdown);
     return true;
   } catch (error) {

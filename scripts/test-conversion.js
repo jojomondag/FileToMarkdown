@@ -15,18 +15,18 @@ async function runTests() {
       { type: 'TXT', name: 'exampleTXT' }
     ];
 
-    // Run tests
+    //Tests
     for (const test of tests) {
       console.log(`Testing ${test.type} conversion...`);
       await convertToMarkdown(
         path.join(exampleDir, `${test.name}.${test.type.toLowerCase()}`),
         path.join(outputDir, `${test.name}.md`)
       );
-      console.log(`${test.type} conversion completed successfully`);
+      console.log(`${test.type} Converted`);
     }
 
   } catch (error) {
-    console.error('Test failed:', error.message);
+    console.error('Failed:', error.message);
     process.exit(1);
   }
 }
