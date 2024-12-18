@@ -2,33 +2,27 @@ const { convertToMarkdown } = require('../src/index.js');
 const path = require('path');
 const fs = require('fs').promises;
 
-async function runTests() {
+(async () => {
   try {
-    // Define path
     const exampleDir = path.join(__dirname, '../src/exampleFiles');
     const outputDir = path.join(exampleDir, 'outputAfterConversion');
     await fs.mkdir(outputDir, { recursive: true });
 
-    // Define test cases - just filename without extension
     const tests = [
       { type: 'PDF', name: 'exampleGardening' },
       { type: 'TXT', name: 'exampleTXT' }
     ];
 
-    //Tests
-    for (const test of tests) {
-      console.log(`Testing ${test.type} conversion...`);
+    for (const { type, name } of tests) {
+      console.log(`Testing ${type} conversion...`);
       await convertToMarkdown(
-        path.join(exampleDir, `${test.name}.${test.type.toLowerCase()}`),
-        path.join(outputDir, `${test.name}.md`)
+        path.join(exampleDir, `${name}.${type.toLowerCase()}`),
+        path.join(outputDir, `${name}.md`)
       );
-      console.log(`${test.type} Converted`);
+      console.log(`${type} Converted`);
     }
-
   } catch (error) {
     console.error('Failed:', error.message);
     process.exit(1);
   }
-}
-
-runTests(); 
+})(); 
