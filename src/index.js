@@ -1,25 +1,28 @@
-const converters = require('./converters');
+const PDFConverter = require('./converters/pdf');
+const TXTConverter = require('./converters/txt');
+const fs = require('fs').promises;
 
-class MarkItDown {
-  constructor(options = {}) {
-    this.options = {
-      preserveFormatting: true,
-      includeMetadata: true,
-      ...options
-    };
-  }
+const CONVERTERS = {
+  pdf: PDFConverter,
+  txt: TXTConverter
+};
 
-  async convertToMarkdown(filePath) {
-    const fileExtension = filePath.split('.').pop().toLowerCase();
+async function convertToMarkdown(inputPath, outputPath) {
+  try {
+    const fileType = inputPath.split('.').pop().toLowerCase();
+    const Converter = CONVERTERS[fileType];
     
-    const Converter = converters[fileExtension];
     if (!Converter) {
-      throw new Error(`Unsupported file format: ${fileExtension}`);
+      throw new Error(`Unsupported file type: ${fileType}`);
     }
 
-    const converter = new Converter(this.options);
-    return converter.convert(filePath);
+    const converter = new Converter();
+    const markdown = await converter.convert(inputPath);
+    await fs.writeFile(outputPath, markdown);
+    return true;
+  } catch (error) {
+    throw new Error(`Conversion failed: ${error.message}`);
   }
 }
 
-module.exports = MarkItDown; 
+module.exports = { convertToMarkdown }; 
