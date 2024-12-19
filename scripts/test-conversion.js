@@ -1,41 +1,38 @@
 const { convertToMarkdown } = require('../src/index.js');
-const path = require('path');
-const fs = require('fs').promises;
+const { join } = require('path');
+const { promises: fs } = require('fs');
 
 (async () => {
   try {
-    const exampleDir = path.join(__dirname, '../src/exampleFiles');
-    const outputDir = path.join(exampleDir, 'outputAfterConversion');
+    const exampleDir = join(__dirname, '../src/exampleFiles');
+    const outputDir = join(exampleDir, 'outputAfterConversion');
     await fs.mkdir(outputDir, { recursive: true });
 
     const tests = [
-      { type: 'PDF', name: 'exampleGardening' },
-      { type: 'TXT', name: 'exampleTheDebuggingDuck' },
-      { type: 'DOCX', name: 'exampleMirjaSiri' },
-      { type: 'PPTX', name: 'exampleBruceLee' },
-      { type: 'XLSX', name: 'exampleProgrammeringYearPlan' },
-      { type: '7Z', name: 'exampleStudentWorks' },
-      { type: 'ZIP', name: 'exampleLeads' }
-    ];
+      ['PDF', 'exampleGardening'],
+      ['TXT', 'exampleTheDebuggingDuck'],
+      ['DOCX', 'exampleMirjaSiri'],
+      ['PPTX', 'exampleBruceLee'],
+      ['XLSX', 'exampleProgrammeringYearPlan'],
+      ['7Z', 'exampleStudentWorks'],
+      ['ZIP', 'exampleLeads']
+    ].map(([type, name]) => ({
+      input: join(exampleDir, `${name}.${type.toLowerCase()}`),
+      output: join(outputDir, `${name}.md`),
+      type
+    }));
 
-    for (const { type, name } of tests) {
-      const inputFile = path.join(exampleDir, `${name}.${type.toLowerCase()}`);
-      const outputFile = path.join(outputDir, `${name}.md`);
-
+    for (const { input, output, type } of tests) {
       try {
-        await fs.access(inputFile);
-      } catch (error) {
-        console.error(`Input file missing: ${inputFile}`);
-        continue;
+        await fs.access(input);
+        process.stdout.write(`${type} Parse - ${type} Done.\n`);
+        await convertToMarkdown(input, output);
+      } catch {
+        console.error(`Missing: ${input}`);
       }
-
-      console.log(`run ${type} conversion.`);
-      await convertToMarkdown(inputFile, outputFile);
-      console.log(`${type} Converted`);
     }
-
   } catch (error) {
-    console.error('Failed:', error.message);
+    console.error('Fail:', error.message);
     process.exit(1);
   }
 })(); 
