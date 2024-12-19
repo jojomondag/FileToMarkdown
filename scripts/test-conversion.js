@@ -14,14 +14,14 @@ const fs = require('fs').promises;
       { type: 'DOCX', name: 'exampleMirjaSiri' },
       { type: 'PPTX', name: 'exampleBruceLee' },
       { type: 'XLSX', name: 'exampleProgrammeringYearPlan' },
-      { type: '7Z', name: 'exampleStudentWorks' }
+      { type: '7Z', name: 'exampleStudentWorks' },
+      { type: 'ZIP', name: 'exampleLeads' }
     ];
 
     for (const { type, name } of tests) {
       const inputFile = path.join(exampleDir, `${name}.${type.toLowerCase()}`);
       const outputFile = path.join(outputDir, `${name}.md`);
-      
-      // Check if input file exists
+
       try {
         await fs.access(inputFile);
       } catch (error) {

@@ -9,7 +9,9 @@
   "dependencies": {
     "7zip-min": "^1.4.5",
     "adm-zip": "^0.5.16",
+    "i": "^0.3.7",
     "mammoth": "^1.8.0",
+    "npm": "^11.0.0",
     "pdfjs-dist": "^4.9.155",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"

@@ -4,7 +4,8 @@ const C = {
   docx: require('./converters/docx'),
   pptx: require('./converters/ppt'),
   xlsx: require('./converters/xlsx'),
-  '7z': require('./converters/7zip')
+  '7z': require('./converters/7zip'),
+  zip: require('./converters/zip')
 };
 
 const M = {
@@ -13,7 +14,8 @@ const M = {
   docx: 'convert',
   pptx: 'convert',
   xlsx: 'convert',
-  '7z': 'convert'
+  '7z': 'convert',
+  zip: 'convert'
 };
 
 async function convertToMarkdown(i, o) {
