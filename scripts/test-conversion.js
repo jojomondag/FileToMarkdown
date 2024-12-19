@@ -11,14 +11,14 @@ const { promises: fs } = require('fs');
     const tests = [
       ['PDF', 'exampleGardening'],
       ['TXT', 'exampleTheDebuggingDuck'],
-      ['DOCX', 'exampleMirjaSiri'],
+      ['DOCX', 'exampleProjekt9'],
       ['PPTX', 'exampleBruceLee'],
       ['XLSX', 'exampleProgrammeringYearPlan'],
       ['7Z', 'exampleStudentWorks'],
       ['ZIP', 'exampleLeads']
     ].map(([type, name]) => ({
       input: join(exampleDir, `${name}.${type.toLowerCase()}`),
-      output: join(outputDir, `${name}.md`),
+      output: join(outputDir, `example_${type.toLowerCase()}_${name.replace('example', '')}.md`),
       type
     }));
 
