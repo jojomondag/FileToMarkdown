@@ -2,7 +2,7 @@ const C = {
   pdf: require('./converters/pdf'),
   txt: require('./converters/txt'),
   docx: require('./converters/docx'),
-  pptx: require('./converters/ppt'),
+  pptx: require('./converters/pptx'),
   xlsx: require('./converters/xlsx'),
   '7z': require('./converters/7zip'),
   zip: require('./converters/zip')
