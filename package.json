@@ -1,6 +1,6 @@
 {
   "name": "filetomarkdown",
-  "version": "0.1.47",
+  "version": "0.1.48",
   "description": "Convert various file types to markdown format. Example files available at github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "src/index.js",
