@@ -1,4 +1,8 @@
 module.exports = class {
+  async convert(filePath) {
+    return this.pdfTextConvert(filePath);
+  }
+
   async pdfTextConvert(f) {
     const p = await import('pdfjs-dist');
     const d = await p.getDocument({data:new Uint8Array(await require('fs').promises.readFile(f))}).promise;

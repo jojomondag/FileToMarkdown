@@ -1,0 +1,37 @@
+# Development files
+scripts/
+src/exampleFiles/
+test/
+.git/
+.github/
+.gitignore
+.npmrc
+.eslintrc
+.prettierrc
+
+# Example and test files
+src/exampleFiles/**/*
+scripts/**/*
+test/**/*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Source control
+.git/
+.gitignore
+
+# Test files
+coverage/ 

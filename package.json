@@ -1,17 +1,38 @@
 {
-  "name": "markitdown-js",
-  "version": "0.1.0",
-  "description": "Convert files to markdown",
+  "name": "markitdown-converter",
+  "version": "0.1.4",
+  "description": "Convert various file types to markdown format",
   "main": "src/index.js",
-  "scripts": {
-    "test-convert": "node scripts/test-conversion.js"
+  "bin": {
+    "markitdown-convert": "./bin/cli.js"
   },
+  "files": [
+    "src/",
+    "bin/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test-markitdown-converter": "node scripts/test-conversion.js"
+  },
+  "keywords": [
+    "markdown",
+    "converter",
+    "pdf",
+    "docx",
+    "pptx",
+    "xlsx",
+    "text",
+    "code",
+    "zip",
+    "7zip"
+  ],
+  "author": "Josef",
+  "license": "MIT",
   "dependencies": {
     "7zip-min": "^1.4.5",
     "adm-zip": "^0.5.16",
-    "i": "^0.3.7",
     "mammoth": "^1.8.0",
-    "npm": "^11.0.0",
     "pdfjs-dist": "^4.9.155",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"
@@ -19,5 +40,8 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "type": "commonjs"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Josef/FileToMarkdown"
+  }
 }

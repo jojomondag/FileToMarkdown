@@ -21,5 +21,4 @@ keyboard.add_hotkey('space', toggle_background)
 
 # Keep the program running until 'esc' is pressed
 keyboard.wait('esc')
-
 ```
