@@ -80,7 +80,7 @@
         Click to browse markdown files or drop a file here
     </div>
     <div class="current-path">Current directory: <span id="current-dir">./</span></div>
-    <input type="file" id="file-input" webkitdirectory directory multiple>
+    <input type="file" id="file-input" accept=".md" multiple>
 
     <div id="content">
         <h2>Welcome to FileToMarkdown Viewer</h2>
@@ -94,8 +94,6 @@
 
     <script>
         const fileInput = document.getElementById('file-input');
-        fileInput.setAttribute('webkitdirectory', '');
-        fileInput.setAttribute('directory', '');
         
         // Add auto-refresh functionality
         function refreshFiles() {
@@ -113,9 +111,9 @@
             
             if (files.length > 0) {
                 const firstFile = files[0];
-                const pathParts = firstFile.webkitRelativePath.split('/');
-                const rootDir = pathParts[0];
-                document.getElementById('current-dir').textContent = rootDir + '/';
+                const filePath = firstFile.webkitRelativePath || firstFile.name;
+                const dirPath = filePath.split('/').slice(0, -1).join('/') || './';
+                document.getElementById('current-dir').textContent = dirPath;
                 
                 const fileList = files.map(file => {
                     const relativePath = file.webkitRelativePath || file.name;
