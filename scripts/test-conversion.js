@@ -145,8 +145,8 @@ const runTests = async (useGithub = false) => {
         // Create directories
         createDirectories();
 
-        // Copy viewer.html
-        const viewerPath = path.join(process.cwd(), 'src', 'outputAfterConversion', 'viewer.html');
+        // Copy viewer.html to src directory instead of outputAfterConversion
+        const viewerPath = path.join(process.cwd(), 'src', 'viewer.html');
         const packageViewerPath = path.join(__dirname, '..', 'src', 'viewer.html');
 
         if (!fsSync.existsSync(viewerPath)) {

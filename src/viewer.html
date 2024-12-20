@@ -87,14 +87,25 @@
         <p>To view a markdown file:</p>
         <ul>
             <li>Drop a markdown file onto the drop zone above, or</li>
-            <li>Click the drop zone to browse the outputAfterConversion folder</li>
+            <li>Click the drop zone to browse for markdown files</li>
         </ul>
+        <p><small>The viewer will automatically refresh to detect new files.</small></p>
     </div>
 
     <script>
         const fileInput = document.getElementById('file-input');
         fileInput.setAttribute('webkitdirectory', '');
         fileInput.setAttribute('directory', '');
+        
+        // Add auto-refresh functionality
+        function refreshFiles() {
+            if (window.mdFiles && window.mdFiles.length > 0) {
+                handleFileSelect({ target: { files: window.mdFiles } });
+            }
+        }
+
+        // Refresh every 2 seconds
+        setInterval(refreshFiles, 2000);
         
         function handleFileSelect(event) {
             const files = Array.from(event.target.files)
@@ -112,10 +123,15 @@
                         data-file="${files.indexOf(file)}">${relativePath}</a></li>`;
                 }).join('');
                 
-                document.getElementById('content').innerHTML = `
+                // Only update content if it's different from current
+                const newContent = `
                     <h2>Available Markdown Files:</h2>
                     <ul>${fileList}</ul>
                 `;
+                
+                if (document.getElementById('content').innerHTML !== newContent) {
+                    document.getElementById('content').innerHTML = newContent;
+                }
                 
                 window.mdFiles = files;
             } else {
