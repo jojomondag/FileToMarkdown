@@ -183,11 +183,7 @@ const runTests = async (useGithub = false) => {
                 }
 
                 console.log(`✓ ${test.type} conversion complete\n`);
-
-                // Keep files for inspection
-                // if (useGithub) {
-                //     fs.unlinkSync(test.localPath);
-                // }
+                
             } catch (error) {
                 console.error(`Error processing ${test.type}:`, error);
                 process.exit(1);

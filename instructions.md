@@ -10,12 +10,7 @@ npm uninstall -g filetomarkdown
 npm install -g filetomarkdown
 ```
 
-3. **Run test without installation (using npx):**
-```bash
-npx filetomarkdown-test
-```
-
-4. **Run test with example files from GitHub (using npx):**
+3. **Run test with example files from GitHub (using npx):**
 ```bash
 npx filetomarkdown-test --github
 ```

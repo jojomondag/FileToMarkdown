@@ -79,7 +79,7 @@
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
         Click to browse markdown files or drop a file here
     </div>
-    <div class="current-path">Current directory: outputAfterConversion/</div>
+    <div class="current-path">Current directory: <span id="current-dir">./</span></div>
     <input type="file" id="file-input" accept=".md" webkitdirectory directory onchange="handleFileSelect(event)">
 
     <div id="content">
@@ -96,22 +96,16 @@
         fileInput.setAttribute('webkitdirectory', '');
         fileInput.setAttribute('directory', '');
         
-        window.addEventListener('load', () => {
-            try {
-                const defaultPath = '../outputAfterConversion/';
-                if (fileInput.webkitdirectory) {
-                    fileInput.webkitdirectory = defaultPath;
-                }
-            } catch (e) {
-                console.warn('Could not set default directory:', e);
-            }
-        });
-
         function handleFileSelect(event) {
             const files = Array.from(event.target.files)
                 .filter(file => file.name.toLowerCase().endsWith('.md'));
             
             if (files.length > 0) {
+                const firstFile = files[0];
+                const pathParts = firstFile.webkitRelativePath.split('/');
+                const rootDir = pathParts[0];
+                document.getElementById('current-dir').textContent = rootDir + '/';
+                
                 const fileList = files.map(file => {
                     const relativePath = file.webkitRelativePath || file.name;
                     return `<li><a href="#" onclick="loadFile(event.target.dataset.file); return false;" 
