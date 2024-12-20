@@ -1,6 +1,6 @@
 # FileToMarkdown
 
-A powerful Node.js utility that converts files into Markdown. This tool supports conversion of:
+Node.js utility that converts files into Markdown. This tool supports conversion of:
 - PDF files
 - Word documents (docx)
 - PowerPoint presentations (pptx)
@@ -11,16 +11,22 @@ A powerful Node.js utility that converts files into Markdown. This tool supports
 
 ## Installation
 
+For CLI usage, install globally:
+```bash
+npm install -g filetomarkdown
+```
+
+For programmatic usage in your project:
 ```bash
 npm install filetomarkdown
 ```
 
 ## Running Tests
 
-To run the test suite:
+To test the converter with example files from GitHub:
 
 ```bash
-npm run filetomarkdown-test
+filetomarkdown-test
 ```
 
 ## CLI Usage
@@ -28,26 +34,32 @@ npm run filetomarkdown-test
 You can use FileToMarkdown directly from the command line:
 
 ```bash
-markitdown-convert <input-file> [output-file]
+filetomarkdown-convert <input-file> [output-file]
 ```
 
 ### How to use:
 ```bash
 # Basic usage - converts file in current directory
-markitdown-convert "example.xlsx"
+filetomarkdown-convert "documents/example.xlsx"
 
 # Convert with custom output path
-markitdown-convert "documents/report.pdf" "output/report.md"
+filetomarkdown-convert "documents/report.pdf" "output/report.md"
 
 # Convert files from different folders
-markitdown-convert "downloads/presentation.pptx"
-markitdown-convert "projects/source_code.py"
-markitdown-convert "desktop/archive.zip"
+filetomarkdown-convert "downloads/presentation.pptx"
+filetomarkdown-convert "projects/source_code.py"
+filetomarkdown-convert "desktop/archive.zip"
 ```
 
 The converted markdown file will be created in the same directory as the input file unless an output path is specified. For example:
 - Input: `documents/yearly-plan.xlsx`
 - Default output: `documents/yearly-plan.md`
+
+## Example Files
+
+You can find example files and their converted markdown outputs in our GitHub repository:
+- Example Files: [github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles](https://github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles)
+- Converted Examples: [github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles/outputAfterConversion](https://github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles/outputAfterConversion)
 
 ## Supported File Types
 - PDF (.pdf)

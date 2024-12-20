@@ -1,5 +1,0 @@
-1|1|# Using the new specific command
-2|2|npm run test-markitdown-converter
-3|3|
-4|4|# Or using the shorter alias
-5|5|npm test 
