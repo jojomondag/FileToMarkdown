@@ -1,5 +1,5 @@
 {
-  "name": "markitdown-converter",
+  "name": "filetomarkdown",
   "version": "0.1.4",
   "description": "Convert various file types to markdown format",
   "main": "src/index.js",
@@ -13,7 +13,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test-markitdown-converter": "node scripts/test-conversion.js"
+    "filetomarkdown-test": "node scripts/test-conversion.js"
   },
   "keywords": [
     "markdown",
@@ -42,6 +42,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Josef/FileToMarkdown"
+    "url": "https://github.com/jojomondag/FileToMarkdown"
   }
 }
