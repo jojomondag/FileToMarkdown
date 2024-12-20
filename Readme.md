@@ -1,95 +1,63 @@
 # FileToMarkdown
 
-Node.js utility that converts files into Markdown. This tool supports conversion of:
-- PDF files
-- Word documents (docx)
-- PowerPoint presentations (pptx)
-- Excel spreadsheets (xlsx)
-- Text files
-- Code files
-- ZIP and 7ZIP archives
+A Node.js utility that converts various file types to Markdown:
+- PDF, Word (docx), PowerPoint (pptx), Excel (xlsx)
+- Text and code files
+- ZIP/7ZIP archives
 
-## Installation
+## Install
 
-For CLI usage, install globally:
 ```bash
 npm install -g filetomarkdown
 ```
 
-For programmatic usage in your project:
-```bash
-npm install filetomarkdown
-```
+## Usage
 
-## Running Tests
-
-You can run tests in two ways:
-
-1. If you have the package installed globally:
-```bash
-filetomarkdown-test
-```
-
-2. Without installation (using npx):
-```bash
-npx filetomarkdown-test
-```
-
-This will create a project structure in your current directory:
-```
-src/
-├── viewer.html            # Markdown viewer (open in browser)
-├── exampleFiles/          # Original files
-│   ├── code/             # Code examples
-│   └── [example files]   # Other example files
-└── outputAfterConversion/ # All converted markdown files
-    ├── code/             # Converted code files
-    └── [converted files] # Other converted files
-```
-
-To view the converted files:
-1. Navigate to the `src/` directory
-2. Open `viewer.html` in your browser
-3. Select a markdown file from the dropdown to view it
-
-## CLI Usage
-
-You can use FileToMarkdown directly from the command line:
-
+Basic command format:
 ```bash
 filetomarkdown-convert <input-file> [output-file]
 ```
 
-### How to use:
+Examples:
 ```bash
-# Basic usage - converts file in current directory
-filetomarkdown-convert "documents/example.xlsx"
+# Convert a PDF file (creates report.md in same folder)
+filetomarkdown-convert "documents/report.pdf"
 
-# Convert with custom output path
-filetomarkdown-convert "documents/report.pdf" "output/report.md"
+# Convert Excel file with custom output location
+filetomarkdown-convert "data/budget.xlsx" "converted/budget.md"
 
-# Convert files from different folders
-filetomarkdown-convert "downloads/presentation.pptx"
-filetomarkdown-convert "projects/source_code.py"
-filetomarkdown-convert "desktop/archive.zip"
+# Convert from any location
+filetomarkdown-convert "/full/path/to/presentation.pptx"
 ```
 
-The converted markdown file will be created in the same directory as the input file unless an output path is specified. For example:
-- Input: `documents/yearly-plan.xlsx`
-- Default output: `documents/yearly-plan.md`
+## Try the Converter
 
-## Example Files
+Want to see how different file types are converted? Run our test command to try it with example files:
 
-You can find example files and their converted markdown outputs in our GitHub repository:
-- Example Files: [github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles](https://github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles)
-- Converted Examples: [github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles/outputAfterConversion](https://github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles/outputAfterConversion)
+```bash
+npx filetomarkdown-test --github
+```
 
-## Supported File Types
-- PDF (.pdf)
-- Word Documents (.docx)
-- PowerPoint Presentations (.pptx)
-- Excel Spreadsheets (.xlsx)
-- Text Files (.txt)
-- Source Code Files (various extensions)
-- ZIP Archives (.zip)
-- 7ZIP Archives (.7z)
+This will:
+1. Create a `src` folder in your current directory
+2. Download example files from our GitHub repository
+3. Convert them to markdown automatically
+
+The created folder structure:
+```
+src/
+├── exampleFiles/           # Original test files
+│   ├── code/              # Sample code files (.js, .py, etc)
+│   ├── documents/         # Sample documents (PDF, DOCX, etc)
+│   └── archives/          # Sample ZIP/7Z files
+│
+├── outputAfterConversion/ # Converted markdown files
+│   └── code/             # Converted code examples
+│
+└── viewer.html           # Web-based markdown viewer
+```
+
+To view the results:
+1. Navigate to the `src` folder
+2. Open `viewer.html` in your web browser
+3. Browse through the converted files in the viewer

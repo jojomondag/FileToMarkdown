@@ -2,307 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>FileToMarkdown Viewer</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-            min-height: 100vh;
-            display: flex;
+        /* Combining common properties and removing redundant declarations */
+        body,#content{margin:0}
+        body,.side-panel,.menu-toggle{display:flex}
+        .side-panel,.side-panel-header,.drop-zone{background:#f8fafc}
+        .side-panel,#content{box-shadow:0 2px 4px rgba(0,0,0,.1)}
+        .drop-zone,.file-list a,.menu-toggle{transition:.2s ease}
+        
+        body{font-family:-apple-system,system-ui,sans-serif;line-height:1.6;padding:0;background:#f5f5f5;min-height:100vh}
+        .side-panel{width:300px;border-right:1px solid #eee;height:100vh;position:fixed;left:0;top:0;flex-direction:column;transform:none;transition:left .3s ease}
+        .side-panel.hidden{left:-300px}
+        .side-panel-header{display:flex;align-items:center;padding:15px;border-bottom:1px solid #eee}
+        .side-panel-title{font-size:1.1em;font-weight:500;color:#2c3e50;margin:0;flex:1}
+        .drop-zone{border-bottom:2px dashed #0366d6;padding:15px;text-align:center;cursor:pointer}
+        .drop-zone:hover,.drop-zone.dragover{background:#e6f3ff}
+        .drop-zone.dragover{border-color:#0255b3}
+        .file-list{flex:1;overflow-y:auto;padding:15px}
+        .file-list ul{list-style:none;padding:0;margin:0}
+        .file-list li{margin:8px 0}
+        .file-list a{color:#2c3e50;text-decoration:none;display:block;padding:8px 12px;border-radius:4px}
+        .file-list a:hover{background:#f0f4f8;color:#0366d6}
+        .main-content{margin-left:300px;flex:1;padding:40px;max-width:100%;transition:margin-left .3s ease}
+        .main-content.expanded{margin-left:0}
+        #content{max-width:1200px;margin:auto;background:#fff;padding:40px;border-radius:8px;word-wrap:break-word}
+        #file-input{display:none}
+        .menu-toggle{position:fixed;top:5px;left:255px;z-index:1000;padding:8px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;align-items:center;justify-content:center;width:40px;height:40px}
+        .menu-toggle.panel-hidden{left:10px}
+        .menu-toggle:hover{background:#f0f4f8;color:#0366d6}
+        
+        /* Markdown */
+        pre,code{background:#f6f8fa;border-radius:6px}
+        pre{padding:16px;overflow-x:auto;max-width:100%;border:1px solid #e1e4e8}
+        code{font-family:SFMono-Regular,monospace;font-size:.9em;padding:.2em .4em}
+        pre code{padding:0;background:none}
+        table{border-collapse:collapse;width:100%;margin:1em 0;overflow-x:auto;display:block}
+        th,td{border:1px solid #dfe2e5;padding:8px 12px;text-align:left}
+        th{background:#f6f8fa}
+        img{max-width:100%;height:auto;display:block;margin:1em auto}
+        a{word-break:break-word}
+        
+        @media(max-width:768px){
+            .side-panel{transform:translateX(-100%)}
+            .side-panel.active{transform:translateX(0)}
+            .main-content{margin-left:0;padding:20px}
         }
-
-        /* Side Panel Styles */
-        .side-panel {
-            width: 300px;
-            background: #fff;
-            border-right: 1px solid #eee;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-        }
-
-        .drop-zone {
-            border-bottom: 2px dashed #0366d6;
-            padding: 15px;
-            text-align: center;
-            background: #f8fafc;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .drop-zone:hover {
-            background: #e6f3ff;
-        }
-
-        .drop-zone.dragover {
-            background: #e6f3ff;
-            border-color: #0255b3;
-        }
-
-        .file-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-
-        .file-list ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .file-list li {
-            margin: 8px 0;
-        }
-
-        .file-list a {
-            color: #2c3e50;
-            text-decoration: none;
-            display: block;
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .file-list a:hover {
-            background: #f0f4f8;
-            color: #0366d6;
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            margin-left: 300px;
-            flex: 1;
-            padding: 40px;
-            max-width: 100%;
-        }
-
-        #content {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        /* Hide file input */
-        #file-input {
-            display: none;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .side-panel {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .side-panel.active {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1000;
-            }
-        }
-
-        /* Modern Button Styles */
-        button {
-            padding: 8px 16px;
-            background: #0366d6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        button:hover {
-            background: #0255b3;
-            transform: translateY(-1px);
-        }
-
-        /* Code block styling */
-        pre {
-            background: #f6f8fa;
-            padding: 16px;
-            border-radius: 6px;
-            overflow-x: auto;
-            max-width: 100%;
-            border: 1px solid #e1e4e8;
-        }
-
-        code {
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            font-size: 0.9em;
-            padding: 0.2em 0.4em;
-            background: #f6f8fa;
-            border-radius: 3px;
-        }
-
-        pre code {
-            padding: 0;
-            background: none;
-        }
-
-        /* Table styling */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 1em 0;
-            overflow-x: auto;
-            display: block;
-        }
-
-        th, td {
-            border: 1px solid #dfe2e5;
-            padding: 8px 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #f6f8fa;
-        }
-
-        /* Image handling */
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 1em auto;
-        }
-
-        /* Long URL handling */
-        a {
-            word-break: break-word;
-        }
-
-        /* Add ultrawide screen support */
-        @media (min-width: 2560px) {
-            #content {
-                max-width: 1600px;
-            }
-        }
-
-        /* Add specific support for 3440px width screens */
-        @media (min-width: 3440px) {
-            #content {
-                max-width: 2000px;
-            }
-        }
-
-        /* Adjust content padding for wider screens */
-        @media (min-width: 1920px) {
-            #content {
-                padding: 60px;
-            }
-        }
-
-        /* Menu Toggle Button */
-        .menu-toggle {
-            position: fixed;
-            top: 5px;
-            left: 255px;
-            z-index: 1000;
-            padding: 8px;
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            color: #666;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-        }
-
-        /* Update toggle position based on panel state */
-        .menu-toggle.panel-visible {
-            left: 255px;
-        }
-
-        .menu-toggle.panel-hidden {
-            left: 10px;
-        }
-
-        /* Adjust hover effect to match sidebar theme */
-        .menu-toggle:hover {
-            background: #f0f4f8;
-            color: #0366d6;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        }
-
-        /* Side Panel Transition */
-        .side-panel {
-            transform: none;
-            left: 0;
-            transition: left 0.3s ease;
-        }
-
-        .side-panel.hidden {
-            transform: none;
-            left: -300px;
-        }
-
-        /* Main Content Transition */
-        .main-content {
-            margin-left: 300px;
-            transition: margin-left 0.3s ease;
-        }
-
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        /* Add title style */
-        .side-panel-title {
-            font-size: 1.1em;
-            font-weight: 500;
-            color: #2c3e50;
-            margin: 0;
-            flex: 1;
-        }
-
-        /* Side Panel Header */
-        .side-panel-header {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            background: #f8fafc;
-        }
+        @media(min-width:1920px){#content{padding:60px;max-width:1600px}}
+        @media(min-width:3440px){#content{max-width:2000px}}
     </style>
 </head>
 <body>
     <button class="menu-toggle panel-visible" id="menuToggle">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
+            <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
     </button>
 
@@ -310,17 +65,13 @@
         <div class="side-panel-header">
             <h1 class="side-panel-title">FileToMarkdown</h1>
         </div>
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div class="drop-zone" id="drop-zone" onclick="$('file-input').click()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
             <p>Drop MD files here<br>or click to browse</p>
         </div>
-        <div class="file-list" id="file-list">
-            <!-- File list will be inserted here -->
-        </div>
+        <div class="file-list" id="file-list"></div>
     </div>
 
     <div class="main-content">
@@ -337,138 +88,74 @@
     <input type="file" id="file-input" accept=".md" multiple>
 
     <script>
-        const fileInput = document.getElementById('file-input');
-        fileInput.addEventListener('change', handleFileSelect);
-        
-        // Modify the refreshFiles function
-        function refreshFiles() {
-            if (window.mdFiles && window.mdFiles.length > 0) {
-                updateFileList();
-            }
-        }
+        const $=id=>document.getElementById(id),
+              c=$('content'),
+              sp=document.querySelector('.side-panel'),
+              mc=document.querySelector('.main-content'),
+              mt=$('menuToggle');
 
-        // Refresh every 2 seconds
-        setInterval(refreshFiles, 2000);
-        
-        function handleFileSelect(event) {
-            const files = Array.from(event.target.files || [])
-                .filter(file => file.name.toLowerCase().endsWith('.md'));
-            
-            if (files.length > 0) {
-                window.mdFiles = files;
-                updateFileList();
-                
-                // If only one file is selected, load it directly
-                if (files.length === 1) {
-                    loadFile(0);
-                }
-            } else {
-                document.getElementById('content').innerHTML = 
-                    '<p style="color: red">No markdown files found in the selected directory.</p>';
-            }
-        }
+        const updateList=()=>{
+            if(!window.mdFiles)return;
+            $('file-list').innerHTML=`<ul>${window.mdFiles.map((f,i)=>
+                `<li><a href="#" onclick="loadFile(${i});return false">${f.webkitRelativePath||f.name}</a></li>`
+            ).join('')}</ul>`;
+        };
 
-        // Add new function to update file list
-        function updateFileList() {
-            if (!window.mdFiles) return;
-            
-            const fileList = window.mdFiles.map((file, index) => {
-                const relativePath = file.webkitRelativePath || file.name;
-                return `<li><a href="#" onclick="loadFile(${index}); return false;">${relativePath}</a></li>`;
-            }).join('');
-            
-            document.getElementById('file-list').innerHTML = `<ul>${fileList}</ul>`;
-        }
-
-        // Add a flag to track when we're viewing markdown
-        function loadFile(fileIndex) {
-            const file = window.mdFiles[fileIndex];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = marked.parse(e.target.result);
-                document.getElementById('content').innerHTML = content;
-                // Add a class to indicate we're viewing markdown
-                document.getElementById('content').classList.add('viewing-markdown');
+        const loadFile=i=>{
+            const f=window.mdFiles[i];
+            if(!f)return;
+            const r=new FileReader();
+            r.onload=e=>{
+                c.innerHTML=marked.parse(e.target.result);
+                c.classList.add('viewing-markdown');
             };
-            reader.onerror = function(e) {
-                document.getElementById('content').innerHTML = 
-                    `<p style="color: red">Error reading file: ${e.target.error}</p>`;
-            };
-            reader.readAsText(file);
-        }
+            r.onerror=e=>c.innerHTML=`<p style="color:red">Error reading file: ${e.target.error}</p>`;
+            r.readAsText(f);
+        };
 
-        // Add a back button functionality
-        function showFileList() {
-            document.getElementById('content').classList.remove('viewing-markdown');
-            handleFileSelect({ target: { files: window.mdFiles } });
-        }
+        const handleFiles=files=>{
+            const mdf=Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.md'));
+            if(mdf.length){
+                window.mdFiles=window.mdFiles||[];
+                window.mdFiles.push(...mdf);
+                updateList();
+                if(window.mdFiles.length===mdf.length)loadFile(0);
+            }else c.innerHTML='<p style="color:red">Please select a markdown (.md) file.</p>';
+        };
 
-        const dropZone = document.getElementById('drop-zone');
+        $('file-input').addEventListener('change',e=>handleFiles(e.target.files));
+        setInterval(()=>window.mdFiles?.length&&updateList(),2000);
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
+        ['dragover','dragleave','drop'].forEach(e=>
+            $('drop-zone').addEventListener(e,v=>{
+                v.preventDefault();
+                $('drop-zone').classList.toggle('dragover',e==='dragover');
+                e==='drop'&&handleFiles(v.dataTransfer.files);
+            })
+        );
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
+        const toggle=()=>{
+            sp.classList.toggle('hidden');
+            mc.classList.toggle('expanded');
+            mt.classList.toggle('panel-visible');
+            mt.classList.toggle('panel-hidden');
+            localStorage.setItem('sidePanelHidden',sp.classList.contains('hidden'));
+        };
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            
-            const droppedFiles = Array.from(e.dataTransfer.files)
-                .filter(file => file.name.toLowerCase().endsWith('.md'));
-            
-            if (droppedFiles.length > 0) {
-                // If we already have files, append the new ones
-                window.mdFiles = window.mdFiles || [];
-                window.mdFiles.push(...droppedFiles);
-                
-                updateFileList();
-                
-                // If this is the first file, load it
-                if (window.mdFiles.length === droppedFiles.length) {
-                    loadFile(0);
-                }
-            } else {
-                document.getElementById('content').innerHTML = 
-                    '<p style="color: red">Please select a markdown (.md) file.</p>';
-            }
-        });
-
-        const menuToggle = document.getElementById('menuToggle');
-        const sidePanel = document.querySelector('.side-panel');
-        const mainContent = document.querySelector('.main-content');
-
-        // Load the saved state
-        const isPanelHidden = localStorage.getItem('sidePanelHidden') === 'true';
-        if (isPanelHidden) {
-            sidePanel.classList.add('hidden');
-            mainContent.classList.add('expanded');
-            menuToggle.classList.remove('panel-visible');
-            menuToggle.classList.add('panel-hidden');
-        }
-
-        menuToggle.addEventListener('click', () => {
-            sidePanel.classList.toggle('hidden');
-            mainContent.classList.toggle('expanded');
-            menuToggle.classList.toggle('panel-visible');
-            menuToggle.classList.toggle('panel-hidden');
-            
-            localStorage.setItem('sidePanelHidden', sidePanel.classList.contains('hidden'));
-        });
-
-        // Add keyboard shortcut (Ctrl/Cmd + B) to toggle panel
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        mt.onclick=toggle;
+        document.onkeydown=e=>{
+            if((e.ctrlKey||e.metaKey)&&e.key==='b'){
                 e.preventDefault();
-                menuToggle.click();
+                toggle();
             }
-        });
+        };
+
+        if(localStorage.getItem('sidePanelHidden')==='true'){
+            sp.classList.add('hidden');
+            mc.classList.add('expanded');
+            mt.classList.remove('panel-visible');
+            mt.classList.add('panel-hidden');
+        }
     </script>
 </body>
 </html> 
