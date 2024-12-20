@@ -38,7 +38,7 @@ const downloadFile = (url, outputPath) => {
                 fsSync.mkdirSync(dir, { recursive: true });
             }
 
-            const fileStream = fs.createWriteStream(outputPath);
+            const fileStream = fsSync.createWriteStream(outputPath);
             response.pipe(fileStream);
 
             fileStream.on('finish', () => {
