@@ -23,11 +23,34 @@ npm install filetomarkdown
 
 ## Running Tests
 
-To test the converter with example files from GitHub:
+You can run tests in two ways:
 
+1. If you have the package installed globally:
 ```bash
 filetomarkdown-test
 ```
+
+2. Without installation (using npx):
+```bash
+npx filetomarkdown-test
+```
+
+This will create a project structure in your current directory:
+```
+src/
+├── viewer.html            # Markdown viewer (open in browser)
+├── exampleFiles/          # Original files
+│   ├── code/             # Code examples
+│   └── [example files]   # Other example files
+└── outputAfterConversion/ # All converted markdown files
+    ├── code/             # Converted code files
+    └── [converted files] # Other converted files
+```
+
+To view the converted files:
+1. Navigate to the `src/` directory
+2. Open `viewer.html` in your browser
+3. Select a markdown file from the dropdown to view it
 
 ## CLI Usage
 

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileToMarkdown Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        #content {
+            background: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f8f8f8;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        #file-input {
+            display: none;
+        }
+        .browse-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #0366d6;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .browse-button:hover {
+            background: #0255b3;
+            text-decoration: none;
+        }
+        .drop-zone {
+            border: 2px dashed #0366d6;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: white;
+            cursor: pointer;
+        }
+        .drop-zone.dragover {
+            background: #e6f3ff;
+            border-color: #0255b3;
+        }
+        .current-path {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        Click to browse markdown files or drop a file here
+    </div>
+    <div class="current-path">Current directory: outputAfterConversion/</div>
+    <input type="file" id="file-input" accept=".md" webkitdirectory directory onchange="handleFileSelect(event)">
+
+    <div id="content">
+        <h2>Welcome to FileToMarkdown Viewer</h2>
+        <p>To view a markdown file:</p>
+        <ul>
+            <li>Drop a markdown file onto the drop zone above, or</li>
+            <li>Click the drop zone to browse the outputAfterConversion folder</li>
+        </ul>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        fileInput.setAttribute('webkitdirectory', '');
+        fileInput.setAttribute('directory', '');
+        
+        window.addEventListener('load', () => {
+            try {
+                const defaultPath = '../outputAfterConversion/';
+                if (fileInput.webkitdirectory) {
+                    fileInput.webkitdirectory = defaultPath;
+                }
+            } catch (e) {
+                console.warn('Could not set default directory:', e);
+            }
+        });
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files)
+                .filter(file => file.name.toLowerCase().endsWith('.md'));
+            
+            if (files.length > 0) {
+                const fileList = files.map(file => {
+                    const relativePath = file.webkitRelativePath || file.name;
+                    return `<li><a href="#" onclick="loadFile(event.target.dataset.file); return false;" 
+                        data-file="${files.indexOf(file)}">${relativePath}</a></li>`;
+                }).join('');
+                
+                document.getElementById('content').innerHTML = `
+                    <h2>Available Markdown Files:</h2>
+                    <ul>${fileList}</ul>
+                `;
+                
+                window.mdFiles = files;
+            } else {
+                document.getElementById('content').innerHTML = 
+                    '<p style="color: red">No markdown files found in the selected directory.</p>';
+            }
+        }
+
+        function loadFile(fileIndex) {
+            const file = window.mdFiles[fileIndex];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('content').innerHTML = marked.parse(e.target.result);
+            };
+            reader.onerror = function(e) {
+                document.getElementById('content').innerHTML = 
+                    `<p style="color: red">Error reading file: ${e.target.error}</p>`;
+            };
+            reader.readAsText(file);
+        }
+
+        const dropZone = document.getElementById('drop-zone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.toLowerCase().endsWith('.md')) {
+                loadFile(file);
+            } else {
+                document.getElementById('content').innerHTML = '<p style="color: red">Please select a markdown (.md) file.</p>';
+            }
+        });
+    </script>
+</body>
+</html> 

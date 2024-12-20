@@ -1,23 +1,25 @@
 {
   "name": "filetomarkdown",
-  "version": "0.1.12",
+  "version": "0.1.36",
   "description": "Convert various file types to markdown format. Example files available at github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "src/index.js",
   "bin": {
-    "filetomarkdown-convert": "bin/cli.js",
-    "filetomarkdown-test": "scripts/test-conversion.js"
+    "filetomarkdown-convert": "./bin/cli.js",
+    "filetomarkdown-test": "./scripts/test-conversion.js"
   },
   "files": [
     "src/index.js",
     "src/converters/",
+    "src/viewer.html",
     "bin/",
     "scripts/test-conversion.js",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node scripts/test-conversion.js --github"
+    "test": "node scripts/test-conversion.js",
+    "test-github": "node scripts/test-conversion.js --github"
   },
   "keywords": [
     "markdown",
