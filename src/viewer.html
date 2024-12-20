@@ -342,10 +342,8 @@
         
         // Modify the refreshFiles function
         function refreshFiles() {
-            // Only refresh if we're showing the file list, not the markdown content
-            const content = document.getElementById('content');
-            if (window.mdFiles && window.mdFiles.length > 0 && content.querySelector('ul')) {
-                handleFileSelect({ target: { files: window.mdFiles } });
+            if (window.mdFiles && window.mdFiles.length > 0) {
+                updateFileList();
             }
         }
 
@@ -358,25 +356,28 @@
             
             if (files.length > 0) {
                 window.mdFiles = files;
+                updateFileList();
+                
                 // If only one file is selected, load it directly
                 if (files.length === 1) {
                     loadFile(0);
-                    return;
                 }
-                
-                // Otherwise show the file list
-                const fileList = files.map((file, index) => {
-                    const relativePath = file.webkitRelativePath || file.name;
-                    return `<li><a href="#" onclick="loadFile(${index}); return false;">${relativePath}</a></li>`;
-                }).join('');
-                
-                document.getElementById('file-list').innerHTML = `
-                    <ul>${fileList}</ul>
-                `;
             } else {
                 document.getElementById('content').innerHTML = 
                     '<p style="color: red">No markdown files found in the selected directory.</p>';
             }
+        }
+
+        // Add new function to update file list
+        function updateFileList() {
+            if (!window.mdFiles) return;
+            
+            const fileList = window.mdFiles.map((file, index) => {
+                const relativePath = file.webkitRelativePath || file.name;
+                return `<li><a href="#" onclick="loadFile(${index}); return false;">${relativePath}</a></li>`;
+            }).join('');
+            
+            document.getElementById('file-list').innerHTML = `<ul>${fileList}</ul>`;
         }
 
         // Add a flag to track when we're viewing markdown
@@ -418,14 +419,24 @@
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                window.mdFiles = [files[0]];
-                if (files[0].name.toLowerCase().endsWith('.md')) {
+            
+            const droppedFiles = Array.from(e.dataTransfer.files)
+                .filter(file => file.name.toLowerCase().endsWith('.md'));
+            
+            if (droppedFiles.length > 0) {
+                // If we already have files, append the new ones
+                window.mdFiles = window.mdFiles || [];
+                window.mdFiles.push(...droppedFiles);
+                
+                updateFileList();
+                
+                // If this is the first file, load it
+                if (window.mdFiles.length === droppedFiles.length) {
                     loadFile(0);
-                } else {
-                    document.getElementById('content').innerHTML = '<p style="color: red">Please select a markdown (.md) file.</p>';
                 }
+            } else {
+                document.getElementById('content').innerHTML = 
+                    '<p style="color: red">Please select a markdown (.md) file.</p>';
             }
         });
 
