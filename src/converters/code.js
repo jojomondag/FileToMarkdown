@@ -1,7 +1,7 @@
 // Map of file extensions to markdown language identifiers
 const langMap = {
   '.js': 'javascript',
-  '.html': 'html',
+  '.html': 'markup',
   '.java': 'java',
   '.cs': 'csharp',
   '.py': 'python',
@@ -18,14 +18,13 @@ const langMap = {
   '.kt': 'kotlin',
   '.lua': 'lua',
   '.m': 'matlab',
-  '.sh': 'bash',
-  '.bash': 'bash',
-  // Framework extensions mapped to base languages for better highlighting
-  '.jsx': 'javascript',  // Map JSX to JavaScript
-  '.tsx': 'typescript',  // Map TSX to TypeScript
-  '.vue': 'html',        // Map Vue to HTML + JavaScript
-  '.svelte': 'html',     // Map Svelte to HTML + JavaScript
-  // Add more languages here
+  '.sh': 'shell',
+  '.bash': 'shell',
+  // Framework extensions
+  '.jsx': 'jsx',
+  '.tsx': 'tsx',
+  '.vue': 'markup',
+  '.svelte': 'markup',
 };
 
 module.exports = class {
