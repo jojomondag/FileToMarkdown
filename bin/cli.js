@@ -15,7 +15,8 @@ Examples:
 Supported formats:
   - Documents: PDF, DOCX, PPTX, XLSX, TXT
   - Archives: ZIP, 7Z
-  - Code: JS, PY, JAVA, CS, HTML
+  - Code: JS (JSX), TS (TSX), PY, JAVA, CS, HTML, CPP, C, GO, SQL, PHP, SWIFT, CSS, RUBY,
+          RUST, KOTLIN, LUA, MATLAB, SHELL, VUE, SVELTE
 `;
 
 async function main() {

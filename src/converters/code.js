@@ -5,6 +5,26 @@ const langMap = {
   '.java': 'java',
   '.cs': 'csharp',
   '.py': 'python',
+  '.cpp': 'cpp',
+  '.c': 'c',
+  '.go': 'go',
+  '.sql': 'sql',
+  '.php': 'php',
+  '.swift': 'swift',
+  '.css': 'css',
+  '.rb': 'ruby',
+  '.ts': 'typescript',
+  '.rs': 'rust',
+  '.kt': 'kotlin',
+  '.lua': 'lua',
+  '.m': 'matlab',
+  '.sh': 'bash',
+  '.bash': 'bash',
+  // Framework extensions mapped to base languages for better highlighting
+  '.jsx': 'javascript',  // Map JSX to JavaScript
+  '.tsx': 'typescript',  // Map TSX to TypeScript
+  '.vue': 'html',        // Map Vue to HTML + JavaScript
+  '.svelte': 'html',     // Map Svelte to HTML + JavaScript
   // Add more languages here
 };
 
