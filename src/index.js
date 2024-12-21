@@ -29,6 +29,8 @@ class MarkitDown {
   }
 
   async getConverter(ext) {
+    const CodeConverter = require('./converters/code');
+    
     const typeMap = {
       'pdf': './converters/pdf',
       'txt': './converters/txt',
@@ -37,11 +39,12 @@ class MarkitDown {
       'xlsx': './converters/xlsx',
       '7z': './converters/7zip',
       'zip': './converters/zip',
-      'js': './converters/code',
-      'py': './converters/code',
-      'java': './converters/code',
-      'cs': './converters/code',
-      'html': './converters/code'
+      // Dynamically add code file extensions
+      ...Object.fromEntries(
+        CodeConverter.supportedExtensions.map(ext => 
+          [ext, './converters/code']
+        )
+      )
     };
 
     const converterPath = typeMap[ext];
@@ -58,4 +61,4 @@ module.exports = {
     const converter = new MarkitDown(options);
     return converter.convertToMarkdown(input, output);
   }
-}; 
+};

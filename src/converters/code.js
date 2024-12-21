@@ -1,17 +1,20 @@
+// Map of file extensions to markdown language identifiers
+const langMap = {
+  '.js': 'javascript',
+  '.html': 'html',
+  '.java': 'java',
+  '.cs': 'csharp',
+  '.py': 'python',
+  // Add more languages here
+};
+
 module.exports = class {
+  // Make langMap accessible as a static property
+  static supportedExtensions = Object.keys(langMap).map(ext => ext.slice(1));
+  
   async convert(f) {
     const fs = require('fs').promises;
     const path = require('path');
-
-    // Map of file extensions to markdown language identifiers
-    const langMap = {
-      // Currently testing languages
-      '.js': 'javascript',
-      '.html': 'html',
-      '.java': 'java',
-      '.cs': 'csharp',
-      '.py': 'python',
-    };
 
     try {
       const ext = path.extname(f).toLowerCase();
@@ -34,4 +37,4 @@ module.exports = class {
       return `# Error\n\nFailed to read file: ${error.message}`;
     }
   }
-} 
+}
