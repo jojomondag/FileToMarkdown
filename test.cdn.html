@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FileToMarkdown CDN Test</title>
+</head>
+<body>
+    <h1>FileToMarkdown CDN Test</h1>
+    <div>
+        <h2>Supported File Types:</h2>
+        <ul id="fileTypes"></ul>
+    </div>
+    <pre id="output"></pre>
+
+    <!-- Using unpkg CDN (will work after npm publish) -->
+    <script src="https://unpkg.com/filetomarkdown/dist/markitdown.js"></script>
+    <script>
+        // Display file types in a list
+        const fileTypesList = document.getElementById('fileTypes');
+        FileToMarkdown.fileTypes.forEach(type => {
+            const li = document.createElement('li');
+            li.textContent = `.${type}`;
+            fileTypesList.appendChild(li);
+        });
+
+        // Show raw data
+        const output = document.getElementById('output');
+        output.textContent = JSON.stringify({
+            fileTypes: FileToMarkdown.fileTypes,
+            version: FileToMarkdown.version
+        }, null, 2);
+
+        // Log to console for easier debugging
+        console.log('FileToMarkdown object:', FileToMarkdown);
+    </script>
+</body>
+</html> 

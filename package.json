@@ -1,9 +1,10 @@
 {
   "name": "filetomarkdown",
-  "version": "0.1.68",
+  "version": "0.1.71",
   "description": "Convert various file types to markdown format. Example files available at github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "src/index.js",
+  "browser": "dist/markitdown.js",
   "bin": {
     "filetomarkdown-convert": "./bin/cli.js",
     "filetomarkdown-test": "./scripts/test-conversion.js"
@@ -14,12 +15,18 @@
     "src/viewer.html",
     "bin/",
     "scripts/test-conversion.js",
+    "dist/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "test": "node scripts/test-conversion.js",
-    "test-github": "node scripts/test-conversion.js --github"
+    "test-github": "node scripts/test-conversion.js --github",
+    "build": "webpack --config webpack.config.js",
+    "build:dev": "webpack --config webpack.dev.config.js",
+    "prepare": "npm run build && npm run build:dev",
+    "serve": "webpack serve --config webpack.dev.config.js",
+    "start:api": "node src/api/api.js"
   },
   "keywords": [
     "markdown",
@@ -38,10 +45,21 @@
   "dependencies": {
     "7zip-min": "^1.4.5",
     "adm-zip": "^0.5.16",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "mammoth": "^1.8.0",
     "pdfjs-dist": "^4.9.155",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "babel-loader": "^9.1.3",
+    "path-browserify": "^1.0.1",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   },
   "engines": {
     "node": ">=14.0.0"

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FileToMarkdown Test</title>
+</head>
+<body>
+    <h1>FileToMarkdown Test</h1>
+    <div>
+        <h2>Supported File Types:</h2>
+        <ul id="fileTypes"></ul>
+    </div>
+    <pre id="output"></pre>
+
+    <script>
+        // Fetch file types from API
+        async function loadFileTypes() {
+            try {
+                const response = await fetch('http://localhost:3000/api/filetypes');
+                const data = await response.json();
+                
+                // Display file types in a list
+                const fileTypesList = document.getElementById('fileTypes');
+                data.fileTypes.forEach(type => {
+                    const li = document.createElement('li');
+                    li.textContent = `.${type}`;
+                    fileTypesList.appendChild(li);
+                });
+
+                // Show raw data
+                const output = document.getElementById('output');
+                output.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error fetching file types:', error);
+                document.getElementById('output').textContent = 'Error loading file types: ' + error.message;
+            }
+        }
+
+        // Load file types when page loads
+        loadFileTypes();
+    </script>
+</body>
+</html> 
