@@ -39,7 +39,6 @@ class MarkitDown {
       'xlsx': './converters/xlsx',
       '7z': './converters/7zip',
       'zip': './converters/zip',
-      // Dynamically add code file extensions
       ...Object.fromEntries(
         CodeConverter.supportedExtensions.map(ext => 
           [ext, './converters/code']
@@ -52,69 +51,12 @@ class MarkitDown {
 
     return require(converterPath);
   }
-
-  // Get supported file types and their paths
-  static getSupportedTypes() {
-    const CodeConverter = require('./converters/code');
-    
-    const baseTypes = {
-      'pdf': 'PDF Documents',
-      'txt': 'Text Files',
-      'docx': 'Word Documents',
-      'pptx': 'PowerPoint Presentations',
-      'xlsx': 'Excel Spreadsheets',
-      '7z': '7-Zip Archives',
-      'zip': 'ZIP Archives'
-    };
-
-    // Add code file types
-    const codeTypes = Object.fromEntries(
-      CodeConverter.supportedExtensions.map(ext => 
-        [ext, `${ext.toUpperCase()} Source Files`]
-      )
-    );
-
-    return {
-      ...baseTypes,
-      ...codeTypes
-    };
-  }
-
-  // Get converter paths for browser
-  static getConverterPaths() {
-    const CodeConverter = require('./converters/code');
-    
-    const basePaths = {
-      'pdf': 'converters/pdf',
-      'txt': 'converters/txt',
-      'docx': 'converters/docx',
-      'pptx': 'converters/pptx',
-      'xlsx': 'converters/xlsx',
-      '7z': 'converters/7zip',
-      'zip': 'converters/zip'
-    };
-
-    // Add code converter paths
-    const codePaths = Object.fromEntries(
-      CodeConverter.supportedExtensions.map(ext => 
-        [ext, 'converters/code']
-      )
-    );
-
-    return {
-      ...basePaths,
-      ...codePaths
-    };
-  }
 }
 
-// Export both the class and convenience functions
 module.exports = {
   MarkitDown,
   convertToMarkdown: async (input, output, options) => {
     const converter = new MarkitDown(options);
     return converter.convertToMarkdown(input, output);
-  },
-  getSupportedTypes: MarkitDown.getSupportedTypes,
-  getConverterPaths: MarkitDown.getConverterPaths
+  }
 };

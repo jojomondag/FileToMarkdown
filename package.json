@@ -1,6 +1,6 @@
 {
   "name": "filetomarkdown",
-  "version": "0.1.71",
+  "version": "0.1.72",
   "description": "Convert various file types to markdown format. Example files available at github.com/jojomondag/FileToMarkdown/tree/main/src/exampleFiles",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "src/index.js",
@@ -48,6 +48,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
     "pdfjs-dist": "^4.9.155",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"
@@ -56,7 +57,13 @@
     "@babel/core": "^7.23.6",
     "@babel/preset-env": "^7.23.6",
     "babel-loader": "^9.1.3",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
     "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
