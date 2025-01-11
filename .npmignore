@@ -1,5 +1,5 @@
 # Example files
-src/exampleFiles/
+examples/
 
 # Development files
 .git/
@@ -8,9 +8,6 @@ src/exampleFiles/
 .npmrc
 *.log
 node_modules/
-
-# Test outputs
-src/exampleFiles/outputAfterConversion/
 
 # IDE files
 .vscode/

@@ -4,122 +4,65 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-
-class MarkitDown {
-  constructor(options = {}) {
-    this.options = options;
-  }
-
-  async convertToMarkdown(inputPath) {
-    try {
-      const ext = path.extname(inputPath).toLowerCase().slice(1);
-      const Converter = await this.getFileType(ext);
-      
-      if (!Converter) {
-        throw new Error(`Unsupported file type: ${ext}`);
-      }
-
-      const converter = new Converter();
-      return await converter.convert(inputPath);
-    } catch (error) {
-      throw new Error(`Conversion failed: ${error.message}`);
-    }
-  }
-
-  getFileType(ext) {
-    const CodeConverter = require('../converters/code');
-    
-    const typeMap = {
-      'pdf': '../converters/pdf',
-      'txt': '../converters/txt',
-      'docx': '../converters/docx',
-      'pptx': '../converters/pptx',
-      'xlsx': '../converters/xlsx',
-      '7z': '../converters/7zip',
-      'zip': '../converters/zip',
-      ...Object.fromEntries(
-        CodeConverter.supportedExtensions.map(ext => 
-          [ext, '../converters/code']
-        )
-      )
-    };
-
-    const converterPath = typeMap[ext];
-    if (!converterPath) return null;
-
-    return require(converterPath);
-  }
-}
+const MarkdownRenderer = require('../renderer/markdown');
+const { MarkitDown } = require('../index.js');
 
 const app = express();
-const port = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.text());
 
-// Configure multer for file upload
+/**
+ * Multer Configuration for File Uploads
+ * Handles file uploads, saves temporarily, manages file info, and cleans up
+ */
 const upload = multer({ 
   storage: multer.diskStorage({
-    destination: async (req, file, cb) => {
+    destination: async (_req, _file, cb) => {
       const tempDir = path.join(os.tmpdir(), 'filetomarkdown-uploads');
       await fs.mkdir(tempDir, { recursive: true });
       cb(null, tempDir);
     },
-    filename: (req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
-    }
+    filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
   })
 });
 
-app.use(cors());
-
-// Simplified filetypes endpoint
-app.get('/api/filetypes', (req, res) => {
+app.get('/api/filetypes', (_req, res) => {
   try {
-    const converter = new MarkitDown();
-    const CodeConverter = require('../converters/code');
-    
     const typeMap = {
-      'pdf': 'PDF Documents',
-      'txt': 'Text Files',
-      'docx': 'Word Documents',
-      'pptx': 'PowerPoint Presentations',
-      'xlsx': 'Excel Spreadsheets',
-      '7z': '7-Zip Archives',
-      'zip': 'ZIP Archives',
-      ...Object.fromEntries(
-        CodeConverter.supportedExtensions.map(ext => 
-          [ext, `${ext.toUpperCase()} Source Files`]
-        )
-      )
+      'pdf': 'PDF Documents', 'txt': 'Text Files', 'docx': 'Word Documents',
+      'pptx': 'PowerPoint Presentations', 'xlsx': 'Excel Spreadsheets',
+      '7z': '7-Zip Archives', 'zip': 'ZIP Archives',
+      ...Object.fromEntries(require('../converters/code').supportedExtensions
+        .map(ext => [ext, `${ext.toUpperCase()} Source Files`]))
     };
-
-    res.json({
-      fileTypes: Object.keys(typeMap)
-    });
+    res.json({ fileTypes: Object.keys(typeMap), descriptions: typeMap, status: 200 });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message, status: 500 });
+  }
+});
+
+app.post('/api/render', async (req, res) => {
+  try {
+    if (!req.body) return res.status(400).json({ error: 'No markdown content provided', status: 400 });
+    const html = new MarkdownRenderer({ highlight: true }).render(req.body);
+    res.json({ html, status: 200 });
+  } catch (error) {
+    res.status(500).json({ error: error.message, status: 500 });
   }
 });
 
 app.post('/api/convert', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-
-  const converter = new MarkitDown();
-  
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded', status: 400 });
   try {
-    const markdown = await converter.convertToMarkdown(req.file.path);
+    const markdown = await new MarkitDown().convertToMarkdown(req.file.path);
     await fs.unlink(req.file.path);
-    res.json({ markdown });
+    res.json({ markdown, status: 200 });
   } catch (error) {
-    if (req.file) {
-      await fs.unlink(req.file.path).catch(() => {});
-    }
-    res.status(500).json({ error: error.message });
+    if (req.file) await fs.unlink(req.file.path).catch(() => {});
+    res.status(500).json({ error: error.message, status: 500 });
   }
 });
 
-app.listen(port, () => {
-  console.log(`API server running on port ${port}`);
-});
+app.listen(process.env.PORT || 3000, () => console.log(`API server running on port ${process.env.PORT || 3000}`));
 
 module.exports = app; 
