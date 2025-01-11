@@ -7,14 +7,14 @@
   "browser": "dist/markitdown.js",
   "bin": {
     "filetomarkdown-convert": "./bin/cli.js",
-    "filetomarkdown-test": "./scripts/test-conversion.js"
+    "filetomarkdown-test": "./examples/scripts/test-conversion.js"
   },
   "files": [
     "src/index.js",
     "src/converters/",
     "src/viewer.html",
     "bin/",
-    "scripts/test-conversion.js",
+    "examples/scripts/test-conversion.js",
     "dist/",
     "README.md",
     "LICENSE"
@@ -27,7 +27,8 @@
     "prepare": "npm run build && npm run build:dev",
     "serve": "webpack serve --config webpack.dev.config.js",
     "start:api": "node src/api/api.js",
-    "build:renderer": "webpack --config webpack.renderer.config.js"
+    "build:renderer": "webpack --config webpack.renderer.config.js",
+    "start:viewer": "node src/server.js"
   },
   "keywords": [
     "markdown",
@@ -49,12 +50,12 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "mammoth": "^1.8.0",
+    "marked": "^4.3.0",
     "multer": "^1.4.5-lts.1",
     "pdfjs-dist": "^4.9.155",
+    "prismjs": "^1.29.0",
     "xlsx-js-style": "^1.2.0",
-    "xml2js": "^0.6.2",
-    "marked": "^4.3.0",
-    "prismjs": "^1.29.0"
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",

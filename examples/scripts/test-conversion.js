@@ -173,7 +173,7 @@ const runTests = async (useGithub = false) => {
                 }
 
                 console.log(`Converting ${test.type}...`);
-                const { convertToMarkdown } = require('../src/index.js');
+                const { convertToMarkdown } = require('../../src/index.js');
                 await convertToMarkdown(test.localPath, test.outputPath);
 
                 // Move the markdown file if it was created in the source directory

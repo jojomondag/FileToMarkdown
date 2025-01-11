@@ -11,6 +11,14 @@ const app = express();
 app.use(cors());
 app.use(express.text());
 
+// Serve static files from src directory
+app.use(express.static(path.join(__dirname, '..')));
+
+// Serve the viewer at root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'viewer.html'));
+});
+
 /**
  * Multer Configuration for File Uploads
  * Handles file uploads, saves temporarily, manages file info, and cleans up
