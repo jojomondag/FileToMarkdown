@@ -16,7 +16,7 @@ Convert various file types to Markdown with a single command.
 ## Quick Test
 ```bash
 # Install
-npm install filetomarkdown
+  npm install filetomarkdown
 
 # Try example conversions
 npx filetomarkdown-test --github
