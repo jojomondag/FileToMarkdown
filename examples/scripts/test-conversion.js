@@ -6,14 +6,14 @@ const path = require('path');
 const https = require('https');
 const os = require('os');
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/refs/heads/main/examples/exampleFiles';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/refs/heads/main/src/exampleFiles';
 
 // Create necessary directories
 const createDirectories = () => {
     const dirs = [
-        'examples/exampleFiles/code',
-        'examples/outputAfterConversion',
-        'examples/outputAfterConversion/code'
+        'src/exampleFiles/code',
+        'src/outputAfterConversion',
+        'src/outputAfterConversion/code'
     ];
     
     dirs.forEach(dir => {
@@ -58,75 +58,75 @@ const downloadFile = (url, outputPath) => {
 const testCases = [
     {
         type: 'PDF',
-        localPath: 'examples/exampleFiles/exampleGardening.pdf',
+        localPath: 'src/exampleFiles/exampleGardening.pdf',
         githubUrl: `${GITHUB_RAW_BASE}/exampleGardening.pdf`,
-        outputPath: 'examples/outputAfterConversion/exampleGardening.md'
+        outputPath: 'src/outputAfterConversion/exampleGardening.md'
     },
     {
         type: 'TXT',
-        localPath: 'examples/exampleFiles/exampleTheDebuggingDuck.txt',
+        localPath: 'src/exampleFiles/exampleTheDebuggingDuck.txt',
         githubUrl: `${GITHUB_RAW_BASE}/exampleTheDebuggingDuck.txt`,
-        outputPath: 'examples/outputAfterConversion/exampleTheDebuggingDuck.md'
+        outputPath: 'src/outputAfterConversion/exampleTheDebuggingDuck.md'
     },
     {
         type: 'DOCX',
-        localPath: 'examples/exampleFiles/exampleProjekt9.docx',
+        localPath: 'src/exampleFiles/exampleProjekt9.docx',
         githubUrl: `${GITHUB_RAW_BASE}/exampleProjekt9.docx`,
-        outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
+        outputPath: 'src/outputAfterConversion/exampleProjekt9.md'
     },
     {
         type: 'PPTX',
-        localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
+        localPath: 'src/exampleFiles/exampleBruceLee.pptx',
         githubUrl: `${GITHUB_RAW_BASE}/exampleBruceLee.pptx`,
-        outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
+        outputPath: 'src/outputAfterConversion/exampleBruceLee.md'
     },
     {
         type: 'XLSX',
-        localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
+        localPath: 'src/exampleFiles/exampleProgrammeringYearPlan.xlsx',
         githubUrl: `${GITHUB_RAW_BASE}/exampleProgrammeringYearPlan.xlsx`,
-        outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
+        outputPath: 'src/outputAfterConversion/exampleProgrammeringYearPlan.md'
     },
     {
         type: '7Z',
-        localPath: 'examples/exampleFiles/exampleStudentWorks.7z',
+        localPath: 'src/exampleFiles/exampleStudentWorks.7z',
         githubUrl: `${GITHUB_RAW_BASE}/exampleStudentWorks.7z`,
-        outputPath: 'examples/outputAfterConversion/exampleStudentWorks.md'
+        outputPath: 'src/outputAfterConversion/exampleStudentWorks.md'
     },
     {
         type: 'ZIP',
-        localPath: 'examples/exampleFiles/exampleLeads.zip',
+        localPath: 'src/exampleFiles/exampleLeads.zip',
         githubUrl: `${GITHUB_RAW_BASE}/exampleLeads.zip`,
-        outputPath: 'examples/outputAfterConversion/exampleLeads.md'
+        outputPath: 'src/outputAfterConversion/exampleLeads.md'
     },
     {
         type: 'Code CS',
-        localPath: 'examples/exampleFiles/code/codeCs.cs',
+        localPath: 'src/exampleFiles/code/codeCs.cs',
         githubUrl: `${GITHUB_RAW_BASE}/code/codeCs.cs`,
-        outputPath: 'examples/outputAfterConversion/code/codeCs.md'
+        outputPath: 'src/outputAfterConversion/code/codeCs.md'
     },
     {
         type: 'Code HTML',
-        localPath: 'examples/exampleFiles/code/codeHtml.html',
+        localPath: 'src/exampleFiles/code/codeHtml.html',
         githubUrl: `${GITHUB_RAW_BASE}/code/codeHtml.html`,
-        outputPath: 'examples/outputAfterConversion/code/codeHtml.md'
+        outputPath: 'src/outputAfterConversion/code/codeHtml.md'
     },
     {
         type: 'Code JAVA',
-        localPath: 'examples/exampleFiles/code/codeJava.java',
+        localPath: 'src/exampleFiles/code/codeJava.java',
         githubUrl: `${GITHUB_RAW_BASE}/code/codeJava.java`,
-        outputPath: 'examples/outputAfterConversion/code/codeJava.md'
+        outputPath: 'src/outputAfterConversion/code/codeJava.md'
     },
     {
         type: 'Code JS',
-        localPath: 'examples/exampleFiles/code/codeJs.js',
+        localPath: 'src/exampleFiles/code/codeJs.js',
         githubUrl: `${GITHUB_RAW_BASE}/code/codeJs.js`,
-        outputPath: 'examples/outputAfterConversion/code/codeJs.md'
+        outputPath: 'src/outputAfterConversion/code/codeJs.md'
     },
     {
         type: 'Code PY',
-        localPath: 'examples/exampleFiles/code/codePy.py',
+        localPath: 'src/exampleFiles/code/codePy.py',
         githubUrl: `${GITHUB_RAW_BASE}/code/codePy.py`,
-        outputPath: 'examples/outputAfterConversion/code/codePy.md'
+        outputPath: 'src/outputAfterConversion/code/codePy.md'
     }
 ];
 
@@ -134,22 +134,21 @@ const testCases = [
 const runTests = async (useGithub = false) => {
     try {
         console.log('Creating project structure:');
-        console.log('├── src/');
-        console.log('│   └── viewer.html           # Markdown viewer');
-        console.log('├── examples/');
-        console.log('│   ├── exampleFiles/');
-        console.log('│   │   ├── code/');
-        console.log('│   │   └── [example files]');
-        console.log('│   └── outputAfterConversion/');
-        console.log('│       └── code/');
-        console.log('└── scripts/\n');
+        console.log('src/');
+        console.log('├── viewer.html           # Markdown viewer');
+        console.log('├── exampleFiles/');
+        console.log('│   ├── code/');
+        console.log('│   └── [example files]');
+        console.log('└── outputAfterConversion/');
+        console.log('    └── code/');
+        console.log('');
 
         // Create directories
         createDirectories();
 
-        // Copy viewer.html to src directory instead of outputAfterConversion
+        // Copy viewer.html to src directory
         const viewerPath = path.join(process.cwd(), 'src', 'viewer.html');
-        const packageViewerPath = path.join(__dirname, '..', 'src', 'viewer.html');
+        const packageViewerPath = path.join(__dirname, '..', '..', 'src', 'viewer.html');
 
         if (!fsSync.existsSync(viewerPath)) {
             if (fsSync.existsSync(packageViewerPath)) {

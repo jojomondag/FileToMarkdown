@@ -13,6 +13,7 @@
     "src/index.js",
     "src/converters/",
     "src/viewer.html",
+    "src/exampleFiles/",
     "bin/",
     "examples/scripts/test-conversion.js",
     "dist/",
