@@ -13,7 +13,7 @@ Convert various file types to Markdown with a single command.
         RUST, KOTLIN, LUA, MATLAB, SHELL, VUE, SVELTE
 - Archives: ZIP, 7Z
 
-## Quick Start
+## Quick Test
 ```bash
 # Install
 npm install filetomarkdown

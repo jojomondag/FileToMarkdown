@@ -15,7 +15,7 @@ app.use(express.text());
 app.use(express.static(path.join(__dirname, '..')));
 
 // Serve the viewer at root
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.sendFile(path.join(__dirname, '..', 'viewer.html'));
 });
 

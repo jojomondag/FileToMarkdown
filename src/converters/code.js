@@ -27,7 +27,7 @@ const langMap = {
   '.svelte': 'markup',
 };
 
-module.exports = class {
+class CodeConverter {
   // Make langMap accessible as a static property
   static supportedExtensions = Object.keys(langMap).map(ext => ext.slice(1));
   
@@ -57,3 +57,6 @@ module.exports = class {
     }
   }
 }
+
+module.exports = CodeConverter;
+module.exports.langMap = langMap;

@@ -1,26 +1,35 @@
 const marked = require('marked');
 const Prism = require('prismjs');
+const { langMap } = require('../converters/code');
 
-// Load Prism components
-require('prismjs/components/prism-markup-templating');
-require('prismjs/components/prism-php');
-require('prismjs/components/prism-python');
-require('prismjs/components/prism-javascript');
-require('prismjs/components/prism-typescript');
-require('prismjs/components/prism-jsx');
-require('prismjs/components/prism-tsx');
-require('prismjs/components/prism-css');
-require('prismjs/components/prism-scss');
-require('prismjs/components/prism-json');
-require('prismjs/components/prism-java');
-require('prismjs/components/prism-c');
-require('prismjs/components/prism-cpp');
-require('prismjs/components/prism-csharp');
-require('prismjs/components/prism-markdown');
-require('prismjs/components/prism-yaml');
-require('prismjs/components/prism-bash');
-require('prismjs/components/prism-shell-session');
-require('prismjs/components/prism-sql');
+// Automatically load Prism components based on supported languages
+const loadPrismComponents = () => {
+    // Get unique languages from langMap
+    const languages = [...new Set(Object.values(langMap))];
+    
+    // Always include markdown for documentation
+    languages.push('markdown');
+    
+    languages.forEach(lang => {
+        try {
+            // Handle special cases
+            const componentName = {
+                'markup': 'markup',          // HTML, Vue, Svelte
+                'shell': 'bash',             // Shell scripts
+                'plaintext': null            // No highlighting needed
+            }[lang] || lang;
+            
+            if (componentName) {
+                require(`prismjs/components/prism-${componentName}`);
+            }
+        } catch (error) {
+            console.warn(`Failed to load Prism component for ${lang}:`, error.message);
+        }
+    });
+};
+
+// Load all required Prism components
+loadPrismComponents();
 
 class MarkdownRenderer {
     constructor(options = {}) {
