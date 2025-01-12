@@ -16,22 +16,29 @@ Convert various file types to Markdown with a single command.
 ## Quick Test
 ```bash
 # Install
-  npm install filetomarkdown
+npm install filetomarkdown
 
 # Try example conversions
 npx filetomarkdown-test --github
-
-# Convert a file
-filetomarkdown-convert "document.pdf"
 ```
 
 ## Usage Options
-1. **Command Line**
+1. **Command Line** (make sure to navigate to your file's directory in cmd first)
    ```bash
    filetomarkdown-convert "input.pdf" "output.md"
    ```
 
-2. **API Server**
+2. **Create Markdown Viewer**
+   ```bash
+   # Create viewer in current directory
+   npx filetomarkdown-viewer
+
+   # Or specify a target directory
+   npx filetomarkdown-viewer /path/to/directory
+   ```
+   This creates a standalone viewer.html that can open and display markdown files without needing a server.
+
+3. **API Server**
    ```bash
    npm run start:api   # Runs on http://localhost:3000
    ```
