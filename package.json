@@ -6,24 +6,23 @@
   "main": "src/index.js",
   "browser": "dist/markitdown.js",
   "bin": {
-    "filetomarkdown-convert": "./bin/cli.js",
-    "filetomarkdown-test": "./examples/scripts/test-conversion.js",
-    "filetomarkdown-viewer": "./bin/create-viewer.js"
+    "filetomarkdown-convert": "bin/cli.js",
+    "filetomarkdown-test": "bin/test-conversion.js",
+    "filetomarkdown-viewer": "bin/create-viewer.js"
   },
   "files": [
     "src/index.js",
     "src/converters/",
     "src/viewer.html",
     "src/renderer/",
-    "examples/",
     "bin/",
     "dist/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node scripts/test-conversion.js",
-    "test-github": "node scripts/test-conversion.js --github",
+    "test": "node bin/test-conversion.js",
+    "test-github": "node bin/test-conversion.js --github",
     "build": "webpack --config webpack.config.js",
     "build:dev": "webpack --config webpack.dev.config.js",
     "prepare": "npm run build",
