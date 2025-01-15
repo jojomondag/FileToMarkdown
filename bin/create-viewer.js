@@ -11,18 +11,13 @@ async function createViewer(targetDir = process.cwd()) {
         const viewerSource = path.join(packageRoot, 'src', 'viewer.html');
         const viewerDest = path.join(targetDir, 'viewer.html');
         const rendererSource = path.join(packageRoot, 'dist', 'renderer.bundle.js');
+        const rendererDest = path.join(targetDir, 'renderer.bundle.js');
         
-        // Create dist directory
-        const distDir = path.join(targetDir, 'dist');
-        if (!fsSync.existsSync(distDir)) {
-            await fs.mkdir(distDir, { recursive: true });
-        }
-
         // Copy and update viewer.html
         if (fsSync.existsSync(viewerSource)) {
             await fs.copyFile(viewerSource, viewerDest);
             let viewerContent = await fs.readFile(viewerDest, 'utf8');
-            viewerContent = viewerContent.replace('../dist/renderer.bundle.js', './dist/renderer.bundle.js');
+            viewerContent = viewerContent.replace('renderer.bundle.js', './renderer.bundle.js');
             await fs.writeFile(viewerDest, viewerContent);
             console.log('✓ Created viewer.html');
         } else {
@@ -31,8 +26,8 @@ async function createViewer(targetDir = process.cwd()) {
 
         // Copy renderer bundle
         if (fsSync.existsSync(rendererSource)) {
-            await fs.copyFile(rendererSource, path.join(distDir, 'renderer.bundle.js'));
-            console.log('✓ Created dist/renderer.bundle.js');
+            await fs.copyFile(rendererSource, rendererDest);
+            console.log('✓ Created renderer.bundle.js');
         } else {
             throw new Error('Could not find renderer.bundle.js in package');
         }

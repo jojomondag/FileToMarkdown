@@ -14,9 +14,10 @@ Convert various file types to Markdown with a single command.
 - Archives: ZIP, 7Z
 
 ## Quick Test
+Node >= v23.5.0
 ```bash
 # Install
-npm install filetomarkdown
+npm install filetomarkdown@latest
 
 # Try example conversions
 npx filetomarkdown-test --github

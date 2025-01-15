@@ -1,16 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
+const commonConfig = {
   mode: 'production',
-  entry: './src/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'markitdown.js',
-    library: 'FileToMarkdown',
-    libraryTarget: 'umd',
-    globalObject: 'this'
-  },
   module: {
     rules: [
       {
@@ -42,4 +34,34 @@ module.exports = {
       Buffer: ['buffer', 'Buffer']
     })
   ]
-}; 
+};
+
+module.exports = [
+  // Main library bundle
+  {
+    ...commonConfig,
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'markitdown.js',
+      library: 'FileToMarkdown',
+      libraryTarget: 'umd',
+      globalObject: 'this'
+    }
+  },
+  // Renderer bundle
+  {
+    ...commonConfig,
+    entry: './src/renderer/markdown.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'renderer.bundle.js',
+      library: {
+        name: 'MarkdownRenderer',
+        type: 'umd',
+        export: 'default'
+      },
+      globalObject: 'this'
+    }
+  }
+]; 

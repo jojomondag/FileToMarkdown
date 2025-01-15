@@ -78,4 +78,5 @@ class MarkdownRenderer {
     }
 }
 
-module.exports = MarkdownRenderer; 
+module.exports = MarkdownRenderer;
+module.exports.default = MarkdownRenderer; 
