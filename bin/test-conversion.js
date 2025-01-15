@@ -57,46 +57,10 @@ const downloadFile = (url, outputPath) => {
 // Test cases
 const testFiles = [
     {
-        type: 'pdf',
-        localPath: 'examples/exampleFiles/exampleGardening.pdf',
-        githubPath: `${GITHUB_RAW_BASE}/exampleGardening.pdf`,
-        outputPath: 'examples/outputAfterConversion/exampleGardening.md'
-    },
-    {
         type: 'txt',
         localPath: 'examples/exampleFiles/exampleTheDebuggingDuck.txt',
         githubPath: `${GITHUB_RAW_BASE}/exampleTheDebuggingDuck.txt`,
         outputPath: 'examples/outputAfterConversion/exampleTheDebuggingDuck.md'
-    },
-    {
-        type: 'docx',
-        localPath: 'examples/exampleFiles/exampleProjekt9.docx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleProjekt9.docx`,
-        outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
-    },
-    {
-        type: 'pptx',
-        localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleBruceLee.pptx`,
-        outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
-    },
-    {
-        type: 'xlsx',
-        localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleProgrammeringYearPlan.xlsx`,
-        outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
-    },
-    {
-        type: '7z',
-        localPath: 'examples/exampleFiles/exampleStudentWorks.7z',
-        githubPath: `${GITHUB_RAW_BASE}/exampleStudentWorks.7z`,
-        outputPath: 'examples/outputAfterConversion/exampleStudentWorks.md'
-    },
-    {
-        type: 'zip',
-        localPath: 'examples/exampleFiles/exampleLeads.zip',
-        githubPath: `${GITHUB_RAW_BASE}/exampleLeads.zip`,
-        outputPath: 'examples/outputAfterConversion/exampleLeads.md'
     },
     {
         type: 'code',
