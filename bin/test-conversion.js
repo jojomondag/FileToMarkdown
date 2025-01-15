@@ -6,7 +6,7 @@ const path = require('path');
 const https = require('https');
 const os = require('os');
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/refs/heads/main/examples/exampleFiles';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples/exampleFiles';
 
 // Create necessary directories
 const createDirectories = () => {
