@@ -1,0 +1,16 @@
+The Rubber Duck Debugging Method
+
+Rubber duck debugging is a method of debugging code by explaining it to an inanimate object, such as a rubber duck. The name comes from a story in the book "The Pragmatic Programmer" where a programmer would carry around a rubber duck and debug their code by explaining it line-by-line to the duck.
+
+How it works:
+1. Get a rubber duck (or any inanimate object)
+2. Explain your code to the duck line by line
+3. While explaining, you'll often realize where the problem is
+
+Benefits:
+- Forces you to explain your code step by step
+- Helps identify assumptions and logical errors
+- Can be done without bothering colleagues
+- Often leads to "aha!" moments
+
+Remember: The duck is very patient and won't judge your code! 

@@ -17,6 +17,7 @@
     "src/renderer/",
     "bin/",
     "dist/",
+    "examples/",
     "README.md",
     "LICENSE"
   ],
