@@ -92,42 +92,42 @@ const testFiles = [
         githubPath: `${GITHUB_RAW_BASE}/code/codePy.py`,
         outputPath: 'examples/outputAfterConversion/code/codePy.md'
     },
-    // Add tests for other formats
+    // Add tests for other formats with correct file names
     {
         type: 'pdf',
-        localPath: 'examples/exampleFiles/document.pdf',
-        githubPath: `${GITHUB_RAW_BASE}/document.pdf`,
-        outputPath: 'examples/outputAfterConversion/document.md'
+        localPath: 'examples/exampleFiles/exampleGardening.pdf',
+        githubPath: `${GITHUB_RAW_BASE}/exampleGardening.pdf`,
+        outputPath: 'examples/outputAfterConversion/exampleGardening.md'
     },
     {
         type: 'docx',
-        localPath: 'examples/exampleFiles/document.docx',
-        githubPath: `${GITHUB_RAW_BASE}/document.docx`,
-        outputPath: 'examples/outputAfterConversion/document.md'
+        localPath: 'examples/exampleFiles/exampleProjekt9.docx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleProjekt9.docx`,
+        outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
     },
     {
         type: 'pptx',
-        localPath: 'examples/exampleFiles/presentation.pptx',
-        githubPath: `${GITHUB_RAW_BASE}/presentation.pptx`,
-        outputPath: 'examples/outputAfterConversion/presentation.md'
+        localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleBruceLee.pptx`,
+        outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
     },
     {
         type: 'xlsx',
-        localPath: 'examples/exampleFiles/spreadsheet.xlsx',
-        githubPath: `${GITHUB_RAW_BASE}/spreadsheet.xlsx`,
-        outputPath: 'examples/outputAfterConversion/spreadsheet.md'
+        localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleProgrammeringYearPlan.xlsx`,
+        outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
     },
     {
         type: 'zip',
-        localPath: 'examples/exampleFiles/archive.zip',
-        githubPath: `${GITHUB_RAW_BASE}/archive.zip`,
-        outputPath: 'examples/outputAfterConversion/archive.md'
+        localPath: 'examples/exampleFiles/exampleLeads.zip',
+        githubPath: `${GITHUB_RAW_BASE}/exampleLeads.zip`,
+        outputPath: 'examples/outputAfterConversion/exampleLeads.md'
     },
     {
         type: '7zip',
-        localPath: 'examples/exampleFiles/archive.7z',
-        githubPath: `${GITHUB_RAW_BASE}/archive.7z`,
-        outputPath: 'examples/outputAfterConversion/archive.md'
+        localPath: 'examples/exampleFiles/exampleStudentWorks.7z',
+        githubPath: `${GITHUB_RAW_BASE}/exampleStudentWorks.7z`,
+        outputPath: 'examples/outputAfterConversion/exampleStudentWorks.md'
     }
 ];
 
