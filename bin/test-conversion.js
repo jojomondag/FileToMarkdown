@@ -4,7 +4,6 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
-const os = require('os');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples/exampleFiles';
 
@@ -13,7 +12,8 @@ const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
         'examples/outputAfterConversion',
-        'examples/outputAfterConversion/code'
+        'examples/outputAfterConversion/code',
+        'examples/viewer'
     ];
     
     dirs.forEach(dir => {
@@ -91,6 +91,43 @@ const testFiles = [
         localPath: 'examples/exampleFiles/code/codePy.py',
         githubPath: `${GITHUB_RAW_BASE}/code/codePy.py`,
         outputPath: 'examples/outputAfterConversion/code/codePy.md'
+    },
+    // Add tests for other formats
+    {
+        type: 'pdf',
+        localPath: 'examples/exampleFiles/document.pdf',
+        githubPath: `${GITHUB_RAW_BASE}/document.pdf`,
+        outputPath: 'examples/outputAfterConversion/document.md'
+    },
+    {
+        type: 'docx',
+        localPath: 'examples/exampleFiles/document.docx',
+        githubPath: `${GITHUB_RAW_BASE}/document.docx`,
+        outputPath: 'examples/outputAfterConversion/document.md'
+    },
+    {
+        type: 'pptx',
+        localPath: 'examples/exampleFiles/presentation.pptx',
+        githubPath: `${GITHUB_RAW_BASE}/presentation.pptx`,
+        outputPath: 'examples/outputAfterConversion/presentation.md'
+    },
+    {
+        type: 'xlsx',
+        localPath: 'examples/exampleFiles/spreadsheet.xlsx',
+        githubPath: `${GITHUB_RAW_BASE}/spreadsheet.xlsx`,
+        outputPath: 'examples/outputAfterConversion/spreadsheet.md'
+    },
+    {
+        type: 'zip',
+        localPath: 'examples/exampleFiles/archive.zip',
+        githubPath: `${GITHUB_RAW_BASE}/archive.zip`,
+        outputPath: 'examples/outputAfterConversion/archive.md'
+    },
+    {
+        type: '7zip',
+        localPath: 'examples/exampleFiles/archive.7z',
+        githubPath: `${GITHUB_RAW_BASE}/archive.7z`,
+        outputPath: 'examples/outputAfterConversion/archive.md'
     }
 ];
 
@@ -99,7 +136,9 @@ const runTests = async (useGithub = false) => {
     try {
         console.log('Creating project structure:');
         console.log('examples/');
-        console.log('├── viewer.html           # Markdown viewer');
+        console.log('├── viewer/');
+        console.log('│   ├── viewer.html     # Markdown viewer');
+        console.log('│   └── markdown.js     # Renderer script');
         console.log('├── exampleFiles/');
         console.log('│   ├── code/');
         console.log('│   └── [example files]');
@@ -111,9 +150,14 @@ const runTests = async (useGithub = false) => {
         createDirectories();
 
         // Copy viewer.html to examples directory
-        const viewerPath = path.join(process.cwd(), 'examples', 'viewer.html');
+        const viewerPath = path.join(process.cwd(), 'examples', 'viewer', 'viewer.html');
         const packageViewerPath = path.join(__dirname, '..', 'src', 'viewer.html');
         const nodeModulesViewerPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'viewer.html');
+
+        // Add markdown.js paths
+        const markdownJsPath = path.join(process.cwd(), 'examples', 'viewer', 'markdown.js');
+        const packageMarkdownJsPath = path.join(__dirname, '..', 'src', 'renderer', 'markdown.js');
+        const nodeModulesMarkdownJsPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'renderer', 'markdown.js');
 
         if (!fsSync.existsSync(viewerPath)) {
             if (fsSync.existsSync(packageViewerPath)) {
@@ -122,6 +166,16 @@ const runTests = async (useGithub = false) => {
                 fsSync.copyFileSync(nodeModulesViewerPath, viewerPath);
             } else {
                 console.warn('Warning: Could not find viewer.html');
+            }
+        }
+
+        if (!fsSync.existsSync(markdownJsPath)) {
+            if (fsSync.existsSync(packageMarkdownJsPath)) {
+                fsSync.copyFileSync(packageMarkdownJsPath, markdownJsPath);
+            } else if (fsSync.existsSync(nodeModulesMarkdownJsPath)) {
+                fsSync.copyFileSync(nodeModulesMarkdownJsPath, markdownJsPath);
+            } else {
+                console.warn('Warning: Could not find markdown.js');
             }
         }
 

@@ -31,6 +31,7 @@ const loadPrismComponents = () => {
 // Load all required Prism components
 loadPrismComponents();
 
+// Browser-compatible version
 class MarkdownRenderer {
     constructor(options = {}) {
         this.options = {
@@ -46,37 +47,29 @@ class MarkdownRenderer {
                     if (lang && Prism.languages[lang]) {
                         return Prism.highlight(code, Prism.languages[lang], lang);
                     }
-                    // Fallback to plain text if language not found
                     return code;
                 } catch (error) {
                     console.warn('Highlighting failed:', error);
                     return code;
                 }
-            },
-            ...options
+            }
         });
-
-        // Make Prism available globally for manual highlighting
-        if (typeof window !== 'undefined') {
-            window.Prism = Prism;
-        }
     }
 
     render(markdown) {
         try {
-            const html = marked.parse(markdown);
-            return html;
+            return marked.parse(markdown);
         } catch (error) {
             throw new Error(`Markdown rendering failed: ${error.message}`);
         }
     }
 
     highlightAll() {
-        if (typeof window !== 'undefined' && this.options.highlight) {
+        if (this.options.highlight) {
             Prism.highlightAll();
         }
     }
 }
 
-module.exports = MarkdownRenderer;
-module.exports.default = MarkdownRenderer; 
+// Make it available globally
+window.MarkdownRenderer = MarkdownRenderer; 
