@@ -5,7 +5,7 @@ const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples/exampleFiles';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
 
 // Create necessary directories
 const createDirectories = () => {
@@ -59,74 +59,74 @@ const testFiles = [
     {
         type: 'txt',
         localPath: 'examples/exampleFiles/exampleTheDebuggingDuck.txt',
-        githubPath: `${GITHUB_RAW_BASE}/exampleTheDebuggingDuck.txt`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleTheDebuggingDuck.txt`,
         outputPath: 'examples/outputAfterConversion/exampleTheDebuggingDuck.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeCs.cs',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeCs.cs`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeCs.cs`,
         outputPath: 'examples/outputAfterConversion/code/codeCs.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeHtml.html',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeHtml.html`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeHtml.html`,
         outputPath: 'examples/outputAfterConversion/code/codeHtml.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeJava.java',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeJava.java`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeJava.java`,
         outputPath: 'examples/outputAfterConversion/code/codeJava.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeJs.js',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeJs.js`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeJs.js`,
         outputPath: 'examples/outputAfterConversion/code/codeJs.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codePy.py',
-        githubPath: `${GITHUB_RAW_BASE}/code/codePy.py`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codePy.py`,
         outputPath: 'examples/outputAfterConversion/code/codePy.md'
     },
     // Add tests for other formats with correct file names
     {
         type: 'pdf',
         localPath: 'examples/exampleFiles/exampleGardening.pdf',
-        githubPath: `${GITHUB_RAW_BASE}/exampleGardening.pdf`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleGardening.pdf`,
         outputPath: 'examples/outputAfterConversion/exampleGardening.md'
     },
     {
         type: 'docx',
         localPath: 'examples/exampleFiles/exampleProjekt9.docx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleProjekt9.docx`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleProjekt9.docx`,
         outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
     },
     {
         type: 'pptx',
         localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleBruceLee.pptx`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleBruceLee.pptx`,
         outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
     },
     {
         type: 'xlsx',
         localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
-        githubPath: `${GITHUB_RAW_BASE}/exampleProgrammeringYearPlan.xlsx`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleProgrammeringYearPlan.xlsx`,
         outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
     },
     {
         type: 'zip',
         localPath: 'examples/exampleFiles/exampleLeads.zip',
-        githubPath: `${GITHUB_RAW_BASE}/exampleLeads.zip`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleLeads.zip`,
         outputPath: 'examples/outputAfterConversion/exampleLeads.md'
     },
     {
         type: '7zip',
         localPath: 'examples/exampleFiles/exampleStudentWorks.7z',
-        githubPath: `${GITHUB_RAW_BASE}/exampleStudentWorks.7z`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleStudentWorks.7z`,
         outputPath: 'examples/outputAfterConversion/exampleStudentWorks.md'
     }
 ];
