@@ -1,0 +1,9 @@
+The Debugging Duck
+
+Sometimes when you're stuck on a problem,
+it helps to explain it to someone else.
+Even if that someone is a rubber duck.
+
+This is known as "rubber duck debugging".
+Just explain your code line by line to the duck,
+and often you'll find the solution yourself! 

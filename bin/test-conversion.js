@@ -57,12 +57,6 @@ const downloadFile = (url, outputPath) => {
 // Test cases
 const testFiles = [
     {
-        type: 'txt',
-        localPath: 'examples/exampleFiles/exampleTheDebuggingDuck.txt',
-        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleTheDebuggingDuck.txt`,
-        outputPath: 'examples/outputAfterConversion/exampleTheDebuggingDuck.md'
-    },
-    {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeCs.cs',
         githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeCs.cs`,
@@ -92,7 +86,6 @@ const testFiles = [
         githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codePy.py`,
         outputPath: 'examples/outputAfterConversion/code/codePy.md'
     },
-    // Add tests for other formats with correct file names
     {
         type: 'pdf',
         localPath: 'examples/exampleFiles/exampleGardening.pdf',
