@@ -10,26 +10,40 @@ async function createViewer(targetDir = process.cwd()) {
         const packageRoot = path.join(__dirname, '..');
         const viewerSource = path.join(packageRoot, 'src', 'viewer.html');
         const viewerDest = path.join(targetDir, 'viewer.html');
-        const rendererSource = path.join(packageRoot, 'dist', 'renderer.bundle.js');
-        const rendererDest = path.join(targetDir, 'renderer.bundle.js');
         
-        // Copy and update viewer.html
+        // Copy viewer.html
         if (fsSync.existsSync(viewerSource)) {
-            await fs.copyFile(viewerSource, viewerDest);
-            let viewerContent = await fs.readFile(viewerDest, 'utf8');
-            viewerContent = viewerContent.replace('renderer.bundle.js', './renderer.bundle.js');
+            let viewerContent = await fs.readFile(viewerSource, 'utf8');
+            
+            // Add Prism.js language components
+            const languageScripts = `
+    <!-- Common programming languages -->
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-ruby.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-go.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-yaml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>`;
+
+            // Insert language scripts after the main Prism.js script
+            viewerContent = viewerContent.replace(
+                '<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>',
+                '<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>' + languageScripts
+            );
+
             await fs.writeFile(viewerDest, viewerContent);
-            console.log('✓ Created viewer.html');
+            console.log('✓ Created viewer.html with syntax highlighting support');
         } else {
             throw new Error('Could not find viewer.html in package');
-        }
-
-        // Copy renderer bundle
-        if (fsSync.existsSync(rendererSource)) {
-            await fs.copyFile(rendererSource, rendererDest);
-            console.log('✓ Created renderer.bundle.js');
-        } else {
-            throw new Error('Could not find renderer.bundle.js in package');
         }
 
         console.log('\nViewer created successfully!');

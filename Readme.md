@@ -29,7 +29,7 @@ npx filetomarkdown-test --github
    filetomarkdown-convert "input.pdf" "output.md"
    ```
 
-2. **Create Markdown Viewer**
+2. **Markdown Viewer**
    ```bash
    # Create viewer in current directory
    npx filetomarkdown-viewer
@@ -37,7 +37,17 @@ npx filetomarkdown-test --github
    # Or specify a target directory
    npx filetomarkdown-viewer /path/to/directory
    ```
-   This creates a standalone viewer.html that can open and display markdown files without needing a server.
+   This creates a standalone `viewer.html` that can:
+   - Open and display markdown files without needing a server
+   - Support syntax highlighting for multiple programming languages
+   - Drag & drop or browse for markdown files
+   - Toggle sidebar for better reading experience
+   
+   To use the viewer:
+   1. Run the command above to create `viewer.html`
+   2. Open `viewer.html` in your browser
+   3. Drop markdown files onto it or use the browse button
+   4. Your markdown files will be rendered with syntax highlighting
 
 3. **API Server**
    ```bash

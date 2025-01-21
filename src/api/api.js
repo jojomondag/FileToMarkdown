@@ -4,8 +4,83 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
-const MarkdownRenderer = require('../renderer/markdown');
+const marked = require('marked');
+const Prism = require('prismjs');
 const { MarkitDown } = require('../index.js');
+const { langMap } = require('../converters/code');
+
+// Load Prism components for syntax highlighting
+const loadPrismComponents = () => {
+    // Only load components in browser environment
+    if (typeof window === 'undefined') return;
+
+    // Get unique languages from langMap
+    const languages = [...new Set(Object.values(langMap))];
+    
+    // Always include markdown for documentation
+    languages.push('markdown');
+    
+    languages.forEach(lang => {
+        try {
+            // Handle special cases
+            const componentName = {
+                'markup': 'markup',          // HTML, Vue, Svelte
+                'shell': 'bash',             // Shell scripts
+                'plaintext': null            // No highlighting needed
+            }[lang] || lang;
+            
+            if (componentName) {
+                require(`prismjs/components/prism-${componentName}`);
+            }
+        } catch (error) {
+            console.warn(`Failed to load Prism component for ${lang}:`, error.message);
+        }
+    });
+};
+
+// Simple markdown renderer with syntax highlighting
+class MarkdownRenderer {
+    constructor(options = {}) {
+        this.options = {
+            highlight: true,
+            ...options
+        };
+
+        // Load language components if in browser
+        loadPrismComponents();
+
+        // Configure marked with syntax highlighting
+        marked.setOptions({
+            highlight: (code, lang) => {
+                if (!this.options.highlight) return code;
+                
+                try {
+                    if (lang && Prism.languages[lang]) {
+                        return Prism.highlight(code, Prism.languages[lang], lang);
+                    }
+                    return code;
+                } catch (error) {
+                    console.warn('Highlighting failed:', error);
+                    return code;
+                }
+            }
+        });
+    }
+
+    render(markdown) {
+        try {
+            return marked.parse(markdown);
+        } catch (error) {
+            throw new Error(`Markdown rendering failed: ${error.message}`);
+        }
+    }
+
+    highlightAll() {
+        if (this.options.highlight) {
+            Prism.highlightAll();
+        }
+    }
+}
 
 const app = express();
 app.use(cors());
@@ -52,7 +127,9 @@ app.get('/api/filetypes', (_req, res) => {
 app.post('/api/render', async (req, res) => {
   try {
     if (!req.body) return res.status(400).json({ error: 'No markdown content provided', status: 400 });
-    const html = new MarkdownRenderer({ highlight: true }).render(req.body);
+    const renderer = new MarkdownRenderer({ highlight: true });
+    const html = renderer.render(req.body);
+    renderer.highlightAll();
     res.json({ html, status: 200 });
   } catch (error) {
     res.status(500).json({ error: error.message, status: 500 });
