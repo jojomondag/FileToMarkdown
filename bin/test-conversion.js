@@ -4,16 +4,16 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
-const os = require('os');
 
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples/exampleFiles';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
 
 // Create necessary directories
 const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
         'examples/outputAfterConversion',
-        'examples/outputAfterConversion/code'
+        'examples/outputAfterConversion/code',
+        'examples/viewer'
     ];
     
     dirs.forEach(dir => {
@@ -57,40 +57,70 @@ const downloadFile = (url, outputPath) => {
 // Test cases
 const testFiles = [
     {
-        type: 'txt',
-        localPath: 'examples/exampleFiles/exampleTheDebuggingDuck.txt',
-        githubPath: `${GITHUB_RAW_BASE}/exampleTheDebuggingDuck.txt`,
-        outputPath: 'examples/outputAfterConversion/exampleTheDebuggingDuck.md'
-    },
-    {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeCs.cs',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeCs.cs`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeCs.cs`,
         outputPath: 'examples/outputAfterConversion/code/codeCs.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeHtml.html',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeHtml.html`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeHtml.html`,
         outputPath: 'examples/outputAfterConversion/code/codeHtml.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeJava.java',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeJava.java`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeJava.java`,
         outputPath: 'examples/outputAfterConversion/code/codeJava.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codeJs.js',
-        githubPath: `${GITHUB_RAW_BASE}/code/codeJs.js`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codeJs.js`,
         outputPath: 'examples/outputAfterConversion/code/codeJs.md'
     },
     {
         type: 'code',
         localPath: 'examples/exampleFiles/code/codePy.py',
-        githubPath: `${GITHUB_RAW_BASE}/code/codePy.py`,
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/code/codePy.py`,
         outputPath: 'examples/outputAfterConversion/code/codePy.md'
+    },
+    {
+        type: 'pdf',
+        localPath: 'examples/exampleFiles/exampleGardening.pdf',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleGardening.pdf`,
+        outputPath: 'examples/outputAfterConversion/exampleGardening.md'
+    },
+    {
+        type: 'docx',
+        localPath: 'examples/exampleFiles/exampleProjekt9.docx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleProjekt9.docx`,
+        outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
+    },
+    {
+        type: 'pptx',
+        localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleBruceLee.pptx`,
+        outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
+    },
+    {
+        type: 'xlsx',
+        localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleProgrammeringYearPlan.xlsx`,
+        outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
+    },
+    {
+        type: 'zip',
+        localPath: 'examples/exampleFiles/exampleLeads.zip',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleLeads.zip`,
+        outputPath: 'examples/outputAfterConversion/exampleLeads.md'
+    },
+    {
+        type: '7zip',
+        localPath: 'examples/exampleFiles/exampleStudentWorks.7z',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleStudentWorks.7z`,
+        outputPath: 'examples/outputAfterConversion/exampleStudentWorks.md'
     }
 ];
 
@@ -99,7 +129,9 @@ const runTests = async (useGithub = false) => {
     try {
         console.log('Creating project structure:');
         console.log('examples/');
-        console.log('├── viewer.html           # Markdown viewer');
+        console.log('├── viewer/');
+        console.log('│   ├── viewer.html     # Markdown viewer');
+        console.log('│   └── markdown.js     # Renderer script');
         console.log('├── exampleFiles/');
         console.log('│   ├── code/');
         console.log('│   └── [example files]');
@@ -111,9 +143,14 @@ const runTests = async (useGithub = false) => {
         createDirectories();
 
         // Copy viewer.html to examples directory
-        const viewerPath = path.join(process.cwd(), 'examples', 'viewer.html');
+        const viewerPath = path.join(process.cwd(), 'examples', 'viewer', 'viewer.html');
         const packageViewerPath = path.join(__dirname, '..', 'src', 'viewer.html');
         const nodeModulesViewerPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'viewer.html');
+
+        // Add markdown.js paths
+        const markdownJsPath = path.join(process.cwd(), 'examples', 'viewer', 'markdown.js');
+        const packageMarkdownJsPath = path.join(__dirname, '..', 'src', 'renderer', 'markdown.js');
+        const nodeModulesMarkdownJsPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'renderer', 'markdown.js');
 
         if (!fsSync.existsSync(viewerPath)) {
             if (fsSync.existsSync(packageViewerPath)) {
@@ -122,6 +159,16 @@ const runTests = async (useGithub = false) => {
                 fsSync.copyFileSync(nodeModulesViewerPath, viewerPath);
             } else {
                 console.warn('Warning: Could not find viewer.html');
+            }
+        }
+
+        if (!fsSync.existsSync(markdownJsPath)) {
+            if (fsSync.existsSync(packageMarkdownJsPath)) {
+                fsSync.copyFileSync(packageMarkdownJsPath, markdownJsPath);
+            } else if (fsSync.existsSync(nodeModulesMarkdownJsPath)) {
+                fsSync.copyFileSync(nodeModulesMarkdownJsPath, markdownJsPath);
+            } else {
+                console.warn('Warning: Could not find markdown.js');
             }
         }
 
