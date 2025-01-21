@@ -34,11 +34,64 @@ async function createViewer(targetDir = process.cwd()) {
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>`;
 
-            // Insert language scripts after the main Prism.js script
-            viewerContent = viewerContent.replace(
-                '<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>',
-                '<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>' + languageScripts
-            );
+            // Replace the entire head section to ensure proper script loading order
+            const headContent = `
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>FileToMarkdown Viewer</title>
+        <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>${languageScripts}`;
+
+            // Replace the head section
+            viewerContent = viewerContent.replace(/<head>[\s\S]*?<\/head>/, headContent + '\n    </head>');
+
+            // Update the MarkdownRenderer class to ensure highlighting works
+            const rendererClass = `
+    class MarkdownRenderer {
+        constructor(options = {}) {
+            this.options = {
+                highlight: true,
+                ...options
+            };
+
+            marked.setOptions({
+                highlight: (code, lang) => {
+                    if (!this.options.highlight) return code;
+                    
+                    try {
+                        if (lang && Prism.languages[lang]) {
+                            return Prism.highlight(code, Prism.languages[lang], lang);
+                        }
+                        return code;
+                    } catch (error) {
+                        console.warn('Highlighting failed:', error);
+                        return code;
+                    }
+                }
+            });
+        }
+
+        render(markdown) {
+            try {
+                const html = marked.parse(markdown);
+                return html;
+            } catch (error) {
+                throw new Error(\`Markdown rendering failed: \${error.message}\`);
+            }
+        }
+
+        highlightAll() {
+            if (this.options.highlight && typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+        }
+    }`;
+
+            // Replace the MarkdownRenderer class
+            viewerContent = viewerContent.replace(/class MarkdownRenderer[\s\S]*?}/, rendererClass);
 
             await fs.writeFile(viewerDest, viewerContent);
             console.log('✓ Created viewer.html with syntax highlighting support');
