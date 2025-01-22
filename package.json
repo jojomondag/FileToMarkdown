@@ -13,7 +13,6 @@
   "files": [
     "src/index.js",
     "src/converters/",
-    "src/viewer.html",
     "bin/",
     "dist/",
     "examples/",
