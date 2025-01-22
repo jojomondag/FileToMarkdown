@@ -176,6 +176,7 @@
     // Initialize viewer
     window.onload = () => {
         window.viewer = new FileToMarkdownViewer();
+        document.getElementById('z').addEventListener('click', () => document.getElementById('f').click());
     };
     </script>
     <style>
@@ -186,7 +187,7 @@
     <button class="b" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
     <div class="p">
         <div class="h"><h1 class="t">FileToMarkdown</h1></div>
-        <div class="z" id="z" onclick="$('f').click()">
+        <div class="z" id="z">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
             <p>Drop MD files here<br>or click to browse</p>
         </div>
