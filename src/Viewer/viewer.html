@@ -32,33 +32,79 @@
                 ...options
             };
 
+            // Map common language aliases to Prism language names
+            this.languageMap = {
+                'js': 'javascript',
+                'py': 'python',
+                'rb': 'ruby',
+                'cs': 'csharp',
+                'ts': 'typescript',
+                'html': 'markup',
+                'xml': 'markup',
+                'cpp': 'cpp',
+                'c++': 'cpp',
+                'jsx': 'jsx',
+                'tsx': 'tsx',
+                'yml': 'yaml'
+            };
+
             marked.setOptions({
                 highlight: (code, lang) => {
                     if (!this.options.highlight) return code;
                     
                     try {
-                        return lang && Prism.languages[lang] 
-                            ? Prism.highlight(code, Prism.languages[lang], lang)
-                            : code;
+                        // Map language alias to Prism language name
+                        const language = this.languageMap[lang] || lang;
+                        
+                        if (language && Prism.languages[language]) {
+                            const highlighted = Prism.highlight(code, Prism.languages[language], language);
+                            return `<div class="code-block ${language}">${highlighted}</div>`;
+                        }
+                        return `<div class="code-block">${code}</div>`;
                     } catch (error) {
                         console.warn('Highlighting failed:', error);
-                        return code;
+                        return `<div class="code-block">${code}</div>`;
                     }
-                }
+                },
+                langPrefix: 'language-',
+                gfm: true,
+                breaks: true,
+                pedantic: false,
+                smartLists: true,
+                smartypants: true
             });
         }
 
         render(markdown) {
             try {
-                return marked.parse(markdown);
+                const html = marked.parse(markdown);
+                return html;
             } catch (error) {
                 throw new Error(`Markdown rendering failed: ${error.message}`);
             }
         }
 
         highlightAll() {
-            if (this.options.highlight) {
-                Prism.highlightAll();
+            if (this.options.highlight && typeof Prism !== 'undefined') {
+                requestAnimationFrame(() => {
+                    // Find all code blocks and highlight them
+                    document.querySelectorAll('pre code').forEach(block => {
+                        // Get language from class (e.g., language-javascript)
+                        const classes = block.className.split(' ');
+                        const langClass = classes.find(c => c.startsWith('language-'));
+                        if (langClass) {
+                            const lang = langClass.replace('language-', '');
+                            // Re-highlight with proper language
+                            if (Prism.languages[lang]) {
+                                block.innerHTML = Prism.highlight(
+                                    block.textContent,
+                                    Prism.languages[lang],
+                                    lang
+                                );
+                            }
+                        }
+                    });
+                });
             }
         }
     }
@@ -88,6 +134,9 @@
         setupEventListeners() {
             // File input handling
             this.elements.fileInput.addEventListener('change', e => this.handleFiles(e.target.files));
+            
+            // Click to browse
+            this.elements.dropZone.addEventListener('click', () => this.elements.fileInput.click());
             
             // Drag and drop
             ['dragover', 'dragleave', 'drop'].forEach(event => {
@@ -137,9 +186,11 @@
 
             const reader = new FileReader();
             reader.onload = e => {
-                this.elements.content.innerHTML = this.renderer.render(e.target.result);
+                const html = this.renderer.render(e.target.result);
+                this.elements.content.innerHTML = html;
                 this.elements.content.classList.add('viewing-markdown');
-                this.renderer.highlightAll();
+                // Highlight after content is rendered
+                setTimeout(() => this.renderer.highlightAll(), 0);
             };
             reader.onerror = e => {
                 this.elements.content.innerHTML = `<p style="color:red">Error reading file: ${e.target.error}</p>`;
@@ -176,7 +227,6 @@
     // Initialize viewer
     window.onload = () => {
         window.viewer = new FileToMarkdownViewer();
-        document.getElementById('z').addEventListener('click', () => document.getElementById('f').click());
     };
     </script>
     <style>
@@ -201,8 +251,5 @@
         </div>
     </div>
     <input type="file" id="f" accept=".md" multiple>
-    <script>
-        // Initialization is handled by the FileToMarkdownViewer class
-    </script>
 </body>
 </html>
