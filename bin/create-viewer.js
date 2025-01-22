@@ -88,6 +88,20 @@ async function createViewer(targetDir = process.cwd()) {
         }
     }
     </script>
+    <script>
+        // Define utility functions first
+        const $=i=>document.getElementById(i);
+        const c=$('c');
+        const p=document.querySelector('.p');
+        const m=document.querySelector('.m');
+        const b=$('b');
+        const r=new MarkdownRenderer();
+        window.f=[];
+        const u=()=>{window.f&&($('l').innerHTML=\`<ul>\${window.f.map((f,i)=>\`<li><a href="#"onclick="L(\${i});return!1">\${f.webkitRelativePath||f.name}</a></li>\`).join('')}</ul>\`)};
+        const L=i=>{const f=window.f[i];if(!f)return;const R=new FileReader();R.onload=e=>{c.innerHTML=r.render(e.target.result);c.classList.add('viewing-markdown');r.highlightAll()};R.onerror=e=>c.innerHTML=\`<p style="color:red">Error reading file: \${e.target.error}</p>\`;R.readAsText(f)};
+        const H=f=>{const m=Array.from(f).filter(f=>f.name.toLowerCase().endsWith('.md'));m.length?(window.f.push(...m),u(),window.f.length===m.length&&L(0)):c.innerHTML='<p style="color:red">Please select a markdown (.md) file.</p>'};
+        const t=()=>{p.classList.toggle('h');m.classList.toggle('e');b.classList.toggle('n');localStorage.setItem('h',p.classList.contains('h'))};
+    </script>
 </head>
 <body>
     <button class="b" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
@@ -108,7 +122,13 @@ async function createViewer(targetDir = process.cwd()) {
     </div>
     <input type="file" id="f" accept=".md" multiple>
     <script>
-        const $=i=>document.getElementById(i),c=$('c'),p=document.querySelector('.p'),m=document.querySelector('.m'),b=$('b'),r=new MarkdownRenderer();window.f=[];const u=()=>{window.f&&($('l').innerHTML=\`<ul>\${window.f.map((f,i)=>\`<li><a href="#"onclick="L(\${i});return!1">\${f.webkitRelativePath||f.name}</a></li>\`).join('')}</ul>\`)},L=i=>{const f=window.f[i];if(!f)return;const R=new FileReader();R.onload=e=>{c.innerHTML=r.render(e.target.result);c.classList.add('viewing-markdown');r.highlightAll()};R.onerror=e=>c.innerHTML=\`<p style="color:red">Error reading file: \${e.target.error}</p>\`;R.readAsText(f)},H=f=>{const m=Array.from(f).filter(f=>f.name.toLowerCase().endsWith('.md'));m.length?(window.f.push(...m),u(),window.f.length===m.length&&L(0)):c.innerHTML='<p style="color:red">Please select a markdown (.md) file.</p>'};$('f').addEventListener('change',e=>H(e.target.files));setInterval(()=>window.f?.length&&u(),2e3);['dragover','dragleave','drop'].forEach(e=>$('z').addEventListener(e,v=>{v.preventDefault();$('z').classList.toggle('d',e==='dragover');e==='drop'&&H(v.dataTransfer.files)}));const t=()=>{p.classList.toggle('h');m.classList.toggle('e');b.classList.toggle('n');localStorage.setItem('h',p.classList.contains('h'))};b.onclick=t;document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();t()}};localStorage.getItem('h')==='true'&&(p.classList.add('h'),m.classList.add('e'),b.classList.add('n'));
+        // Add event listeners after DOM is loaded
+        $('f').addEventListener('change',e=>H(e.target.files));
+        setInterval(()=>window.f?.length&&u(),2e3);
+        ['dragover','dragleave','drop'].forEach(e=>$('z').addEventListener(e,v=>{v.preventDefault();$('z').classList.toggle('d',e==='dragover');e==='drop'&&H(v.dataTransfer.files)}));
+        b.onclick=t;
+        document.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();t()}};
+        localStorage.getItem('h')==='true'&&(p.classList.add('h'),m.classList.add('e'),b.classList.add('n'));
     </script>
 </body>
 </html>`;
