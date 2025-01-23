@@ -26,6 +26,7 @@ npx filetomarkdown-test --github
 ## Usage Options
 1. **Command Line** (make sure to navigate to your file's directory in cmd first)
    ```bash
+   filetomarkdown-convert "input.pdf"
    filetomarkdown-convert "input.pdf" "output.md"
    ```
 

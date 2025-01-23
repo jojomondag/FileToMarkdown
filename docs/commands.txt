@@ -1,0 +1,28 @@
+npm run start:api
+
+Convert api
+    curl -X POST \
+    -F "file=@/Users/josef.nobach/Documents/GitHub/FileToMarkdown/LinkTester/examples/exampleFiles/exampleGardening.pdf" \
+    http://localhost:3000/api/convert
+
+
+Filetypes api
+    curl -s http://localhost:3000/api/filetypes | jq
+
+Renderer api with others.
+
+    # Convert PDF to Markdown
+    MARKDOWN=$(curl -s -X POST \
+    -F "file=@/Users/josef.nobach/Documents/GitHub/FileToMarkdown/examples/exampleFiles/exampleGardening.pdf" \
+    http://localhost:3000/api/convert | jq -r .markdown)
+
+    # Verify markdown content
+    echo "Markdown length: ${#MARKDOWN} characters"
+    echo "$MARKDOWN" | head -n 5
+
+    # Render to HTML
+    curl -X POST -H "Content-Type: text/plain" -d "$MARKDOWN" \
+    http://localhost:3000/api/render | jq -r .html > output.html
+
+    # Open in browser
+    open output.html

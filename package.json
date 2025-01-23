@@ -1,48 +1,50 @@
 {
   "name": "filetomarkdown",
-  "version": "0.3.10",
-  "description": "Convert various file types to markdown format. Example files available at github.com/jojomondag/FileToMarkdown/tree/main/examples/exampleFiles",
+  "version": "0.4.1",
+  "description": "Convert various file types to markdown format with browser and Node.js support",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
-  "main": "src/index.js",
-  "browser": "dist/markitdown.js",
+  "main": "dist/filetomarkdown.node.js",
+  "browser": "dist/filetomarkdown.browser.js",
   "bin": {
     "filetomarkdown-convert": "bin/cli.js",
     "filetomarkdown-test": "bin/test-conversion.js",
     "filetomarkdown-viewer": "bin/create-viewer.js"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/filetomarkdown.browser.js",
+      "require": "./dist/filetomarkdown.node.js"
+    },
+    "./client": "./src/client.js"
+  },
   "files": [
-    "src/renderer/",
-    "src/Viewer/",
-    "src/converters/",
-    "src/index.js",
-    "src/api/",
-    "bin/",
     "dist/",
+    "src/",
+    "bin/",
+    "webpack.*.config.js",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "test": "node bin/test-conversion.js",
     "test-github": "node bin/test-conversion.js --github",
-    "build": "webpack --config webpack.config.js",
-    "build:dev": "webpack --config webpack.dev.config.js",
+    "build": "npm run build:browser && npm run build:node",
+    "build:browser": "webpack --config webpack.browser.config.js --env production",
+    "build:node": "webpack --config webpack.node.config.js",
+    "dev": "webpack serve --config webpack.browser.config.js --env development",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "serve": "webpack serve --config webpack.dev.config.js",
-    "start:api": "node src/api/api.js",
+    "start:api": "node dist/filetomarkdown.node.js",
     "start:viewer": "node src/server.js"
   },
   "keywords": [
     "markdown",
     "converter",
+    "browser",
+    "node",
     "pdf",
     "docx",
-    "pptx",
-    "xlsx",
-    "text",
-    "code",
-    "zip",
-    "7zip"
+    "webpack"
   ],
   "author": "Josef",
   "license": "MIT",
@@ -63,7 +65,6 @@
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
     "babel-loader": "^9.1.2",
-    "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.1",
     "path-browserify": "^1.0.1",

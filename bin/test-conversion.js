@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-
 const fs = require('fs/promises');
 const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
+const { convertToMarkdown } = require('../src/index');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
+const VIEWER_SOURCE = path.join(__dirname, '../src/Viewer/viewer.html');
 
-// Create necessary directories
+// Create directory structure
 const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
-        'examples/outputAfterConversion',
         'examples/outputAfterConversion/code',
-        'examples/viewer'
+        'viewer'  // New viewer directory
     ];
     
     dirs.forEach(dir => {
@@ -23,38 +23,62 @@ const createDirectories = () => {
     });
 };
 
-// Download a file from GitHub
-const downloadFile = (url, outputPath) => {
-    return new Promise((resolve, reject) => {
-        https.get(url, (response) => {
-            if (response.statusCode !== 200) {
-                reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
-                return;
-            }
+// Setup viewer with GitHub enhancements
+const setupViewer = async (githubStyle = false) => {
+    try {
+        const viewerDest = path.join('viewer', 'viewer.html');
+        
+        // Copy viewer template
+        await fs.copyFile(VIEWER_SOURCE, viewerDest);
+        
+        if (githubStyle) {
+            const githubCSS = `
+            <style>
+                /* GitHub-themed additions */
+                body { background: #f6f8fa !important; }
+                #c { 
+                    background: #ffffff;
+                    border: 1px solid #e1e4e8 !important;
+                    box-shadow: 0 1px 3px rgba(27,31,35,0.04) !important;
+                }
+                pre { 
+                    background: #f6f8fa !important;
+                    border-radius: 6px !important;
+                    padding: 16px !important;
+                }
+                .token.keyword { color: #d73a49 !important; }
+                .token.string { color: #032f62 !important; }
+            </style>`;
+            
+            await fs.appendFile(viewerDest, githubCSS);
+        }
+        
+        console.log(`✅ Viewer created: ${path.resolve(viewerDest)}`);
 
-            // Create directory if it doesn't exist
-            const dir = path.dirname(outputPath);
-            if (!fsSync.existsSync(dir)) {
-                fsSync.mkdirSync(dir, { recursive: true });
-            }
-
-            const fileStream = fsSync.createWriteStream(outputPath);
-            response.pipe(fileStream);
-
-            fileStream.on('finish', () => {
-                fileStream.close();
-                resolve();
-            });
-
-            fileStream.on('error', (err) => {
-                fs.unlink(outputPath, () => {});
-                reject(err);
-            });
-        }).on('error', reject);
-    });
+    } catch (error) {
+        console.error('❌ Viewer setup failed:', error.message);
+        process.exit(1);
+    }
 };
 
-// Test cases
+// Download helper
+const downloadFile = (url, outputPath) => new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+        if (response.statusCode !== 200) {
+            reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
+            return;
+        }
+
+        const fileStream = fsSync.createWriteStream(outputPath);
+        response.pipe(fileStream)
+            .on('finish', resolve)
+            .on('error', (err) => {
+                fs.unlink(outputPath, () => reject(err));
+            });
+    }).on('error', reject);
+});
+
+// Test files configuration
 const testFiles = [
     {
         type: 'code',
@@ -124,101 +148,64 @@ const testFiles = [
     }
 ];
 
-// Run the tests
+// Main test runner
 const runTests = async (useGithub = false) => {
     try {
-        console.log('Creating project structure:');
-        console.log('examples/');
-        console.log('├── viewer/');
-        console.log('│   ├── viewer.html     # Markdown viewer');
-        console.log('│   └── markdown.js     # Renderer script');
-        console.log('├── exampleFiles/');
-        console.log('│   ├── code/');
-        console.log('│   └── [example files]');
-        console.log('└── outputAfterConversion/');
-        console.log('    └── code/');
-        console.log('');
-
-        // Create directories
+        console.log('🚀 Starting FileToMarkdown Test Suite\n');
         createDirectories();
 
-        // Copy viewer.html to examples directory
-        const viewerPath = path.join(process.cwd(), 'examples', 'viewer', 'viewer.html');
-        const packageViewerPath = path.join(__dirname, '..', 'src', 'viewer.html');
-        const nodeModulesViewerPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'viewer.html');
-
-        // Add markdown.js paths
-        const markdownJsPath = path.join(process.cwd(), 'examples', 'viewer', 'markdown.js');
-        const packageMarkdownJsPath = path.join(__dirname, '..', 'src', 'renderer', 'markdown.js');
-        const nodeModulesMarkdownJsPath = path.join(process.cwd(), 'node_modules', 'filetomarkdown', 'src', 'renderer', 'markdown.js');
-
-        if (!fsSync.existsSync(viewerPath)) {
-            if (fsSync.existsSync(packageViewerPath)) {
-                fsSync.copyFileSync(packageViewerPath, viewerPath);
-            } else if (fsSync.existsSync(nodeModulesViewerPath)) {
-                fsSync.copyFileSync(nodeModulesViewerPath, viewerPath);
-            } else {
-                console.warn('Warning: Could not find viewer.html');
-            }
+        if (useGithub) {
+            console.log('🌐 GitHub Mode Activated');
+            await setupViewer(true);
         }
 
-        if (!fsSync.existsSync(markdownJsPath)) {
-            if (fsSync.existsSync(packageMarkdownJsPath)) {
-                fsSync.copyFileSync(packageMarkdownJsPath, markdownJsPath);
-            } else if (fsSync.existsSync(nodeModulesMarkdownJsPath)) {
-                fsSync.copyFileSync(nodeModulesMarkdownJsPath, markdownJsPath);
-            } else {
-                console.warn('Warning: Could not find markdown.js');
-            }
-        }
+        console.log('\n📂 Project Structure:');
+        console.log('├── viewer/');
+        console.log('│   └── viewer.html');
+        console.log('├── examples/');
+        console.log('│   ├── exampleFiles/');
+        console.log('│   └── outputAfterConversion/');
+        console.log('└── package.json\n');
 
-        // Process each test case
         for (const test of testFiles) {
             try {
+                const fileType = test.type.padEnd(6, ' ');
+                console.log(`🔨 Processing ${fileType}: ${path.basename(test.localPath)}`);
+
                 if (useGithub) {
-                    console.log(`Downloading ${test.type} file from GitHub...`);
                     await downloadFile(test.githubPath, test.localPath);
-                    console.log(`✓ Download complete: ${test.localPath}`);
                 }
 
-                // Ensure output directory exists
-                const outputDir = path.dirname(test.outputPath);
-                if (!fsSync.existsSync(outputDir)) {
-                    fsSync.mkdirSync(outputDir, { recursive: true });
-                }
-
-                console.log(`Converting ${test.type}...`);
-                const { convertToMarkdown } = require('../src/index.js');
                 await convertToMarkdown(test.localPath, test.outputPath);
-
-                // Move the markdown file if it was created in the source directory
-                const sourceDir = path.dirname(test.localPath);
-                const sourceMd = path.join(sourceDir, path.basename(test.localPath, path.extname(test.localPath)) + '.md');
-                if (fsSync.existsSync(sourceMd)) {
-                    await fs.copyFile(sourceMd, test.outputPath);
-                    await fs.unlink(sourceMd);
+                
+                // Verify output
+                if (fsSync.existsSync(test.outputPath)) {
+                    const stats = fsSync.statSync(test.outputPath);
+                    console.log(`✅ Success: ${path.basename(test.outputPath)} (${Math.round(stats.size/1024)}KB)`);
+                } else {
+                    throw new Error('Output file not created');
                 }
 
-                console.log(`✓ ${test.type} conversion complete\n`);
-                
             } catch (error) {
-                console.error(`Error processing ${test.type}:`, error);
-                process.exit(1);
+                console.error(`❌ ${test.type} conversion failed:`, error.message);
+                if (useGithub) process.exit(1);
             }
         }
 
-        console.log('All conversions completed!');
-        console.log('Project structure created in current directory.\n');
-        console.log('To view the converted files:');
-        console.log('1. Navigate to the examples/outputAfterConversion directory');
-        console.log('2. Open ../viewer.html in your browser\n');
+        console.log('\n🎉 All conversions completed!');
+        if (useGithub) {
+            console.log('\n🔗 Viewer Access Instructions:');
+            console.log('   - Open viewer/viewer.html in your browser');
+            console.log('   - Drag generated .md files from:');
+            console.log('     examples/outputAfterConversion/');
+        }
 
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('💥 Critical error:', error.message);
         process.exit(1);
     }
 };
 
-// Check if --github flag is provided
+// CLI execution
 const useGithub = process.argv.includes('--github');
-runTests(useGithub); 
+runTests(useGithub);

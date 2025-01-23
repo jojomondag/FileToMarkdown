@@ -1,35 +1,51 @@
 #!/usr/bin/env node
-
 const path = require('path');
 const fs = require('fs');
-const { spawnSync } = require('child_process');
 
 async function createViewer(targetDir = process.cwd()) {
     try {
-        // Get package root path
         const packageRoot = path.resolve(__dirname, '..');
-        
-        // Source files
-        const viewerSource = path.join(packageRoot, 'src', 'Viewer', 'viewer.html');
-        const markdownSource = path.join(packageRoot, 'src', 'Viewer', 'markdown.js');
+        const sourceFiles = {
+            viewer: path.join(packageRoot, 'src', 'Viewer', 'viewer.html')
+        };
 
-        // Create target directory if needed
-        if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-        }
+        // Verify source files exist
+        Object.entries(sourceFiles).forEach(([name, path]) => {
+            if (!fs.existsSync(path)) {
+                throw new Error(`Missing required file: ${name} (${path})`);
+            }
+        });
 
-        // Copy files using Windows-friendly methods
-        fs.copyFileSync(viewerSource, path.join(targetDir, 'viewer.html'));
-        fs.copyFileSync(markdownSource, path.join(targetDir, 'markdown.js'));
+        // Create target directory
+        fs.mkdirSync(targetDir, { recursive: true });
 
-        console.log('✓ Viewer files created at:', path.resolve(targetDir));
+        // Copy files with better error handling
+        Object.entries(sourceFiles).forEach(([name, sourcePath]) => {
+            const destPath = path.join(targetDir, path.basename(sourcePath));
+            fs.copyFileSync(sourcePath, destPath);
+            console.log(`✓ Copied ${name} to ${destPath}`);
+        });
+
+        console.log('\n✅ Viewer setup completed at:', path.resolve(targetDir));
 
     } catch (error) {
-        console.error('Error creating viewer:', error.message);
+        console.error('\n❌ Error creating viewer:', error.message);
+        console.log('Verify these files exist in your project:');
+        console.log('- src/Viewer/viewer.html');
+        console.log('- src/renderer/markdown.js');
         process.exit(1);
     }
 }
 
-// Handle arguments
-const targetDir = process.argv[2] || process.cwd();
+// Handle arguments with better validation
+const targetDir = process.argv[2] 
+    ? path.resolve(process.cwd(), process.argv[2])
+    : process.cwd();
+
+// Verify target directory exists
+if (!fs.existsSync(targetDir)) {
+    console.log(`Creating directory: ${targetDir}`);
+    fs.mkdirSync(targetDir, { recursive: true });
+}
+
 createViewer(targetDir);

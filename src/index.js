@@ -7,20 +7,6 @@ class MarkitDown {
     this.options = options;
   }
 
-  async copyViewerHtml(outputPath) {
-    try {
-      const outputDir = path.dirname(outputPath);
-      const viewerSource = path.join(__dirname, 'viewer.html');
-      const viewerDest = path.join(outputDir, 'viewer.html');
-      
-      if (fsSync.existsSync(viewerSource)) {
-        await fs.copyFile(viewerSource, viewerDest);
-      }
-    } catch (error) {
-      console.warn('Warning: Could not copy viewer files:', error.message);
-    }
-  }
-
   async convertToMarkdown(inputPath, outputPath) {
     try {
       const ext = path.extname(inputPath).toLowerCase().slice(1);
@@ -35,7 +21,6 @@ class MarkitDown {
       
       if (outputPath) {
         await fs.writeFile(outputPath, markdown);
-        await this.copyViewerHtml(outputPath);
       }
       
       return markdown;

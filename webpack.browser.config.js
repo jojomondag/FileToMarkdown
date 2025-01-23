@@ -1,17 +1,17 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
-  mode: 'development',
-  entry: './src/index.js',
+module.exports = (env) => ({
+  mode: env.production ? 'production' : 'development',
+  entry: './src/client.js',
+  devtool: env.production ? false : 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'markitdown.dev.js',
+    filename: env.production ? 'filetomarkdown.browser.js' : 'filetomarkdown.browser.dev.js',
     library: 'FileToMarkdown',
     libraryTarget: 'umd',
     globalObject: 'this'
   },
-  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -27,15 +27,21 @@ module.exports = {
     ]
   },
   resolve: {
+    extensions: ['.js'],
     fallback: {
-      "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer/"),
-      "path": require.resolve("path-browserify"),
-      "crypto": require.resolve("crypto-browserify"),
-      "zlib": require.resolve("browserify-zlib"),
-      "util": require.resolve("util/"),
-      "fs": false
+      "path": false,
+      "fs": false,
+      "os": false,
+      "stream": false,
+      "crypto": false
     }
+  },
+  externals: {
+    'express': 'commonjs express',
+    'multer': 'commonjs multer',
+    'fs': 'commonjs fs',
+    'path': 'commonjs path',
+    'os': 'commonjs os'
   },
   plugins: [
     new webpack.ProvidePlugin({
@@ -43,11 +49,12 @@ module.exports = {
       Buffer: ['buffer', 'Buffer']
     })
   ],
-  devServer: {
+  devServer: env.development ? {
     static: {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
     port: 9000,
-  }
-}; 
+    hot: true
+  } : undefined
+});
