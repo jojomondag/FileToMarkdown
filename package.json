@@ -11,11 +11,13 @@
     "filetomarkdown-viewer": "bin/create-viewer.js"
   },
   "files": [
-    "src/index.js",
+    "src/renderer/",
+    "src/Viewer/",
     "src/converters/",
+    "src/index.js",
+    "src/api/",
     "bin/",
     "dist/",
-    "examples/",
     "README.md",
     "LICENSE"
   ],
