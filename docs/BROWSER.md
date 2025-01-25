@@ -1,20 +1,10 @@
 # FileToMarkdown Browser Usage
 
-## Features
-`FileToMarkdown.fileTypes`
-- Get list of supported file types
-- Returns array of extensions (e.g., ['pdf', 'txt', 'docx', ...])
+## Installation
 
-`FileToMarkdown.convert(file)`
-- Convert a file to markdown
-- Input: File object from input or drag & drop
-- Returns: Promise with markdown content
-
-## Quick Setup
-
-### CDN (Simplest)
+### CDN (Recommended)
 ```html
-<script src="https://unpkg.com/filetomarkdown/dist/markitdown.js"></script>
+<script src="https://unpkg.com/filetomarkdown/dist/filetomarkdown.browser.js"></script>
 ```
 
 ### NPM
@@ -22,19 +12,42 @@
 npm install filetomarkdown
 ```
 
-## Usage Examples
-
-### Basic Example
 ```javascript
-// Check supported files
-console.log(FileToMarkdown.fileTypes);  // ['pdf', 'txt', 'docx', ...]
+import FileToMarkdown from 'filetomarkdown';
+```
 
-// Convert a file
+## API Reference
+
+### `FileToMarkdown.fileTypes`
+Array of supported file extensions
+```javascript
+console.log(FileToMarkdown.fileTypes);  // ['pdf', 'txt', 'docx', ...]
+```
+
+### `FileToMarkdown.convert(file)`
+Convert a file to markdown
+- Input: File object from input or drag & drop
+- Returns: Promise<string> with markdown content
+```javascript
+const markdown = await FileToMarkdown.convert(file);
+```
+
+### `FileToMarkdown.render(markdown)`
+Render markdown to HTML with syntax highlighting
+- Input: Markdown string
+- Returns: Promise<string> with HTML content
+```javascript
+const html = await FileToMarkdown.render(markdown);
+```
+
+## Examples
+
+### Basic Conversion
+```javascript
 const fileInput = document.querySelector('input[type="file"]');
 fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
     try {
-        const markdown = await FileToMarkdown.convert(file);
+        const markdown = await FileToMarkdown.convert(e.target.files[0]);
         console.log(markdown);
     } catch (error) {
         console.error('Conversion failed:', error);
@@ -42,12 +55,20 @@ fileInput.addEventListener('change', async (e) => {
 });
 ```
 
-### Import with NPM
+### Convert and Render
 ```javascript
-import FileToMarkdown from 'filetomarkdown';
+const fileInput = document.querySelector('input[type="file"]');
+const output = document.querySelector('#output');
 
-// Use same methods as CDN version
-console.log(FileToMarkdown.fileTypes);
+fileInput.addEventListener('change', async (e) => {
+    try {
+        const markdown = await FileToMarkdown.convert(e.target.files[0]);
+        const html = await FileToMarkdown.render(markdown);
+        output.innerHTML = html;
+    } catch (error) {
+        console.error('Operation failed:', error);
+    }
+});
 ```
 
-For complete implementation examples, see our [example HTML files](../test.html). 
+For supported file types and features, see [Converters Documentation](CONVERTERS.md). 

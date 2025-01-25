@@ -1,14 +1,16 @@
 {
   "name": "filetomarkdown",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Convert various file types to markdown format with browser and Node.js support",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "dist/filetomarkdown.node.js",
   "browser": "dist/filetomarkdown.browser.js",
   "bin": {
     "filetomarkdown-convert": "bin/cli.js",
+    "filetomarkdown-render": "bin/render.js",
     "filetomarkdown-test": "bin/test-conversion.js",
-    "filetomarkdown-viewer": "bin/create-viewer.js"
+    "filetomarkdown-viewer": "bin/create-viewer.js",
+    "filetomarkdown-filetypes": "bin/filetypes.js"
   },
   "exports": {
     ".": {

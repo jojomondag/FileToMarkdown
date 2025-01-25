@@ -1,59 +1,65 @@
 # FileToMarkdown
 
-Convert various file types to Markdown with a single command.
+Convert various file types to Markdown with a single command. Supports documents, code files, and archives with browser and Node.js integration.
 
 ## Documentation
-- [API Documentation](docs/API.md) - REST API endpoints and usage for server integration
-- [Browser Usage](docs/BROWSER.md) - JavaScript API for browser-side file conversion
-- [Supported Converters](docs/CONVERTERS.md) - Detailed information about file format converters and their capabilities
+- [CLI Commands](docs/COMMANDS.md) - All available commands and usage
+- [API Reference](docs/API.md) - REST API endpoints and integration
+- [Browser Usage](docs/BROWSER.md) - JavaScript API for browsers
+- [Converters](docs/CONVERTERS.md) - Supported file types and features
 
-## Supported Formats
-- Documents: PDF, DOCX, PPTX, XLSX, TXT
-- Code: JS (JSX), TS (TSX), PY, JAVA, CS, HTML, CPP, C, GO, SQL, PHP, SWIFT, CSS, RUBY,
-        RUST, KOTLIN, LUA, MATLAB, SHELL, VUE, SVELTE
-- Archives: ZIP, 7Z
-
-## Quick Test
-Node >= v23.5.0
+## Quick Start
 ```bash
-# Install
-npm install filetomarkdown@latest
+# Install globally
+npm install -g filetomarkdown
 
-# Try example conversions
-npx filetomarkdown-test --github
+# Convert a file
+filetomarkdown-convert input.pdf output.md
+
+# Or start the API server
+npm run start:api
 ```
 
+## Features
+- Convert multiple file types to markdown
+- Browser & Node.js support
+- API server with REST endpoints
+- Markdown viewer with syntax highlighting
+- Extensive file type support
+
 ## Usage Options
-1. **Command Line** (make sure to navigate to your file's directory in cmd first)
-   ```bash
-   filetomarkdown-convert "input.pdf"
-   filetomarkdown-convert "input.pdf" "output.md"
-   ```
 
-2. **Markdown Viewer**
-   ```bash
-   # Create viewer in current directory
-   npx filetomarkdown-viewer
+### 1. Command Line
+```bash
+# Convert a file
+filetomarkdown-convert input.pdf output.md
 
-   # Or specify a target directory
-   npx filetomarkdown-viewer /path/to/directory
-   ```
-   This creates a standalone `viewer.html` that can:
-   - Open and display markdown files without needing a server
-   - Support syntax highlighting for multiple programming languages
-   - Drag & drop or browse for markdown files
-   - Toggle sidebar for better reading experience
-   
-   To use the viewer:
-   1. Run the command above to create `viewer.html`
-   2. Open `viewer.html` in your browser
-   3. Drop markdown files onto it or use the browse button
-   4. Your markdown files will be rendered with syntax highlighting
+# View supported file types
+filetomarkdown-filetypes
 
-3. **API Server**
-   ```bash
-   npm run start:api   # Runs on http://localhost:3000
-   ```
+# Test the package
+filetomarkdown-test --github
+```
+
+### 2. Browser
+```javascript
+// Via CDN
+<script src="https://unpkg.com/filetomarkdown/dist/filetomarkdown.browser.js"></script>
+
+// Convert a file
+const markdown = await FileToMarkdown.convert(file);
+```
+
+### 3. API Server
+```bash
+# Start server
+npm run start:api
+
+# Convert via API
+curl -X POST -F "file=@input.pdf" http://localhost:3000/api/convert
+```
+
+## Demo Video
 <div align="center">
   <a href="https://youtu.be/UkGT3DDPTGI">
     <img src="https://img.youtube.com/vi/UkGT3DDPTGI/mqdefault.jpg" width="320" alt="Demo Video" />

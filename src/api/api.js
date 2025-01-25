@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const os = require('os');
-const { MarkitDown } = require('../index');
+const { MarkitDown, getFileTypes, getFileTypeDescriptions } = require('../index');
 const MarkdownRenderer = require('../renderer/markdown');
 
 const app = express();
@@ -88,14 +88,12 @@ const upload = multer({
 app.get('/api/filetypes', (_req, res) => {
     console.log('📨 GET /api/filetypes');
     try {
-        const typeMap = {
-            'pdf': 'PDF Documents', 'txt': 'Text Files', 'docx': 'Word Documents',
-            'pptx': 'PowerPoint Presentations', 'xlsx': 'Excel Spreadsheets',
-            '7z': '7-Zip Archives', 'zip': 'ZIP Archives',
-            ...Object.fromEntries(require('../converters/code').supportedExtensions
-                .map(ext => [ext, `${ext.toUpperCase()} Source Files`]))
-        };
-        res.json({ fileTypes: Object.keys(typeMap), descriptions: typeMap, status: 200 });
+        const descriptions = getFileTypeDescriptions();
+        res.json({ 
+            fileTypes: getFileTypes(), 
+            descriptions, 
+            status: 200 
+        });
     } catch (error) {
         console.error('❌ /api/filetypes error:', error);
         res.status(500).json({ error: error.message, status: 500 });

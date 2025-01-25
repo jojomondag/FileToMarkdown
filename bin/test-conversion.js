@@ -13,7 +13,7 @@ const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
         'examples/outputAfterConversion/code',
-        'viewer'  // New viewer directory
+        'viewer'
     ];
     
     dirs.forEach(dir => {
@@ -23,36 +23,33 @@ const createDirectories = () => {
     });
 };
 
-// Setup viewer with GitHub enhancements
-const setupViewer = async (githubStyle = false) => {
+// Setup viewer with GitHub theme
+const setupViewer = async () => {
     try {
         const viewerDest = path.join('viewer', 'viewer.html');
         
         // Copy viewer template
         await fs.copyFile(VIEWER_SOURCE, viewerDest);
         
-        if (githubStyle) {
-            const githubCSS = `
-            <style>
-                /* GitHub-themed additions */
-                body { background: #f6f8fa !important; }
-                #c { 
-                    background: #ffffff;
-                    border: 1px solid #e1e4e8 !important;
-                    box-shadow: 0 1px 3px rgba(27,31,35,0.04) !important;
-                }
-                pre { 
-                    background: #f6f8fa !important;
-                    border-radius: 6px !important;
-                    padding: 16px !important;
-                }
-                .token.keyword { color: #d73a49 !important; }
-                .token.string { color: #032f62 !important; }
-            </style>`;
-            
-            await fs.appendFile(viewerDest, githubCSS);
-        }
+        const githubCSS = `
+        <style>
+            /* GitHub-themed additions */
+            body { background: #f6f8fa !important; }
+            #c { 
+                background: #ffffff;
+                border: 1px solid #e1e4e8 !important;
+                box-shadow: 0 1px 3px rgba(27,31,35,0.04) !important;
+            }
+            pre { 
+                background: #f6f8fa !important;
+                border-radius: 6px !important;
+                padding: 16px !important;
+            }
+            .token.keyword { color: #d73a49 !important; }
+            .token.string { color: #032f62 !important; }
+        </style>`;
         
+        await fs.appendFile(viewerDest, githubCSS);
         console.log(`✅ Viewer created: ${path.resolve(viewerDest)}`);
 
     } catch (error) {
@@ -149,15 +146,13 @@ const testFiles = [
 ];
 
 // Main test runner
-const runTests = async (useGithub = false) => {
+const runTests = async () => {
     try {
         console.log('🚀 Starting FileToMarkdown Test Suite\n');
+        console.log('🌐 Using GitHub examples and styling\n');
+        
         createDirectories();
-
-        if (useGithub) {
-            console.log('🌐 GitHub Mode Activated');
-            await setupViewer(true);
-        }
+        await setupViewer();
 
         console.log('\n📂 Project Structure:');
         console.log('├── viewer/');
@@ -172,10 +167,7 @@ const runTests = async (useGithub = false) => {
                 const fileType = test.type.padEnd(6, ' ');
                 console.log(`🔨 Processing ${fileType}: ${path.basename(test.localPath)}`);
 
-                if (useGithub) {
-                    await downloadFile(test.githubPath, test.localPath);
-                }
-
+                await downloadFile(test.githubPath, test.localPath);
                 await convertToMarkdown(test.localPath, test.outputPath);
                 
                 // Verify output
@@ -188,17 +180,15 @@ const runTests = async (useGithub = false) => {
 
             } catch (error) {
                 console.error(`❌ ${test.type} conversion failed:`, error.message);
-                if (useGithub) process.exit(1);
+                process.exit(1);
             }
         }
 
         console.log('\n🎉 All conversions completed!');
-        if (useGithub) {
-            console.log('\n🔗 Viewer Access Instructions:');
-            console.log('   - Open viewer/viewer.html in your browser');
-            console.log('   - Drag generated .md files from:');
-            console.log('     examples/outputAfterConversion/');
-        }
+        console.log('\n🔗 Viewer Access Instructions:');
+        console.log('   - Open viewer/viewer.html in your browser');
+        console.log('   - Drag generated .md files from:');
+        console.log('     examples/outputAfterConversion/');
 
     } catch (error) {
         console.error('💥 Critical error:', error.message);
@@ -206,6 +196,5 @@ const runTests = async (useGithub = false) => {
     }
 };
 
-// CLI execution
-const useGithub = process.argv.includes('--github');
-runTests(useGithub);
+// Run tests
+runTests();

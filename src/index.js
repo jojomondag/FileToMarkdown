@@ -1,8 +1,43 @@
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
+const CodeConverter = require('./converters/code');
 
 class MarkitDown {
+  static get typeMap() {
+    return {
+      'pdf': './converters/pdf',
+      'txt': './converters/txt',
+      'docx': './converters/docx',
+      'pptx': './converters/pptx',
+      'xlsx': './converters/xlsx',
+      '7z': './converters/7zip',
+      'zip': './converters/zip',
+      ...Object.fromEntries(
+        CodeConverter.supportedExtensions.map(ext => 
+          [ext, './converters/code']
+        )
+      )
+    };
+  }
+
+  static getTypeDescriptions() {
+    return {
+      'pdf': 'PDF Documents',
+      'txt': 'Text Files',
+      'docx': 'Word Documents',
+      'pptx': 'PowerPoint Presentations',
+      'xlsx': 'Excel Spreadsheets',
+      '7z': '7-Zip Archives',
+      'zip': 'ZIP Archives',
+      ...Object.fromEntries(
+        CodeConverter.supportedExtensions.map(ext => 
+          [ext, `${ext.toUpperCase()} Source Files`]
+        )
+      )
+    };
+  }
+
   constructor(options = {}) {
     this.options = options;
   }
@@ -30,24 +65,7 @@ class MarkitDown {
   }
 
   async getFileType(ext) {
-    const CodeConverter = require('./converters/code');
-    
-    const typeMap = {
-      'pdf': './converters/pdf',
-      'txt': './converters/txt',
-      'docx': './converters/docx',
-      'pptx': './converters/pptx',
-      'xlsx': './converters/xlsx',
-      '7z': './converters/7zip',
-      'zip': './converters/zip',
-      ...Object.fromEntries(
-        CodeConverter.supportedExtensions.map(ext => 
-          [ext, './converters/code']
-        )
-      )
-    };
-
-    const converterPath = typeMap[ext];
+    const converterPath = MarkitDown.typeMap[ext];
     if (!converterPath) return null;
 
     return require(converterPath);
@@ -59,5 +77,7 @@ module.exports = {
   convertToMarkdown: async (input, output, options) => {
     const converter = new MarkitDown(options);
     return converter.convertToMarkdown(input, output);
-  }
+  },
+  getFileTypes: () => Object.keys(MarkitDown.typeMap),
+  getFileTypeDescriptions: () => MarkitDown.getTypeDescriptions()
 };
