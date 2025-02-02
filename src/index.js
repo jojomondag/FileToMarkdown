@@ -6,16 +6,16 @@ const CodeConverter = require('./converters/code');
 class MarkitDown {
   static get typeMap() {
     return {
-      'pdf': './converters/pdf',
-      'txt': './converters/txt',
-      'docx': './converters/docx',
-      'pptx': './converters/pptx',
-      'xlsx': './converters/xlsx',
-      '7z': './converters/7zip',
-      'zip': './converters/zip',
+      'pdf': require('./converters/pdf'),
+      'txt': require('./converters/txt'),
+      'docx': require('./converters/docx'),
+      'pptx': require('./converters/pptx'),
+      'xlsx': require('./converters/xlsx'),
+      '7z': require('./converters/7zip'),
+      'zip': require('./converters/zip'),
       ...Object.fromEntries(
         CodeConverter.supportedExtensions.map(ext => 
-          [ext, './converters/code']
+          [ext, CodeConverter]
         )
       )
     };
@@ -45,7 +45,7 @@ class MarkitDown {
   async convertToMarkdown(inputPath, outputPath) {
     try {
       const ext = path.extname(inputPath).toLowerCase().slice(1);
-      const Converter = await this.getFileType(ext);
+      const Converter = this.getFileType(ext);
       
       if (!Converter) {
         throw new Error(`Unsupported file type: ${ext}`);
@@ -64,11 +64,8 @@ class MarkitDown {
     }
   }
 
-  async getFileType(ext) {
-    const converterPath = MarkitDown.typeMap[ext];
-    if (!converterPath) return null;
-
-    return require(converterPath);
+  getFileType(ext) {
+    return MarkitDown.typeMap[ext] || null;
   }
 }
 

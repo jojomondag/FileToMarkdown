@@ -1,43 +1,68 @@
-# FileToMarkdown Browser Usage
+# FileToMarkdown API Usage
 
 ## Installation
-
-### CDN (Recommended)
-```html
-<script src="https://unpkg.com/filetomarkdown/dist/filetomarkdown.browser.js"></script>
-```
 
 ### NPM
 ```bash
 npm install filetomarkdown
 ```
 
+### Client Setup
+
 ```javascript
-import FileToMarkdown from 'filetomarkdown';
+import { FileToMarkdownClient } from 'filetomarkdown/client';
+
+// Initialize client (defaults to window.location.origin if in browser)
+const client = new FileToMarkdownClient('http://localhost:3000');
+```
+
+## Starting the Server
+
+You can start the API server programmatically or using the CLI:
+
+```javascript
+// Programmatic server start
+const { createServer } = require('filetomarkdown/api');
+
+const server = createServer({
+    port: 3000, // optional, defaults to 3000
+    cors: {     // optional CORS configuration
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
+
+server.start();
+```
+
+Or using CLI:
+```bash
+npx filetomarkdown-server
 ```
 
 ## API Reference
 
-### `FileToMarkdown.fileTypes`
-Array of supported file extensions
-```javascript
-console.log(FileToMarkdown.fileTypes);  // ['pdf', 'txt', 'docx', ...]
-```
-
-### `FileToMarkdown.convert(file)`
+### `client.convertFile(file)`
 Convert a file to markdown
 - Input: File object from input or drag & drop
-- Returns: Promise<string> with markdown content
+- Returns: Promise<{ markdown: string, status: number }>
 ```javascript
-const markdown = await FileToMarkdown.convert(file);
+const { markdown } = await client.convertFile(file);
 ```
 
-### `FileToMarkdown.render(markdown)`
+### `client.renderMarkdown(content)`
 Render markdown to HTML with syntax highlighting
 - Input: Markdown string
-- Returns: Promise<string> with HTML content
+- Returns: Promise<{ html: string, status: number }>
 ```javascript
-const html = await FileToMarkdown.render(markdown);
+const { html } = await client.renderMarkdown(markdown);
+```
+
+### `client.getSupportedTypes()`
+Get list of supported file types
+- Returns: Promise<{ fileTypes: string[], descriptions: Object, status: number }>
+```javascript
+const { fileTypes, descriptions } = await client.getSupportedTypes();
 ```
 
 ## Examples
@@ -45,9 +70,11 @@ const html = await FileToMarkdown.render(markdown);
 ### Basic Conversion
 ```javascript
 const fileInput = document.querySelector('input[type="file"]');
+const client = new FileToMarkdownClient();
+
 fileInput.addEventListener('change', async (e) => {
     try {
-        const markdown = await FileToMarkdown.convert(e.target.files[0]);
+        const { markdown } = await client.convertFile(e.target.files[0]);
         console.log(markdown);
     } catch (error) {
         console.error('Conversion failed:', error);
@@ -59,11 +86,12 @@ fileInput.addEventListener('change', async (e) => {
 ```javascript
 const fileInput = document.querySelector('input[type="file"]');
 const output = document.querySelector('#output');
+const client = new FileToMarkdownClient();
 
 fileInput.addEventListener('change', async (e) => {
     try {
-        const markdown = await FileToMarkdown.convert(e.target.files[0]);
-        const html = await FileToMarkdown.render(markdown);
+        const { markdown } = await client.convertFile(e.target.files[0]);
+        const { html } = await client.renderMarkdown(markdown);
         output.innerHTML = html;
     } catch (error) {
         console.error('Operation failed:', error);

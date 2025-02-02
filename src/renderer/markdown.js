@@ -8,6 +8,10 @@ require('prismjs/components/prism-markup');
 require('prismjs/components/prism-clike');
 require('prismjs/components/prism-javascript');
 
+// Explicitly load C# and Java components
+require('prismjs/components/prism-java');
+require('prismjs/components/prism-csharp');
+
 class MarkdownRenderer {
     constructor(options = {}) {
         this.options = {
@@ -21,6 +25,8 @@ class MarkdownRenderer {
             'py': 'python',
             'rb': 'ruby',
             'cs': 'csharp',
+            'csharp': 'csharp',
+            'java': 'java',
             'ts': 'typescript',
             'html': 'markup',
             'xml': 'markup',
@@ -33,11 +39,15 @@ class MarkdownRenderer {
             this.loadPrismComponents();
         }
 
-        marked.setOptions({
+        // Create a new marked instance
+        this.marked = new marked.Marked({
             highlight: (code, lang) => this.highlightCode(code, lang),
             langPrefix: 'language-',
             gfm: true,
             breaks: true,
+            pedantic: false,
+            mangle: false,
+            headerIds: true,
             ...options
         });
     }
@@ -47,7 +57,9 @@ class MarkdownRenderer {
         const allLanguages = new Set([
             ...Object.values(this.languageMap),
             ...Object.values(langMap),
-            'markdown'
+            'markdown',
+            'csharp',
+            'java'
         ]);
 
         // Define dependencies and load order
@@ -69,12 +81,13 @@ class MarkdownRenderer {
         };
 
         // Load order for base languages
-        const baseLanguages = ['markup', 'clike', 'javascript', 'c'];
+        const baseLanguages = ['markup', 'clike', 'javascript', 'c', 'java', 'csharp'];
         
         // Load base languages first
         baseLanguages.forEach(lang => {
             try {
                 require(`prismjs/components/prism-${lang}`);
+                console.log(`Loaded language: ${lang}`);
             } catch (error) {
                 console.warn(`Base language ${lang} load error: ${error.message}`);
             }
@@ -86,7 +99,8 @@ class MarkdownRenderer {
                 const componentName = {
                     'markup': 'markup',
                     'shell': 'bash',
-                    'plaintext': null
+                    'plaintext': null,
+                    'cs': 'csharp'
                 }[lang] || lang;
 
                 if (componentName && !baseLanguages.includes(componentName)) {
@@ -95,6 +109,7 @@ class MarkdownRenderer {
                         dependencies[componentName].forEach(dep => {
                             try {
                                 require(`prismjs/components/prism-${dep}`);
+                                console.log(`Loaded dependency: ${dep} for ${componentName}`);
                             } catch (error) {
                                 // Ignore if already loaded
                             }
@@ -103,6 +118,7 @@ class MarkdownRenderer {
                     
                     try {
                         require(`prismjs/components/prism-${componentName}`);
+                        console.log(`Loaded language: ${componentName}`);
                     } catch (error) {
                         console.warn(`Optional language ${componentName} not available`);
                     }
@@ -117,8 +133,24 @@ class MarkdownRenderer {
         if (!this.options.highlight || !lang) return code;
         
         try {
-            const language = this.languageMap[lang] || lang;
+            // Map common extensions to their language names
+            const languageMap = {
+                'cs': 'csharp',
+                'js': 'javascript',
+                'ts': 'typescript',
+                'py': 'python',
+                'rb': 'ruby'
+            };
+
+            const language = languageMap[lang] || this.languageMap[lang] || lang;
+            
+            if (!Prism.languages[language]) {
+                console.warn(`Language not loaded: ${language}`);
+                return code;
+            }
+
             if (language && Prism.languages[language]) {
+                console.log(`Highlighting code for language: ${language}`);
                 return Prism.highlight(code, Prism.languages[language], language);
             }
             return code;
@@ -129,7 +161,24 @@ class MarkdownRenderer {
     }
 
     render(content) {
-        return marked.parse(content);
+        try {
+            // Ensure content is a string and not empty
+            const markdownContent = (content || '').toString().trim();
+            if (!markdownContent) {
+                return '<p><em>No content to render</em></p>';
+            }
+
+            // Parse markdown to HTML using our marked instance
+            const html = this.marked.parse(markdownContent);
+            if (!html) {
+                throw new Error('Marked parser returned empty result');
+            }
+
+            return html;
+        } catch (error) {
+            console.error('Markdown rendering failed:', error);
+            return `<p class="error">Failed to render markdown: ${error.message}</p>`;
+        }
     }
 
     highlightAll() {

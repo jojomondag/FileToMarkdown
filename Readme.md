@@ -23,7 +23,6 @@ npm run start:api
 ## Features
 - Convert multiple file types to markdown
 - Browser & Node.js support
-- API server with REST endpoints
 - Markdown viewer with syntax highlighting
 - Extensive file type support
 
@@ -39,24 +38,6 @@ filetomarkdown-filetypes
 
 # Test the package
 filetomarkdown-test --github
-```
-
-### 2. Browser
-```javascript
-// Via CDN
-<script src="https://unpkg.com/filetomarkdown/dist/filetomarkdown.browser.js"></script>
-
-// Convert a file
-const markdown = await FileToMarkdown.convert(file);
-```
-
-### 3. API Server
-```bash
-# Start server
-npm run start:api
-
-# Convert via API
-curl -X POST -F "file=@input.pdf" http://localhost:3000/api/convert
 ```
 
 ## Demo Video
