@@ -6,6 +6,7 @@ const CodeConverter = require('./converters/code');
 class MarkitDown {
   static get typeMap() {
     return {
+      'md': require('./converters/md'),
       'pdf': require('./converters/pdf'),
       'txt': require('./converters/txt'),
       'docx': require('./converters/docx'),
@@ -23,6 +24,7 @@ class MarkitDown {
 
   static getTypeDescriptions() {
     return {
+      'md': 'Markdown file (passthrough)',
       'pdf': 'PDF Documents',
       'txt': 'Text Files',
       'docx': 'Word Documents',
