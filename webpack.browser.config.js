@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
+//This builds and Packages the Browser compatible version of the library.
 module.exports = (env) => ({
   mode: env.production ? 'production' : 'development',
   entry: './src/client.js',

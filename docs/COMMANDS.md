@@ -41,11 +41,4 @@ filetomarkdown-filetypes
 ```
 Shows all supported file types and their descriptions.
 
-## API Server
-
-Start the server:
-```bash
-npm run start:api  # Runs on http://localhost:3000
-```
-
 For detailed API documentation and examples, see [API Documentation](API.md). 

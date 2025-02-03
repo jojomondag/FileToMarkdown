@@ -8,18 +8,6 @@ Convert various file types to Markdown. Supports Office documents, code files, a
 - [Browser Usage](docs/BROWSER.md) - JavaScript API for browsers
 - [Converters](docs/CONVERTERS.md) - Supported file types and features
 
-## Quick Start
-```bash
-# Install globally
-npm install -g filetomarkdown
-
-# Convert a file
-filetomarkdown-convert input.pdf output.md
-
-# Or start the API server
-npm run start:api
-```
-
 ## Features
 - Convert multiple file types to markdown
 - Browser & Node.js support
@@ -28,16 +16,19 @@ npm run start:api
 
 ## Usage Options
 
-### 1. Command Line
+### CLI Command Line Interface usage
 ```bash
-# Convert a file
-filetomarkdown-convert input.pdf output.md
+# Install globally
+npm install -g filetomarkdown
 
 # View supported file types
 filetomarkdown-filetypes
 
 # Test the package
 filetomarkdown-test --github
+
+# Convert a file
+filetomarkdown-convert input.pdf output.md
 ```
 
 ## Demo Video

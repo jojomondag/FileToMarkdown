@@ -7,38 +7,33 @@
 npm install filetomarkdown
 ```
 
-### Client Setup
+### Browser Setup
 
+Include the browser bundle in your HTML:
+```html
+<script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
+```
+
+Then initialize the client:
 ```javascript
-import { FileToMarkdownClient } from 'filetomarkdown/client';
-
-// Initialize client (defaults to window.location.origin if in browser)
-const client = new FileToMarkdownClient('http://localhost:3000');
+const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
 ```
 
 ## Starting the Server
 
-You can start the API server programmatically or using the CLI:
-
-```javascript
-// Programmatic server start
-const { createServer } = require('filetomarkdown/api');
-
-const server = createServer({
-    port: 3000, // optional, defaults to 3000
-    cors: {     // optional CORS configuration
-        origin: '*',
-        methods: ['GET', 'POST']
-    }
-});
-
-server.start();
-```
-
-Or using CLI:
+Start the server using the CLI command:
 ```bash
 npx filetomarkdown-server
 ```
+
+This will start a server with the following configuration:
+- Port: 3000 (default)
+- CORS: Enabled for all origins
+- Endpoints:
+  - GET  /api/filetypes - List supported file types
+  - POST /api/render    - Render markdown to HTML
+  - POST /api/convert   - Convert file to markdown
+  - GET  /health       - Server health check
 
 ## API Reference
 
@@ -65,38 +60,47 @@ Get list of supported file types
 const { fileTypes, descriptions } = await client.getSupportedTypes();
 ```
 
-## Examples
+## Complete Example
 
-### Basic Conversion
-```javascript
-const fileInput = document.querySelector('input[type="file"]');
-const client = new FileToMarkdownClient();
+Here's a simple example showing how to use the package:
 
-fileInput.addEventListener('change', async (e) => {
-    try {
-        const { markdown } = await client.convertFile(e.target.files[0]);
-        console.log(markdown);
-    } catch (error) {
-        console.error('Conversion failed:', error);
-    }
-});
-```
+### HTML
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File to Markdown</title>
+    <style>
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput">
+    <div id="output"></div>
+    
+    <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
+    <script>
+        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
+        const output = document.getElementById('output');
 
-### Convert and Render
-```javascript
-const fileInput = document.querySelector('input[type="file"]');
-const output = document.querySelector('#output');
-const client = new FileToMarkdownClient();
-
-fileInput.addEventListener('change', async (e) => {
-    try {
-        const { markdown } = await client.convertFile(e.target.files[0]);
-        const { html } = await client.renderMarkdown(markdown);
-        output.innerHTML = html;
-    } catch (error) {
-        console.error('Operation failed:', error);
-    }
-});
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                try {
+                    const { markdown } = await client.convertFile(e.target.files[0]);
+                    const { html } = await client.renderMarkdown(markdown);
+                    output.innerHTML = html;
+                } catch (error) {
+                    output.textContent = 'Error: ' + error.message;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
 ```
 
 For supported file types and features, see [Converters Documentation](CONVERTERS.md). 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const createServer = require('../dist/server');
+const { createServer } = require('../dist/server');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
