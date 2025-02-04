@@ -1,6 +1,15 @@
 // src/server.js
 const express = require('express');
 const path = require('path');
+const api = require('./api/api');
+
+function createServer(options = {}) {
+    return api.createServer(options);
+}
+
+module.exports = {
+    createServer
+};
 
 const app = express();
 const port = 3001;

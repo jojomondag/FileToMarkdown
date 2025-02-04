@@ -17,7 +17,7 @@ module.exports = (env) => ({
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(prismjs)\/).*/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -47,7 +47,8 @@ module.exports = (env) => ({
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
-      Buffer: ['buffer', 'Buffer']
+      Buffer: ['buffer', 'Buffer'],
+      Prism: 'prismjs'
     })
   ],
   devServer: env.development ? {

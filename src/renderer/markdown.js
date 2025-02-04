@@ -2,6 +2,11 @@ const marked = require('marked');
 const Prism = require('prismjs');
 const { langMap } = require('../converters/code');
 
+// Initialize Prism in browser environment
+if (typeof window !== 'undefined') {
+    window.Prism = Prism;
+}
+
 // Load core components first
 require('prismjs/components/prism-core');
 require('prismjs/components/prism-markup');
@@ -21,17 +26,72 @@ class MarkdownRenderer {
         };
 
         this.languageMap = {
+            // Common web languages
             'js': 'javascript',
+            'html': 'markup',
+            'htm': 'markup',
+            'xml': 'markup',
+            'css': 'css',
+            'scss': 'scss',
+            'less': 'less',
+            'json': 'json',
+
+            // Programming languages
+            'java': 'java',
+            'cs': 'csharp',
             'py': 'python',
             'rb': 'ruby',
-            'cs': 'csharp',
-            'csharp': 'csharp',
-            'java': 'java',
+            'cpp': 'cpp',
+            'c': 'c',
+            'h': 'c',
+            'hpp': 'cpp',
+            'go': 'go',
+            'rs': 'rust',
+            'php': 'php',
+            'swift': 'swift',
+            'kt': 'kotlin',
+            'scala': 'scala',
+            'dart': 'dart',
+            'lua': 'lua',
+            'r': 'r',
+            'm': 'matlab',
+            'pl': 'perl',
             'ts': 'typescript',
-            'html': 'markup',
-            'xml': 'markup',
+
+            // Shell and scripting
+            'sh': 'bash',
+            'bash': 'bash',
+            'zsh': 'bash',
+            'ps1': 'powershell',
+            'bat': 'batch',
+            'cmd': 'batch',
+
+            // Database
+            'sql': 'sql',
+            'pgsql': 'pgsql',
+            'mysql': 'sql',
+
+            // Framework-specific
+            'jsx': 'jsx',
+            'tsx': 'tsx',
             'vue': 'markup',
             'svelte': 'markup',
+            'astro': 'markup',
+
+            // Config files
+            'yml': 'yaml',
+            'yaml': 'yaml',
+            'toml': 'toml',
+            'ini': 'ini',
+            'conf': 'nginx',
+            'dockerfile': 'dockerfile',
+            'docker': 'dockerfile',
+
+            // Other
+            'md': 'markdown',
+            'tex': 'latex',
+            'graphql': 'graphql',
+            'gql': 'graphql',
             ...langMap
         };
 
@@ -39,7 +99,7 @@ class MarkdownRenderer {
             this.loadPrismComponents();
         }
 
-        // Create a new marked instance
+        // Create a new marked instance with enhanced options
         this.marked = new marked.Marked({
             highlight: (code, lang) => this.highlightCode(code, lang),
             langPrefix: 'language-',
@@ -134,10 +194,15 @@ class MarkdownRenderer {
             return code;
         }
 
-        // Ensure we have a valid language
-        const language = this.languageMap[lang] || lang;
+        // Clean up the language identifier
+        const language = (this.languageMap[lang] || lang || '').toLowerCase();
 
         try {
+            // If no language is specified or language is plaintext, return as-is
+            if (!language || language === 'plaintext' || language === 'text') {
+                return code;
+            }
+
             // Make sure the language exists in Prism
             if (Prism.languages[language]) {
                 return Prism.highlight(code, Prism.languages[language], language);
@@ -186,8 +251,9 @@ class MarkdownRenderer {
                     <style>
                     .rendered-content code[class*="language-"],
                     .rendered-content pre[class*="language-"] {
-                        color: #383a42 !important;
+                        color: #f8f8f2 !important;
                         background: none !important;
+                        text-shadow: 0 1px rgba(0, 0, 0, 0.3) !important;
                         font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
                         font-size: 1em !important;
                         text-align: left !important;
@@ -203,30 +269,28 @@ class MarkdownRenderer {
                     .rendered-content pre[class*="language-"] {
                         position: relative !important;
                         margin: .5em 0 !important;
-                        overflow: visible !important;
+                        overflow: auto !important;
                         padding: 1em !important;
-                        background-color: #fafafa !important;
+                        background: #282a36 !important;
                         border-radius: 0.3em !important;
-                        border: 1px solid #e1e4e8 !important;
                     }
                     
                     .rendered-content :not(pre) > code[class*="language-"] {
                         padding: .1em !important;
                         border-radius: .3em !important;
                         white-space: normal !important;
-                        background: #fafafa !important;
+                        background: #282a36 !important;
                     }
                     
                     .rendered-content .token.comment,
                     .rendered-content .token.prolog,
                     .rendered-content .token.doctype,
                     .rendered-content .token.cdata {
-                        color: #a0a1a7 !important;
-                        font-style: italic !important;
+                        color: #6272a4 !important;
                     }
                     
                     .rendered-content .token.punctuation {
-                        color: #383a42 !important;
+                        color: #f8f8f2 !important;
                     }
                     
                     .rendered-content .token.namespace {
@@ -235,12 +299,15 @@ class MarkdownRenderer {
                     
                     .rendered-content .token.property,
                     .rendered-content .token.tag,
-                    .rendered-content .token.boolean,
-                    .rendered-content .token.number,
                     .rendered-content .token.constant,
                     .rendered-content .token.symbol,
                     .rendered-content .token.deleted {
-                        color: #e45649 !important;
+                        color: #ff79c6 !important;
+                    }
+                    
+                    .rendered-content .token.boolean,
+                    .rendered-content .token.number {
+                        color: #bd93f9 !important;
                     }
                     
                     .rendered-content .token.selector,
@@ -249,7 +316,7 @@ class MarkdownRenderer {
                     .rendered-content .token.char,
                     .rendered-content .token.builtin,
                     .rendered-content .token.inserted {
-                        color: #50a14f !important;
+                        color: #50fa7b !important;
                     }
                     
                     .rendered-content .token.operator,
@@ -257,24 +324,24 @@ class MarkdownRenderer {
                     .rendered-content .token.url,
                     .rendered-content .language-css .token.string,
                     .rendered-content .style .token.string {
-                        color: #0184bc !important;
+                        color: #f8f8f2 !important;
                     }
                     
                     .rendered-content .token.atrule,
                     .rendered-content .token.attr-value,
                     .rendered-content .token.keyword {
-                        color: #a626a4 !important;
+                        color: #ff79c6 !important;
                     }
                     
                     .rendered-content .token.function,
                     .rendered-content .token.class-name {
-                        color: #c18401 !important;
+                        color: #8be9fd !important;
                     }
                     
                     .rendered-content .token.regex,
                     .rendered-content .token.important,
                     .rendered-content .token.variable {
-                        color: #e45649 !important;
+                        color: #f1fa8c !important;
                     }
                     
                     .rendered-content .token.important,
@@ -284,6 +351,10 @@ class MarkdownRenderer {
                     
                     .rendered-content .token.italic {
                         font-style: italic !important;
+                    }
+                    
+                    .rendered-content .token.entity {
+                        cursor: help !important;
                     }
                     </style>
                 `;

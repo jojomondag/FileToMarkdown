@@ -6,7 +6,7 @@ module.exports = {
   mode: 'production',
   entry: {
     main: './src/index.js',
-    server: './src/api/api.js'
+    server: './src/server.js'
   },
   target: 'node',
   output: {
@@ -35,25 +35,23 @@ module.exports = {
     modules: [
       'node_modules',
       path.resolve(__dirname, 'src')
-    ],
-    fallback: {
-      "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer/"),
-      "path": require.resolve("path-browserify"),
-      "crypto": require.resolve("crypto-browserify"),
-      "util": require.resolve("util/")
+    ]
+  },
+  optimization: {
+    minimize: true
+  },
+  externals: [
+    {
+      'express': 'commonjs express',
+      'multer': 'commonjs multer',
+      'cors': 'commonjs cors',
+      'pdfjs-dist': 'commonjs pdfjs-dist',
+      'mammoth': 'commonjs mammoth',
+      'xlsx-js-style': 'commonjs xlsx-js-style',
+      '7zip-min': 'commonjs 7zip-min',
+      'adm-zip': 'commonjs adm-zip'
     }
-  },
-  externals: {
-    'express': 'commonjs express',
-    'multer': 'commonjs multer',
-    'cors': 'commonjs cors',
-    'pdfjs-dist': 'commonjs pdfjs-dist',
-    'mammoth': 'commonjs mammoth',
-    'xlsx-js-style': 'commonjs xlsx-js-style',
-    '7zip-min': 'commonjs 7zip-min',
-    'adm-zip': 'commonjs adm-zip'
-  },
+  ],
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
@@ -64,10 +62,6 @@ module.exports = {
         { 
           from: path.resolve(__dirname, 'src/Viewer'),
           to: 'Viewer'
-        },
-        {
-          from: path.resolve(__dirname, 'src/converters'),
-          to: 'converters'
         }
       ]
     })

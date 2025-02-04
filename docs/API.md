@@ -39,12 +39,110 @@ npm run start:api  # Runs on http://localhost:3000
 ### `POST /api/render`
 - Renders markdown content to HTML with syntax highlighting
 - Input: Raw markdown content in request body (Content-Type: text/plain)
+- Options:
+  - `highlight`: Boolean to enable/disable syntax highlighting (default: true)
+  - `theme`: Object to customize syntax highlighting colors
 - Returns:
   - `html`: Rendered HTML content with syntax highlighting
   - `status`: HTTP status code
 - Error Responses:
   - `400`: No markdown content provided
   - `500`: Render failed with error message
+
+### Syntax Highlighting Configuration
+
+The `/api/render` endpoint supports custom color themes for syntax highlighting. You can configure the colors by passing a theme object in the request:
+
+```javascript
+{
+  "markdown": "your markdown content",
+  "options": {
+    "highlight": true,
+    "theme": {
+      "base": {
+        "background": "#2d2d2d",
+        "color": "#ccc",
+        "fontSize": "1em",
+        "fontFamily": "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace"
+      },
+      "tokens": {
+        "comment": "#999",
+        "punctuation": "#ccc",
+        "tag": "#e2777a",
+        "function": "#f08d49",
+        "keyword": "#cc99cd",
+        "string": "#7ec699",
+        "number": "#f08d49",
+        "operator": "#67cdcc",
+        "class": "#f8c555",
+        "variable": "#7ec699"
+      }
+    }
+  }
+}
+```
+
+If no theme is provided, the default theme will be used. The theme configuration supports:
+
+1. Base Styles:
+   - `background`: Code block background color
+   - `color`: Default text color
+   - `fontSize`: Font size for code
+   - `fontFamily`: Font family for code
+   - `lineHeight`: Line height for code blocks
+   - `borderRadius`: Border radius for code blocks
+   - `border`: Border style for code blocks
+
+2. Token Colors:
+   - `comment`: Comments and documentation
+   - `punctuation`: Punctuation marks
+   - `tag`: HTML/XML tags
+   - `function`: Function names
+   - `keyword`: Language keywords
+   - `string`: String literals
+   - `number`: Numeric values
+   - `operator`: Operators
+   - `class`: Class names
+   - `variable`: Variable names
+   - `property`: Object properties
+   - `builtin`: Built-in functions
+   - `namespace`: Namespaces
+   - `regex`: Regular expressions
+
+**Example Usage with Custom Theme:**
+```javascript
+const markdown = '```javascript\n// Example code\nfunction hello() {\n  return "world";\n}\n```';
+
+fetch('http://localhost:3000/api/render', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        markdown,
+        options: {
+            highlight: true,
+            theme: {
+                base: {
+                    background: '#1e1e1e',
+                    color: '#d4d4d4'
+                },
+                tokens: {
+                    comment: '#6a9955',
+                    keyword: '#569cd6',
+                    string: '#ce9178',
+                    function: '#dcdcaa'
+                }
+            }
+        }
+    })
+})
+    .then(response => response.json())
+    .then(data => {
+        document.body.innerHTML = data.html;
+    })
+    .catch(error => console.error('Render failed:', error));
+```
 
 ## Static Files
 - The server also serves static files from the `dist` directory
