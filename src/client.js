@@ -16,11 +16,16 @@ export class FileToMarkdownClient {
       return response.json();
     }
   
-    async renderMarkdown(content) {
+    async renderMarkdown(content, options = {}) {
       const response = await fetch(`${this.baseURL}/api/render`, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: content
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          markdown: content,
+          options: {
+            highlight: options.highlight !== undefined ? options.highlight : true
+          }
+        })
       });
       
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

@@ -23,10 +23,15 @@ const api = {
     /**
      * Render markdown to HTML
      * @param {string} markdown - Markdown content to render
+     * @param {Object} options - Rendering options
+     * @param {boolean} options.highlight - Enable/disable syntax highlighting
      * @returns {string} HTML content
      */
-    renderMarkdown(markdown) {
-        const renderer = new MarkdownRenderer({ highlight: true, loadLanguages: true });
+    renderMarkdown(markdown, options = {}) {
+        const renderer = new MarkdownRenderer({ 
+            highlight: options.highlight !== undefined ? options.highlight : true,
+            loadLanguages: true 
+        });
         return renderer.render(markdown);
     },
 
@@ -149,13 +154,13 @@ function createServer(options = {}) {
 
     app.post('/api/render', async (req, res) => {
         try {
-            const markdown = req.body;
+            const { markdown, options = {} } = req.body;
             if (!markdown || (typeof markdown !== 'string' && !(markdown instanceof Buffer))) {
                 return res.status(400).json({ error: 'No markdown content provided', status: 400 });
             }
 
             console.log('Rendering markdown:', markdown.slice(0, 100) + '...');
-            const html = api.renderMarkdown(markdown.toString());
+            const html = api.renderMarkdown(markdown.toString(), options);
             
             if (!html) {
                 throw new Error('Failed to generate HTML output');
