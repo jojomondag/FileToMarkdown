@@ -4,7 +4,7 @@
 
 Start the API server:
 ```bash
-npm run start:api  # Runs on http://localhost:3000
+npx filetomarkdown-server  # Runs on http://localhost:3002
 ```
 
 ## Endpoints
@@ -49,100 +49,48 @@ npm run start:api  # Runs on http://localhost:3000
   - `400`: No markdown content provided
   - `500`: Render failed with error message
 
-### Syntax Highlighting Configuration
+### Syntax Highlighting
 
-The `/api/render` endpoint supports custom color themes for syntax highlighting. You can configure the colors by passing a theme object in the request:
+The `/api/render` endpoint automatically highlights code blocks in your markdown. You can customize the highlighting:
 
 ```javascript
 {
   "markdown": "your markdown content",
   "options": {
-    "highlight": true,
+    "highlight": true,  // Enable/disable highlighting
     "theme": {
       "base": {
         "background": "#2d2d2d",
-        "color": "#ccc",
-        "fontSize": "1em",
-        "fontFamily": "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace"
+        "color": "#ccc"
       },
       "tokens": {
-        "comment": "#999",
-        "punctuation": "#ccc",
-        "tag": "#e2777a",
-        "function": "#f08d49",
-        "keyword": "#cc99cd",
-        "string": "#7ec699",
-        "number": "#f08d49",
-        "operator": "#67cdcc",
-        "class": "#f8c555",
-        "variable": "#7ec699"
+        "comment": "#999",    // Comments
+        "keyword": "#cc99cd", // Language keywords
+        "string": "#7ec699",  // String literals
+        "function": "#f08d49" // Function names
       }
     }
   }
 }
 ```
 
-If no theme is provided, the default theme will be used. The theme configuration supports:
-
-1. Base Styles:
-   - `background`: Code block background color
-   - `color`: Default text color
-   - `fontSize`: Font size for code
-   - `fontFamily`: Font family for code
-   - `lineHeight`: Line height for code blocks
-   - `borderRadius`: Border radius for code blocks
-   - `border`: Border style for code blocks
-
-2. Token Colors:
-   - `comment`: Comments and documentation
-   - `punctuation`: Punctuation marks
-   - `tag`: HTML/XML tags
-   - `function`: Function names
-   - `keyword`: Language keywords
-   - `string`: String literals
-   - `number`: Numeric values
-   - `operator`: Operators
-   - `class`: Class names
-   - `variable`: Variable names
-   - `property`: Object properties
-   - `builtin`: Built-in functions
-   - `namespace`: Namespaces
-   - `regex`: Regular expressions
-
-**Example Usage with Custom Theme:**
+**Quick Example:**
 ```javascript
-const markdown = '```javascript\n// Example code\nfunction hello() {\n  return "world";\n}\n```';
+const markdown = '```javascript\nfunction hello() { return "world"; }\n```';
 
-fetch('http://localhost:3000/api/render', {
+fetch('http://localhost:3002/api/render', {
     method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
         markdown,
-        options: {
-            highlight: true,
-            theme: {
-                base: {
-                    background: '#1e1e1e',
-                    color: '#d4d4d4'
-                },
-                tokens: {
-                    comment: '#6a9955',
-                    keyword: '#569cd6',
-                    string: '#ce9178',
-                    function: '#dcdcaa'
-                }
-            }
-        }
+        options: { highlight: true }  // Use default theme
     })
 })
-    .then(response => response.json())
-    .then(data => {
-        document.body.innerHTML = data.html;
-    })
-    .catch(error => console.error('Render failed:', error));
+.then(response => response.json())
+.then(data => { document.body.innerHTML = data.html; });
 ```
+
+The default theme provides syntax highlighting for all common programming languages. Custom themes are optional.
 
 ## Static Files
 - The server also serves static files from the `dist` directory
@@ -188,7 +136,7 @@ POST /api/convert
 const formData = new FormData();
 formData.append('file', fileInput.files[0]);
 
-fetch('http://localhost:3000/api/convert', {
+fetch('http://localhost:3002/api/convert', {
     method: 'POST',
     body: formData
 })
@@ -206,7 +154,7 @@ POST /api/render
 ```javascript
 const markdown = '# Hello World\nThis is **markdown**';
 
-fetch('http://localhost:3000/api/render', {
+fetch('http://localhost:3002/api/render', {
     method: 'POST',
     headers: {
         'Content-Type': 'text/plain'
@@ -228,14 +176,14 @@ Here's a complete example that converts a file to markdown and then renders it:
 const formData = new FormData();
 formData.append('file', fileInput.files[0]);
 
-fetch('http://localhost:3000/api/convert', {
+fetch('http://localhost:3002/api/convert', {
     method: 'POST',
     body: formData
 })
     .then(response => response.json())
     .then(data => {
         // Then render the markdown to HTML
-        return fetch('http://localhost:3000/api/render', {
+        return fetch('http://localhost:3002/api/render', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/plain'

@@ -1,6 +1,6 @@
 # FileToMarkdown
 
-Convert various file types to Markdown. Supports Office documents, code files, and Ziparchives in the browser or as CLI Node.js integration.
+Convert Files to Markdown. Supports Office documents, code files, and Ziparchives in the browser or as CLI Node.js integration.
 
 ## Documentation
 - [CLI Commands](docs/COMMANDS.md) - All available commands and usage
@@ -8,24 +8,18 @@ Convert various file types to Markdown. Supports Office documents, code files, a
 - [Browser Usage](docs/BROWSER.md) - JavaScript API for browsers
 - [Converters](docs/CONVERTERS.md) - Supported file types and features
 
-## Features
-- Convert multiple file types to markdown
-- Browser & Node.js support
-- Markdown viewer with syntax highlighting
-- Extensive file type support
-
 ## Usage Options
 
-### CLI Command Line Interface usage
 ```bash
 # Install globally
 npm install -g filetomarkdown
 
+## Quick Example after installation
+
+filetomarkdown-test --github
+
 # View supported file types
 filetomarkdown-filetypes
-
-# Test the package
-filetomarkdown-test --github
 
 # Convert a file
 filetomarkdown-convert input.pdf output.md

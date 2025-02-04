@@ -16,7 +16,7 @@ Include the browser bundle in your HTML:
 
 Then initialize the client:
 ```javascript
-const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
+const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3002');
 ```
 
 ## Starting the Server
@@ -27,7 +27,7 @@ npx filetomarkdown-server
 ```
 
 This will start a server with the following configuration:
-- Port: 3000 (default)
+- Port: 3002 (default)
 - CORS: Enabled for all origins
 - Endpoints:
   - GET  /api/filetypes - List supported file types
@@ -84,7 +84,7 @@ Here's a simple example showing how to use the package:
     
     <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
     <script>
-        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
+        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3002');
         const output = document.getElementById('output');
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {

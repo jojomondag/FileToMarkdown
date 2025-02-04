@@ -21,6 +21,12 @@
   - Preserves cell formatting and alignment
   - Supports multiple sheets
 
+- **Markdown** (.md)
+  - Converts between markdown formats
+  - Standardizes markdown syntax
+  - Preserves formatting and structure
+  - Supports GitHub Flavored Markdown
+
 ## Code Converters
 Supports multiple programming languages with syntax highlighting:
 
