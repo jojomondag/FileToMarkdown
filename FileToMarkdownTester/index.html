@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileToMarkdown Tester</title>
+    <!-- Include the FileToMarkdown browser bundle -->
+    <script src="http://localhost:3000/filetomarkdown.browser.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .content-area {
+            width: 100%;
+            min-height: 200px;
+            max-height: 600px;
+            overflow: auto;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .content-area > * {
+            max-width: 100%;
+        }
+
+        /* Remove all conflicting styles and ensure Prism.js styles take precedence */
+        .content-area pre,
+        .content-area code {
+            background: none;
+            padding: 0;
+            margin: 0;
+            font-family: inherit;
+        }
+
+        .content-area pre[class*="language-"] {
+            margin: 1em 0;
+            padding: 1em;
+            overflow: auto;
+        }
+
+        /* Remove rendered-content specific styles that might conflict */
+        .rendered-content pre,
+        .rendered-content code {
+            background: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Ensure code blocks in rendered content use Prism.js styles */
+        .rendered-content pre[class*="language-"] {
+            margin: 1em 0;
+            padding: 1em;
+            overflow: auto;
+            background: #fafafa;
+        }
+        
+        #markdownInput {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            resize: vertical;
+        }
+        
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+        
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .file-input-container {
+            margin: 10px 0;
+        }
+        
+        .file-input-container input[type="file"] {
+            display: block;
+            margin: 10px 0;
+        }
+
+        /* Custom scrollbar styling */
+        .content-area *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .content-area *::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .content-area *::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .content-area *::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Ensure rendered content stays within bounds */
+        #renderOutput img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #renderOutput table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        #renderOutput th,
+        #renderOutput td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* Rendered content specific styles */
+        .rendered-content {
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .rendered-content h1,
+        .rendered-content h2,
+        .rendered-content h3,
+        .rendered-content h4,
+        .rendered-content h5,
+        .rendered-content h6 {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+
+        .rendered-content p {
+            margin: 0.5em 0;
+            line-height: 1.5;
+        }
+
+        .rendered-content code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .rendered-content pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+
+        .rendered-content blockquote {
+            margin: 1em 0;
+            padding-left: 1em;
+            border-left: 4px solid #ddd;
+            color: #666;
+        }
+
+        .rendered-content ul,
+        .rendered-content ol {
+            margin: 0.5em 0;
+            padding-left: 2em;
+        }
+
+        .rendered-content li {
+            margin: 0.3em 0;
+        }
+
+        .rendered-content a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+
+        .rendered-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* File types specific styling */
+        #fileTypes {
+            min-height: 100px;
+            max-height: 300px;
+        }
+
+        #fileTypes ul {
+            margin: 0;
+            padding: 0 0 0 20px;
+        }
+
+        #fileTypes li {
+            margin: 5px 0;
+        }
+
+        .button-group {
+            margin: 10px 0;
+        }
+        .button-group .button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FileToMarkdown Tester</h1>
+
+        <div class="section">
+            <h2>1. Check Supported File Types</h2>
+            <button class="button" onclick="getFileTypes()">Get File Types</button>
+            <div id="fileTypes" class="content-area"></div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Convert File to Markdown</h2>
+            <div class="file-input-container">
+                <input type="file" id="fileInput">
+            </div>
+            <div id="convertOutput" class="content-area"></div>
+        </div>
+        
+        <div class="section">
+            <h2>3. Render Markdown</h2>
+            <div class="button-group">
+                <button class="button" id="renderButton">Show Rendered with Syntax Highlighting</button>
+                <label style="margin-left: 10px;">
+                    <input type="checkbox" id="highlightToggle" checked>
+                    Enable Syntax Highlighting
+                </label>
+            </div>
+            <textarea id="markdownInput" 
+                placeholder="Converted markdown will appear here, or you can enter your own markdown..."></textarea>
+            <div id="renderOutput" class="content-area rendered-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let client;
+
+        // Wait for DOM to be ready before initializing anything
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Initialize the client with the correct API endpoint
+                client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
+                
+                // Setup event handlers
+                setupEventHandlers();
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                document.body.innerHTML = `<div class="error">Failed to initialize: ${error.message}</div>`;
+            }
+        });
+
+        // Setup all event handlers
+        function setupEventHandlers() {
+            const fileInput = document.getElementById('fileInput');
+            const markdownInput = document.getElementById('markdownInput');
+            const renderButton = document.getElementById('renderButton');
+            const highlightToggle = document.getElementById('highlightToggle');
+
+            if (!fileInput || !markdownInput || !renderButton || !highlightToggle) {
+                console.error('Required elements not found');
+                return;
+            }
+
+            fileInput.addEventListener('change', handleFileInput);
+            renderButton.addEventListener('click', handleRenderClick);
+            
+            // Update button text when highlight toggle changes
+            highlightToggle.addEventListener('change', (e) => {
+                renderButton.textContent = e.target.checked ? 
+                    'Show Rendered with Syntax Highlighting' : 
+                    'Show Rendered without Syntax Highlighting';
+            });
+        }
+
+        // Handle file input changes
+        async function handleFileInput(e) {
+            if (e.target.files.length > 0) {
+                try {
+                    const file = e.target.files[0];
+                    const { markdown } = await client.convertFile(file);
+                    
+                    // Update both the convert output and markdown input
+                    document.getElementById('convertOutput').textContent = markdown;
+                    document.getElementById('markdownInput').value = markdown;
+                    
+                    // Clear the render output until user clicks render
+                    document.getElementById('renderOutput').innerHTML = 
+                        '<div style="text-align: center; color: #666;">Click "Show Rendered with Syntax Highlighting" to see the rendered output</div>';
+                } catch (error) {
+                    document.getElementById('convertOutput').innerHTML = 
+                        `<div class="error">Error converting file: ${error.message}</div>`;
+                }
+            }
+        }
+
+        // Handle render button clicks
+        async function handleRenderClick() {
+            const markdown = document.getElementById('markdownInput').value;
+            const highlightEnabled = document.getElementById('highlightToggle').checked;
+            
+            if (!markdown.trim()) {
+                document.getElementById('renderOutput').innerHTML = 
+                    '<div class="error">Please convert a file or enter some markdown first</div>';
+                return;
+            }
+            await renderMarkdown(markdown, { highlight: highlightEnabled });
+        }
+
+        // Render markdown content
+        async function renderMarkdown(markdown, options = {}) {
+            try {
+                const { html } = await client.renderMarkdown(markdown, options);
+                document.getElementById('renderOutput').innerHTML = html;
+            } catch (error) {
+                document.getElementById('renderOutput').innerHTML = 
+                    `<div class="error">Error rendering markdown: ${error.message}</div>`;
+            }
+        }
+
+        // Get supported file types
+        async function getFileTypes() {
+            try {
+                const fileTypesDiv = document.getElementById('fileTypes');
+                fileTypesDiv.innerHTML = 'Loading...';
+
+                const { fileTypes, descriptions } = await client.getSupportedTypes();
+                
+                const html = ['<h3>Supported File Types:</h3><ul>'];
+                for (const type of fileTypes) {
+                    html.push(`<li><strong>.${type}</strong> - ${descriptions[type] || 'No description available'}</li>`);
+                }
+                html.push('</ul>');
+                
+                fileTypesDiv.innerHTML = html.join('');
+            } catch (error) {
+                document.getElementById('fileTypes').innerHTML = 
+                    `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 
