@@ -1,0 +1,91 @@
+/* File Tree Specific Styles */
+.file-tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.file-tree li {
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.file-tree .folder-contents {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-left: 1.2em;
+    border-left: 1px solid #e1e4e8;
+}
+
+.file-tree .folder-contents.collapsed {
+    display: none;
+}
+
+.file-tree .file-item a,
+.file-tree .folder-item > a {
+    display: block;
+    padding: 4px 0;
+    text-decoration: none;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+/* Icons */
+.file-tree .file-item a::before {
+    content: "📄";
+    margin-right: 5px;
+    opacity: 0.7;
+}
+
+.file-tree .folder-item > a::before {
+    content: "📁";
+    margin-right: 5px;
+}
+
+.file-tree .folder-item.expanded > a::before {
+    content: "📂";
+}
+
+/* Hover states */
+.file-tree .file-item a:hover,
+.file-tree .folder-item > a:hover {
+    background-color: #f6f8fa;
+    color: #0366d6;
+}
+
+/* Selected state */
+.file-tree .file-item.selected > a {
+    background-color: #e6f3ff;
+    color: #0366d6;
+}
+
+/* Indentation levels */
+.file-tree [data-depth="0"] { padding-left: 0.5em; }
+.file-tree [data-depth="1"] { padding-left: 1.5em; }
+.file-tree [data-depth="2"] { padding-left: 2.5em; }
+.file-tree [data-depth="3"] { padding-left: 3.5em; }
+.file-tree [data-depth="4"] { padding-left: 4.5em; }
+.file-tree [data-depth="5"] { padding-left: 5.5em; }
+
+/* Tree lines */
+.file-tree .folder-contents::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #e1e4e8;
+    opacity: 0.4;
+}
+
+/* Animation */
+.file-tree .folder-contents {
+    transition: all 0.15s ease-out;
+} 

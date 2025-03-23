@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FileToMarkdown Viewer</title>
+    <!-- Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
@@ -15,14 +16,30 @@
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+    
+    <script src="src/bundle.js"></script>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/filetree.css">
+    
     <style>
-        body, #c { margin: 0; background: #fff }
-        body {
+        body { 
+            margin: 0; 
             font-family: -apple-system, system-ui, sans-serif;
             line-height: 1.6;
-            background: #f5f5f5;
+            background: #f6f8fa;
             min-height: 100vh;
             display: flex;
+        }
+        
+        #c { 
+            margin: auto; 
+            background: #fff;
+            max-width: 100%;
+            padding: 40px;
+            border-radius: 8px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e1e4e8;
         }
         
         .p, .m { transition: all 0.3s ease }
@@ -38,7 +55,10 @@
             flex-direction: column;
             background: #f8fafc;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
+        
+        .p.hidden { transform: translateX(-100%); }
         
         .h { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; background: #f8fafc }
         .t { font-size: 1.1em; font-weight: 500; color: #2c3e50; margin: 0; flex: 1 }
@@ -50,41 +70,114 @@
             cursor: pointer;
             background: #f8fafc;
             transition: 0.2s ease;
+            position: relative;
         }
         .z:hover, .z.d { background: #e6f3ff }
         .z.d { border-color: #0255b3 }
         
-        .l { flex: 1; overflow-y: auto; padding: 15px }
-        .l ul { list-style: none; padding: 0; margin: 0 }
-        .l li { margin: 8px 0 }
+        .l {
+            --guide-color: #94a3b8;
+            --guide-style: solid;
+            --guide-width: 1.5px;
+            --guide-spacing: 24px;
+            --icon-size: 16px;
+            --icon-position: 8px;
+            --icon-middle: calc(var(--icon-size) / 2);
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .l ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .l li {
+            position: relative;
+            margin: 4px 0;
+            min-height: 28px;
+        }
         .l a {
+            position: relative;
+            padding: 4px 8px 4px 32px;
+            display: flex;
+            align-items: center;
             color: #2c3e50;
             text-decoration: none;
-            display: block;
-            padding: 8px 12px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             border-radius: 4px;
             transition: 0.2s ease;
+            line-height: 20px;
+            height: 28px;
         }
-        .l a:hover { background: #f0f4f8; color: #0366d6 }
+        .l a::before {
+            content: "📄";
+            position: absolute;
+            left: var(--icon-position);
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.8;
+            font-size: 14px;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .l .folder-contents {
+            position: relative;
+            padding-left: var(--guide-spacing);
+        }
+        .l .folder-contents::before {
+            content: "";
+            position: absolute;
+            left: calc(var(--icon-position) + var(--icon-middle));
+            top: 0;
+            bottom: 8px;
+            width: var(--guide-width);
+            border-left: var(--guide-width) var(--guide-style) var(--guide-color);
+        }
+        .l .folder-contents > li::after {
+            content: "";
+            position: absolute;
+            left: calc((var(--icon-position) + var(--icon-middle)) * -1);
+            width: calc(var(--icon-position) + var(--icon-middle));
+            height: var(--guide-width);
+            top: calc(50% - var(--guide-width) / 2);
+            border-top: var(--guide-width) var(--guide-style) var(--guide-color);
+            z-index: 0;
+        }
+        
+        .l a[data-folder] {
+            cursor: pointer;
+            color: #2c3e50;
+            user-select: none;
+            font-weight: 500;
+            position: relative;
+        }
+        .l a[data-folder]::before {
+            content: "📂";
+            left: var(--icon-position);
+            position: absolute;
+        }
+        .l li.folder-item.expanded > a[data-folder]::before { content: "📂"; }
+        .l li.folder-item:not(.expanded) > a[data-folder]::before { content: "📁"; }
+        .l .folder-contents.collapsed { display: none; }
+        .l li.selected > a { background: #f0f4f8; color: #0366d6; }
         
         .m {
             margin-left: 300px;
             flex: 1;
             padding: 40px;
             max-width: 100%;
+            transition: margin-left 0.3s ease;
         }
-        .m.e { margin-left: 0 }
-        
-        #c {
-            max-width: 1200px;
-            margin: auto;
-            padding: 40px;
-            border-radius: 8px;
-            word-wrap: break-word;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        #f { display: none }
+        .m.expanded { margin-left: 0; }
         
         .b {
             position: fixed;
@@ -107,15 +200,14 @@
         .b.n { left: 10px }
         .b:hover { background: #f0f4f8; color: #0366d6 }
         
-        pre, code {
-            background: #2d2d2d;
-            border-radius: 6px;
-        }
+        pre, code { background: #2d2d2d; border-radius: 6px; }
         pre {
             padding: 16px;
             overflow-x: auto;
             max-width: 100%;
             border: 1px solid #444;
+            background: #f6f8fa !important;
+            border-radius: 6px !important;
         }
         code {
             font-family: SFMono-Regular, monospace;
@@ -144,13 +236,29 @@
 
         @media (max-width: 768px) {
             .p { transform: translateX(-100%) }
-            .p.active { transform: translateX(0) }
+            .p.hidden { transform: translateX(0) }
             .m { margin-left: 0; padding: 20px }
         }
+
+        @media (min-width: 1600px) {
+            .p { width: 350px; }
+            .m { margin-left: 350px; padding: 60px; }
+            #c { padding: 60px; }
+            .b { left: 305px; }
+        }
+
+        @media (min-width: 2000px) {
+            .p { width: 400px; }
+            .m { margin-left: 400px; padding: 80px; }
+            #c { padding: 80px; }
+            .b { left: 355px; }
+        }
+        
+        .token.keyword { color: #d73a49 !important; }
+        .token.string { color: #032f62 !important; }
     </style>
 </head>
 <body>
-    <input type="file" id="f" accept=".md" multiple style="display:none">
     <button class="b" id="b">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 12h18M3 6h18M3 18h18"/>
@@ -177,174 +285,245 @@
         </div>
     </div>
     <script>
-    class BrowserRenderer {
-        constructor() {
-            this.configureMarked();
-            if (typeof window !== 'undefined') {
-                window.Prism = Prism;
+        class BrowserRenderer {
+            constructor() {
+                this.configureMarked();
+                if (typeof window !== 'undefined') {
+                    window.Prism = Prism;
+                }
             }
-        }
 
-        configureMarked() {
-            marked.setOptions({
-                highlight: (code, lang) => {
+            configureMarked() {
+                const langMappings = {
+                    'js': 'javascript',
+                    'py': 'python',
+                    'html': 'markup',
+                    'vue': 'markup',
+                    'svelte': 'markup',
+                    'shell': 'bash',
+                    'cs': 'csharp',
+                    'csharp': 'csharp',
+                    'java': 'java'
+                };
+
+                const highlightCode = (code, lang) => {
                     try {
-                        const language = this.normalizeLanguage(lang);
+                        const language = langMappings[lang] || lang;
                         return Prism.languages[language] 
                             ? Prism.highlight(code, Prism.languages[language], language)
                             : code;
                     } catch {
                         return code;
                     }
-                },
-                langPrefix: 'language-',
-                gfm: true,
-                breaks: true
-            });
-        }
+                };
 
-        normalizeLanguage(lang) {
-            const mappings = {
-                'js': 'javascript',
-                'py': 'python',
-                'html': 'markup',
-                'vue': 'markup',
-                'svelte': 'markup',
-                'shell': 'bash',
-                'cs': 'csharp',
-                'csharp': 'csharp',
-                'java': 'java'
-            };
-            return mappings[lang] || lang;
-        }
-
-        render(content) {
-            return marked.parse(content);
-        }
-
-        highlightAll() {
-            Prism?.highlightAll();
-        }
-    }
-
-    class FileToMarkdownViewer {
-        constructor() {
-            this.files = [];
-            this.renderer = new BrowserRenderer();
-            this.initializeElements();
-            this.setupEventListeners();
-            this.restoreSidebarState();
-        }
-
-        initializeElements() {
-            this.elements = {
-                content: document.getElementById('c'),
-                sidebar: document.querySelector('.p'),
-                main: document.querySelector('.m'),
-                fileList: document.getElementById('l'),
-                fileInput: document.getElementById('f'),
-                dropZone: document.getElementById('z'),
-                toggleButton: document.getElementById('b')
-            };
-        }
-
-        setupEventListeners() {
-            this.elements.fileInput.addEventListener('change', e => this.handleFiles(e.target.files));
-            this.elements.dropZone.addEventListener('click', () => this.elements.fileInput.click());
-            
-            ['dragover', 'dragleave', 'drop'].forEach(event => {
-                this.elements.dropZone.addEventListener(event, e => {
-                    e.preventDefault();
-                    this.elements.dropZone.classList.toggle('d', event === 'dragover');
-                    if (event === 'drop') this.handleFiles(e.dataTransfer.files);
+                marked.setOptions({
+                    highlight: highlightCode,
+                    langPrefix: 'language-',
+                    gfm: true,
+                    breaks: true
                 });
-            });
+            }
 
-            this.elements.toggleButton.onclick = () => this.toggleSidebar();
-            document.onkeydown = e => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
-                    e.preventDefault();
-                    this.toggleSidebar();
-                }
-            };
-        }
+            render(content) {
+                return marked.parse(content);
+            }
 
-        handleFiles(fileList) {
-            const markdownFiles = Array.from(fileList).filter(file => 
-                file.name.toLowerCase().endsWith('.md')
-            );
-
-            if (markdownFiles.length) {
-                this.files.push(...markdownFiles);
-                this.updateFileList();
-                if (this.files.length === markdownFiles.length) {
-                    this.loadFile(0);
-                }
-            } else {
-                this.elements.content.innerHTML = '<p style="color:red">Please select a markdown (.md) file.</p>';
+            highlightAll() {
+                Prism?.highlightAll();
             }
         }
 
-        loadFile(index) {
-            const file = this.files[index];
-            if (!file) return;
+        class FileToMarkdownViewer {
+            constructor() {
+                this.fileManager = new FileManager();
+                this.renderer = new BrowserRenderer();
+                this.elements = this.getElements();
+                this.setupComponents();
+                this.setupEventListeners();
+                this.restoreSidebarState();
+            }
 
-            const reader = new FileReader();
-            reader.onload = e => {
-                this.elements.content.innerHTML = this.renderer.render(e.target.result);
-                this.renderer.highlightAll();
-            };
-            reader.onerror = e => {
-                this.elements.content.innerHTML = `<p style="color:red">Error reading file: ${e.target.error}</p>`;
-            };
-            reader.readAsText(file);
-        }
+            getElements() {
+                return {
+                    content: document.getElementById('c'),
+                    sidebar: document.querySelector('.p'),
+                    main: document.querySelector('.m'),
+                    fileList: document.getElementById('l'),
+                    dropZone: document.getElementById('z'),
+                    toggleButton: document.getElementById('b')
+                };
+            }
 
-        updateFileList() {
-            this.elements.fileList.innerHTML = `<ul>${
-                this.files.map((file, index) => `
-                    <li><a href="#" onclick="viewer.loadFile(${index});return false">
-                        ${file.webkitRelativePath || file.name}
-                    </a></li>
-                `).join('')
-            }</ul>`;
-        }
+            setupComponents() {
+                this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
+                this.fileListComponent.on('fileSelect', ({ index }) => {
+                    this.loadFile(index);
+                });
+            }
 
-        toggleSidebar() {
-            this.elements.sidebar.classList.toggle('h');
-            this.elements.main.classList.toggle('e');
-            this.elements.toggleButton.classList.toggle('n');
-            localStorage.setItem('h', this.elements.sidebar.classList.contains('h'));
-        }
+            setupEventListeners() {
+                // Drop zone handling
+                this.elements.dropZone.addEventListener('click', () => {
+                    this.createAndClickFileInput();
+                });
+                
+                ['dragover', 'dragleave', 'drop'].forEach(event => {
+                    this.elements.dropZone.addEventListener(event, e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.elements.dropZone.classList.toggle('d', event === 'dragover');
+                        if (event === 'drop') {
+                            this.handleFiles(Array.from(e.dataTransfer.files));
+                        }
+                    });
+                });
 
-        restoreSidebarState() {
-            if (localStorage.getItem('h') === 'true') {
-                this.elements.sidebar.classList.add('h');
-                this.elements.main.classList.add('e');
-                this.elements.toggleButton.classList.add('n');
+                // Prevent browser default drag behavior
+                ['dragover', 'drop'].forEach(event => {
+                    document.addEventListener(event, e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                });
+
+                // Sidebar toggle
+                this.elements.toggleButton.onclick = () => this.toggleSidebar();
+                document.onkeydown = e => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                        e.preventDefault();
+                        this.toggleSidebar();
+                    }
+                };
+            }
+            
+            createAndClickFileInput() {
+                // Clean up any existing input
+                const oldInput = document.getElementById('temp-file-input');
+                if (oldInput) document.body.removeChild(oldInput);
+                
+                // Create new file input
+                const tempInput = document.createElement('input');
+                Object.assign(tempInput, {
+                    type: 'file',
+                    id: 'temp-file-input',
+                    accept: '.md',
+                    multiple: true,
+                    webkitdirectory: true,
+                    directory: true,
+                    style: 'display:none'
+                });
+                
+                // Set up change handler
+                tempInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                    document.body.removeChild(tempInput);
+                });
+                
+                // Add to DOM and trigger click
+                document.body.appendChild(tempInput);
+                tempInput.click();
+            }
+
+            handleFiles(fileList) {
+                if (this.fileManager.processFiles(fileList)) {
+                    this.fileListComponent.render();
+                    if (this.fileManager.files.length > 0) {
+                        this.loadFile(0);
+                    }
+                } else {
+                    this.showError('No markdown (.md) files found in the selected files/folders.');
+                }
+            }
+
+            showError(message) {
+                this.elements.content.innerHTML = `<p style="color:red">${message}</p>`;
+            }
+
+            loadFile(index) {
+                const fileInfo = this.fileManager.getFile(index);
+                if (!fileInfo) return;
+
+                this.fileManager.setCurrentFile(index);
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    this.elements.content.innerHTML = this.renderer.render(e.target.result);
+                    this.renderer.highlightAll();
+                    this.setupLinkHandlers();
+                };
+                reader.onerror = e => {
+                    this.showError(`Error reading file: ${e.target.error}`);
+                };
+                reader.readAsText(fileInfo.file);
+            }
+
+            setupLinkHandlers() {
+                const links = this.elements.content.getElementsByTagName('a');
+                Array.from(links).forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href.endsWith('.md')) {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.handleInternalLink(href);
+                        });
+                    }
+                });
+            }
+
+            handleInternalLink(href) {
+                const currentFile = this.fileManager.files[this.fileManager.currentFileIndex];
+                const currentPath = currentFile.path;
+                const currentDir = currentPath.split('/').slice(0, -1).join('/');
+
+                let targetPath = this.resolvePath(href, currentDir);
+                const fileIndex = this.fileManager.fileMap.get(targetPath.toLowerCase());
+                
+                if (fileIndex !== undefined) {
+                    this.loadFile(fileIndex);
+                } else {
+                    this.elements.content.innerHTML = `
+                        <div style="color: red; padding: 20px; border: 1px solid #ffcdd2; background: #ffebee; border-radius: 4px;">
+                            <h3>File Not Found</h3>
+                            <p>The linked file "${href}" is not loaded in the viewer.</p>
+                            <p>Please make sure to load all related Markdown files together.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            resolvePath(href, currentDir) {
+                if (href.startsWith('./')) {
+                    return currentDir + '/' + href.slice(2);
+                } else if (href.startsWith('../')) {
+                    const parts = currentDir.split('/');
+                    const upCount = (href.match(/^\.\.\//g) || []).length;
+                    return parts.slice(0, -upCount).join('/') + '/' + href.replace(/^\.\.\//g, '');
+                } else if (!href.startsWith('/')) {
+                    return currentDir + '/' + href;
+                }
+                return href;
+            }
+
+            toggleSidebar() {
+                this.elements.sidebar.classList.toggle('hidden');
+                this.elements.main.classList.toggle('expanded');
+                this.elements.toggleButton.classList.toggle('n');
+                localStorage.setItem('sidebarHidden', this.elements.sidebar.classList.contains('hidden'));
+            }
+
+            restoreSidebarState() {
+                if (localStorage.getItem('sidebarHidden') === 'true') {
+                    this.elements.sidebar.classList.add('hidden');
+                    this.elements.main.classList.add('expanded');
+                    this.elements.toggleButton.classList.add('n');
+                }
             }
         }
-    }
 
-    window.onload = () => {
-        window.viewer = new FileToMarkdownViewer();
-    };
+        window.onload = () => {
+            window.viewer = new FileToMarkdownViewer();
+        };
     </script>
 </body>
 </html>
-        <style>
-            /* GitHub-themed additions */
-            body { background: #f6f8fa !important; }
-            #c { 
-                background: #ffffff;
-                border: 1px solid #e1e4e8 !important;
-                box-shadow: 0 1px 3px rgba(27,31,35,0.04) !important;
-            }
-            pre { 
-                background: #f6f8fa !important;
-                border-radius: 6px !important;
-                padding: 16px !important;
-            }
-            .token.keyword { color: #d73a49 !important; }
-            .token.string { color: #032f62 !important; }
-        </style>
