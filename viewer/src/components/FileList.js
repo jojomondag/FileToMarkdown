@@ -9,9 +9,6 @@ class FileList extends BaseComponent {
             selectedIndex: -1,
             expandedFolders: new Set()
         };
-
-        // Debug logging
-        console.log('FileList initialized');
     }
 
     createFileItem(fileInfo, index) {
@@ -70,7 +67,6 @@ class FileList extends BaseComponent {
     }
 
     toggleFolder(folderPath) {
-        console.log('Toggling folder:', folderPath); // Debug log
         const expandedFolders = new Set(this.state.expandedFolders);
         const isExpanding = !expandedFolders.has(folderPath);
         
@@ -93,13 +89,11 @@ class FileList extends BaseComponent {
         }
         
         this.setState({ expandedFolders });
-        console.log('Expanded folders:', Array.from(expandedFolders)); // Debug log
     }
 
     renderFolderContents(folderPath, container) {
         const folder = this.fileManager.getFolderInfo(folderPath);
         if (!folder) {
-            console.warn('No folder found for path:', folderPath); // Debug log
             return;
         }
 
@@ -107,15 +101,12 @@ class FileList extends BaseComponent {
         const subfolders = this.fileManager.getSubfolders(folderPath)
             .sort((a, b) => a.name.localeCompare(b.name));
         
-        console.log('Subfolders for', folderPath, ':', subfolders); // Debug log
-        
         subfolders.forEach(subfolder => {
             container.appendChild(this.createFolderItem(subfolder));
         });
 
         // Then render files
         const files = this.fileManager.getFilesInFolder(folderPath);
-        console.log('Files in folder', folderPath, ':', files); // Debug log
         
         files.forEach(fileIndex => {
             const fileInfo = this.fileManager.getFile(fileIndex);
@@ -124,12 +115,6 @@ class FileList extends BaseComponent {
     }
 
     render() {
-        console.log('Rendering file list'); // Debug log
-        console.log('File manager state:', {
-            files: this.fileManager.files,
-            structure: this.fileManager.folderStructure
-        });
-
         const rootList = this.createElement('ul', {
             class: 'file-tree'
         });
@@ -142,8 +127,6 @@ class FileList extends BaseComponent {
         const rootFiles = this.fileManager.files
             .filter(f => f.isRoot)
             .sort((a, b) => a.name.localeCompare(b.name));
-
-        console.log('Root items:', { folders: rootFolders, files: rootFiles }); // Debug log
 
         // First render root folders
         rootFolders.forEach(folder => {

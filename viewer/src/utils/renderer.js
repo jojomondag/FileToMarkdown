@@ -1,6 +1,9 @@
 import { LANGUAGE_MAPPINGS } from './constants';
 
-class MarkdownRenderer {
+/**
+ * Renderer for markdown content with syntax highlighting
+ */
+class BrowserRenderer {
     constructor() {
         this.configureMarked();
         if (typeof window !== 'undefined') {
@@ -9,25 +12,23 @@ class MarkdownRenderer {
     }
 
     configureMarked() {
+        const highlightCode = (code, lang) => {
+            try {
+                const language = LANGUAGE_MAPPINGS[lang] || lang;
+                return Prism.languages[language] 
+                    ? Prism.highlight(code, Prism.languages[language], language)
+                    : code;
+            } catch {
+                return code;
+            }
+        };
+
         marked.setOptions({
-            highlight: (code, lang) => {
-                try {
-                    const language = this.normalizeLanguage(lang);
-                    return Prism.languages[language] 
-                        ? Prism.highlight(code, Prism.languages[language], language)
-                        : code;
-                } catch {
-                    return code;
-                }
-            },
+            highlight: highlightCode,
             langPrefix: 'language-',
             gfm: true,
             breaks: true
         });
-    }
-
-    normalizeLanguage(lang) {
-        return LANGUAGE_MAPPINGS[lang] || lang;
     }
 
     render(content) {
@@ -39,4 +40,4 @@ class MarkdownRenderer {
     }
 }
 
-export default MarkdownRenderer; 
+export default BrowserRenderer; 
