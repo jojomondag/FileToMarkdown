@@ -6,9 +6,7 @@ import { LANGUAGE_MAPPINGS } from './constants';
 class BrowserRenderer {
     constructor() {
         this.configureMarked();
-        if (typeof window !== 'undefined') {
-            window.Prism = Prism;
-        }
+        if (typeof window !== 'undefined') window.Prism = Prism;
     }
 
     configureMarked() {

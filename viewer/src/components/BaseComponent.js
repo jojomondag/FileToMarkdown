@@ -8,21 +8,18 @@ class BaseComponent {
     }
 
     setState(newState) {
-        this.state = { ...this.state, ...newState };
+        this.state = {...this.state, ...newState};
         this.render();
     }
 
     on(eventName, callback) {
-        if (!this.events.has(eventName)) {
-            this.events.set(eventName, new Set());
-        }
+        if (!this.events.has(eventName)) this.events.set(eventName, new Set());
         this.events.get(eventName).add(callback);
     }
 
     emit(eventName, data) {
-        if (this.events.has(eventName)) {
+        if (this.events.has(eventName)) 
             this.events.get(eventName).forEach(callback => callback(data));
-        }
     }
 
     createElement(tag, attributes = {}, content = '') {
@@ -30,7 +27,6 @@ class BaseComponent {
     }
 
     render() {
-        // To be implemented by child classes
         throw new Error('render() method must be implemented');
     }
 

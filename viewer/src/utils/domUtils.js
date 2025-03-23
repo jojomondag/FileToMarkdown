@@ -1,4 +1,4 @@
-import { DOM_ATTRIBUTES, CSS_CLASSES } from './constants';
+import { DOM_ATTRIBUTES } from './constants';
 
 class DOMUtils {
     static createElement(tag, attributes = {}, content = '') {
@@ -6,7 +6,7 @@ class DOMUtils {
         Object.entries(attributes).forEach(([key, value]) => {
             element.setAttribute(key, value);
         });
-        element.innerHTML = content;
+        if (content) element.innerHTML = content;
         return element;
     }
 

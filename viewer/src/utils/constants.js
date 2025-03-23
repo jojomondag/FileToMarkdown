@@ -12,9 +12,7 @@ export const ICONS = {
 };
 
 export const DOM_ATTRIBUTES = {
-    DATA_FOLDER: 'data-folder',
-    DATA_TARGET: 'data-target',
-    DATA_PATH: 'data-path'
+    DATA_FOLDER: 'data-folder'
 };
 
 export const FILE_EXTENSIONS = {

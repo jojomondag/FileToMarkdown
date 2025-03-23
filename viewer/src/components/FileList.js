@@ -1,5 +1,4 @@
 import BaseComponent from './BaseComponent';
-import DOMUtils from '../utils/domUtils';
 
 class FileList extends BaseComponent {
     constructor(container, fileManager) {
@@ -52,16 +51,12 @@ class FileList extends BaseComponent {
         });
         li.appendChild(folderLink);
 
-        // Create container for folder contents
         const contentsContainer = this.createElement('ul', {
             class: `folder-contents ${isExpanded ? '' : 'collapsed'}`
         });
         li.appendChild(contentsContainer);
 
-        // Add folder contents if expanded
-        if (isExpanded) {
-            this.renderFolderContents(folderInfo.path, contentsContainer);
-        }
+        if (isExpanded) this.renderFolderContents(folderInfo.path, contentsContainer);
 
         return li;
     }
@@ -72,7 +67,6 @@ class FileList extends BaseComponent {
         
         if (isExpanding) {
             expandedFolders.add(folderPath);
-            // Also expand parent folders
             let currentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
             while (currentPath) {
                 expandedFolders.add(currentPath);
@@ -80,11 +74,8 @@ class FileList extends BaseComponent {
             }
         } else {
             expandedFolders.delete(folderPath);
-            // Also collapse child folders
             Array.from(expandedFolders).forEach(path => {
-                if (path.startsWith(folderPath + '/')) {
-                    expandedFolders.delete(path);
-                }
+                if (path.startsWith(folderPath + '/')) expandedFolders.delete(path);
             });
         }
         
@@ -93,11 +84,8 @@ class FileList extends BaseComponent {
 
     renderFolderContents(folderPath, container) {
         const folder = this.fileManager.getFolderInfo(folderPath);
-        if (!folder) {
-            return;
-        }
+        if (!folder) return;
 
-        // First render subfolders
         const subfolders = this.fileManager.getSubfolders(folderPath)
             .sort((a, b) => a.name.localeCompare(b.name));
         
@@ -105,9 +93,7 @@ class FileList extends BaseComponent {
             container.appendChild(this.createFolderItem(subfolder));
         });
 
-        // Then render files
         const files = this.fileManager.getFilesInFolder(folderPath);
-        
         files.forEach(fileIndex => {
             const fileInfo = this.fileManager.getFile(fileIndex);
             container.appendChild(this.createFileItem(fileInfo, fileIndex));
@@ -115,11 +101,8 @@ class FileList extends BaseComponent {
     }
 
     render() {
-        const rootList = this.createElement('ul', {
-            class: 'file-tree'
-        });
+        const rootList = this.createElement('ul', {class: 'file-tree'});
 
-        // Get root level items
         const rootFolders = Array.from(this.fileManager.folderStructure.values())
             .filter(f => f.isRoot)
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -128,12 +111,10 @@ class FileList extends BaseComponent {
             .filter(f => f.isRoot)
             .sort((a, b) => a.name.localeCompare(b.name));
 
-        // First render root folders
         rootFolders.forEach(folder => {
             rootList.appendChild(this.createFolderItem(folder));
         });
 
-        // Then render root files
         rootFiles.forEach((fileInfo, index) => {
             rootList.appendChild(this.createFileItem(fileInfo, index));
         });

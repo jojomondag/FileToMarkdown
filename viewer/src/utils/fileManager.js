@@ -13,7 +13,6 @@ class FileManager {
         const markdownFiles = [];
         this.folderStructure.clear();
         
-        // First, determine the root folder name from the first file
         for (const file of fileList) {
             if (file.webkitRelativePath) {
                 this.rootFolder = file.webkitRelativePath.split('/')[0];
@@ -23,16 +22,7 @@ class FileManager {
         
         for (const file of fileList) {
             if (file.name.toLowerCase().endsWith(FILE_EXTENSIONS.MARKDOWN)) {
-                // Handle both drag-drop and folder picker cases
-                let relativePath;
-                if (file.webkitRelativePath) {
-                    // For folder picker, keep the full structure
-                    relativePath = file.webkitRelativePath;
-                } else {
-                    // For drag-drop, place at root level
-                    relativePath = file.name;
-                }
-
+                let relativePath = file.webkitRelativePath || file.name;
                 const pathParts = relativePath.split('/');
                 const fileInfo = {
                     file: file,
@@ -43,7 +33,6 @@ class FileManager {
                     isRoot: pathParts.length === 1
                 };
 
-                // Build folder structure starting from root
                 let currentPath = '';
                 pathParts.slice(0, -1).forEach((part, index) => {
                     const parentPath = currentPath;
@@ -66,7 +55,6 @@ class FileManager {
                     }
                 });
 
-                // Add file to its parent folder's files
                 if (fileInfo.folder) {
                     this.folderStructure.get(fileInfo.folder).files.add(relativePath);
                 }
@@ -109,27 +97,6 @@ class FileManager {
         });
     }
 
-    createFileTree() {
-        const tree = {};
-        this.files.forEach((fileInfo, index) => {
-            const parts = fileInfo.path.split('/');
-            let current = tree;
-            parts.forEach((part, i) => {
-                if (i === parts.length - 1) {
-                    current[part] = { index, fileInfo };
-                } else {
-                    current[part] = current[part] || {
-                        isFolder: true,
-                        path: parts.slice(0, i + 1).join('/'),
-                        children: {}
-                    };
-                    current = current[part].children;
-                }
-            });
-        });
-        return tree;
-    }
-
     getFile(index) {
         return this.files[index];
     }
@@ -149,21 +116,19 @@ class FileManager {
     resolveRelativePath(href) {
         const currentFile = this.getCurrentFile();
         if (!currentFile) return href;
-
-        const currentPath = currentFile.path;
-        const currentDir = this.getFolderPath(currentPath);
-
+        
+        const currentDir = currentFile.folder;
         if (href.startsWith('./')) {
-            return `${currentDir}/${href.slice(2)}`;
+            return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
         } else if (href.startsWith('../')) {
             const parts = currentDir.split('/');
-            const upCount = (href.match(/^\.\.\//g) || []).length;
-            return parts.slice(0, -upCount).join('/') + '/' + href.replace(/^\.\.\//g, '');
+            return parts.length > 1
+                ? `${parts.slice(0, -1).join('/')}/${href.slice(3)}`
+                : href.slice(3);
         } else if (!href.startsWith('/')) {
-            return `${currentDir}/${href}`;
+            return currentDir ? `${currentDir}/${href}` : href;
         }
-
-        return href;
+        return href.slice(1);
     }
 }
 

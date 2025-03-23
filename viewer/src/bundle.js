@@ -1,27 +1,89 @@
-// Constants
+// FileToMarkdown Viewer Bundle - 2025-03-23T11:27:56.690Z
+
+// File: utils/constants.js
+const FOLDER_STATES_KEY = 'folderStates';
+
+const CSS_CLASSES = {
+    COLLAPSED: 'collapsed',
+    FOLDER_CONTENT: 'folder-content'
+};
+
+const ICONS = {
+    FILE: '📄',
+    FOLDER_OPEN: '📂',
+    FOLDER_CLOSED: '📁'
+};
+
+const DOM_ATTRIBUTES = {
+    DATA_FOLDER: 'data-folder'
+};
+
 const FILE_EXTENSIONS = {
     MARKDOWN: '.md'
 };
 
-const FOLDER_STATES_KEY = 'folderStates';
+const LANGUAGE_MAPPINGS = {
+    'js': 'javascript',
+    'py': 'python',
+    'html': 'markup',
+    'vue': 'markup',
+    'svelte': 'markup',
+    'shell': 'bash',
+    'cs': 'csharp',
+    'csharp': 'csharp',
+    'java': 'java'
+}; 
+// File: utils/domUtils.js
 
-// DOM Utils
-const DOMUtils = {
-    createElement(tag, attributes = {}, content = '') {
+
+class DOMUtils {
+    static createElement(tag, attributes = {}, content = '') {
         const element = document.createElement(tag);
         Object.entries(attributes).forEach(([key, value]) => {
             element.setAttribute(key, value);
         });
         if (content) element.innerHTML = content;
         return element;
-    },
+    }
 
-    getFolderId(path) {
+    static toggleClass(element, className) {
+        element.classList.toggle(className);
+    }
+
+    static getAttribute(element, attribute) {
+        return element.getAttribute(attribute);
+    }
+
+    static dispatchCustomEvent(eventName, detail) {
+        const event = new CustomEvent(eventName, { detail });
+        window.dispatchEvent(event);
+    }
+
+    static getFolderId(path) {
         return `folder-${path}`.replace(/[^a-z0-9]/gi, '-');
     }
-};
 
-// Base Component
+    static getIndentation(level) {
+        return '&nbsp;'.repeat(level * 2);
+    }
+
+    static isElementCollapsed(element) {
+        return element.classList.contains(CSS_CLASSES.COLLAPSED);
+    }
+
+    static setCollapsed(element, isCollapsed) {
+        if (isCollapsed) {
+            element.classList.add(CSS_CLASSES.COLLAPSED);
+        } else {
+            element.classList.remove(CSS_CLASSES.COLLAPSED);
+        }
+    }
+}
+
+// export DOMUtils; 
+// File: components/BaseComponent.js
+
+
 class BaseComponent {
     constructor(container) {
         this.container = container;
@@ -30,21 +92,18 @@ class BaseComponent {
     }
 
     setState(newState) {
-        this.state = { ...this.state, ...newState };
+        this.state = {...this.state, ...newState};
         this.render();
     }
 
     on(eventName, callback) {
-        if (!this.events.has(eventName)) {
-            this.events.set(eventName, new Set());
-        }
+        if (!this.events.has(eventName)) this.events.set(eventName, new Set());
         this.events.get(eventName).add(callback);
     }
 
     emit(eventName, data) {
-        if (this.events.has(eventName)) {
+        if (this.events.has(eventName)) 
             this.events.get(eventName).forEach(callback => callback(data));
-        }
     }
 
     createElement(tag, attributes = {}, content = '') {
@@ -65,13 +124,17 @@ class BaseComponent {
     }
 }
 
-// File Manager
+// export BaseComponent; 
+// File: utils/fileManager.js
+
+
 class FileManager {
     constructor() {
         this.files = [];
         this.fileMap = new Map();
         this.folderStructure = new Map();
         this.currentFileIndex = -1;
+        this.rootFolder = null;
     }
 
     processFiles(fileList) {
@@ -79,17 +142,52 @@ class FileManager {
         this.folderStructure.clear();
         
         for (const file of fileList) {
+            if (file.webkitRelativePath) {
+                this.rootFolder = file.webkitRelativePath.split('/')[0];
+                break;
+            }
+        }
+        
+        for (const file of fileList) {
             if (file.name.toLowerCase().endsWith(FILE_EXTENSIONS.MARKDOWN)) {
-                const relativePath = file.webkitRelativePath || file.name;
+                let relativePath = file.webkitRelativePath || file.name;
                 const pathParts = relativePath.split('/');
-                const isSimpleFile = pathParts.length === 1;
-                
-                const fileInfo = this.createFileInfo(file, relativePath, pathParts);
-                markdownFiles.push(fileInfo);
-                
-                if (!isSimpleFile) {
-                    this.processFolderStructure(pathParts, relativePath);
+                const fileInfo = {
+                    file: file,
+                    path: relativePath,
+                    name: pathParts[pathParts.length - 1],
+                    folder: pathParts.slice(0, -1).join('/'),
+                    depth: pathParts.length - 1,
+                    isRoot: pathParts.length === 1
+                };
+
+                let currentPath = '';
+                pathParts.slice(0, -1).forEach((part, index) => {
+                    const parentPath = currentPath;
+                    currentPath = currentPath ? `${currentPath}/${part}` : part;
+                    
+                    if (!this.folderStructure.has(currentPath)) {
+                        this.folderStructure.set(currentPath, {
+                            name: part,
+                            path: currentPath,
+                            parent: parentPath,
+                            children: new Set(),
+                            files: new Set(),
+                            depth: index,
+                            isRoot: index === 0
+                        });
+                    }
+                    
+                    if (parentPath) {
+                        this.folderStructure.get(parentPath).children.add(currentPath);
+                    }
+                });
+
+                if (fileInfo.folder) {
+                    this.folderStructure.get(fileInfo.folder).files.add(relativePath);
                 }
+
+                markdownFiles.push(fileInfo);
             }
         }
 
@@ -101,55 +199,23 @@ class FileManager {
         return false;
     }
 
-    createFileInfo(file, relativePath, pathParts) {
-        if (pathParts.length === 1) {
-            return {
-                file,
-                path: file.name,
-                name: file.name,
-                folder: '',
-                depth: 0,
-                isRoot: true
-            };
-        }
-        
-        return {
-            file,
-            path: relativePath,
-            name: pathParts[pathParts.length - 1],
-            folder: pathParts.slice(0, -1).join('/'),
-            depth: pathParts.length - 1,
-            isRoot: false
-        };
+    getFolderInfo(path) {
+        return this.folderStructure.get(path);
     }
 
-    processFolderStructure(pathParts, relativePath) {
-        let currentPath = '';
-        
-        pathParts.slice(0, -1).forEach((part, index) => {
-            const parentPath = currentPath;
-            currentPath = currentPath ? `${currentPath}/${part}` : part;
-            
-            if (!this.folderStructure.has(currentPath)) {
-                this.folderStructure.set(currentPath, {
-                    name: part,
-                    path: currentPath,
-                    parent: parentPath,
-                    children: new Set(),
-                    files: new Set(),
-                    depth: index,
-                    isRoot: index === 0
-                });
-            }
-            
-            if (parentPath) {
-                this.folderStructure.get(parentPath).children.add(currentPath);
-            }
-        });
-        
-        // Add file to its folder
-        const folder = pathParts.slice(0, -1).join('/');
-        this.folderStructure.get(folder).files.add(relativePath);
+    getFileParentFolder(filePath) {
+        const parts = filePath.split('/');
+        return parts.length > 1 ? parts.slice(0, -1).join('/') : null;
+    }
+
+    getFilesInFolder(folderPath) {
+        const folder = this.folderStructure.get(folderPath);
+        return folder ? Array.from(folder.files).map(path => this.fileMap.get(path.toLowerCase())) : [];
+    }
+
+    getSubfolders(folderPath) {
+        const folder = this.folderStructure.get(folderPath);
+        return folder ? Array.from(folder.children).map(path => this.folderStructure.get(path)) : [];
     }
 
     updateFileMap() {
@@ -171,32 +237,33 @@ class FileManager {
         this.currentFileIndex = index;
     }
 
-    getFolderInfo(path) {
-        return this.folderStructure.get(path);
+    findFileByPath(path) {
+        return this.fileMap.get(path.toLowerCase());
     }
 
-    getFilesInFolder(folderPath) {
-        if (!folderPath) {
-            // Return root-level files
-            return this.files
-                .filter(file => !file.folder)
-                .map((_, index) => index);
+    resolveRelativePath(href) {
+        const currentFile = this.getCurrentFile();
+        if (!currentFile) return href;
+        
+        const currentDir = currentFile.folder;
+        if (href.startsWith('./')) {
+            return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
+        } else if (href.startsWith('../')) {
+            const parts = currentDir.split('/');
+            return parts.length > 1
+                ? `${parts.slice(0, -1).join('/')}/${href.slice(3)}`
+                : href.slice(3);
+        } else if (!href.startsWith('/')) {
+            return currentDir ? `${currentDir}/${href}` : href;
         }
-        const folder = this.folderStructure.get(folderPath);
-        return folder ? Array.from(folder.files).map(path => this.fileMap.get(path.toLowerCase())) : [];
-    }
-
-    getSubfolders(folderPath) {
-        const folder = folderPath ? this.folderStructure.get(folderPath) : null;
-        if (!folder) {
-            // Return root-level folders
-            return Array.from(this.folderStructure.values()).filter(f => f.isRoot);
-        }
-        return Array.from(folder.children).map(path => this.folderStructure.get(path));
+        return href.slice(1);
     }
 }
 
-// File List Component
+// export FileManager; 
+// File: components/FileList.js
+
+
 class FileList extends BaseComponent {
     constructor(container, fileManager) {
         super(container);
@@ -253,9 +320,7 @@ class FileList extends BaseComponent {
         });
         li.appendChild(contentsContainer);
 
-        if (isExpanded) {
-            this.renderFolderContents(folderInfo.path, contentsContainer);
-        }
+        if (isExpanded) this.renderFolderContents(folderInfo.path, contentsContainer);
 
         return li;
     }
@@ -265,41 +330,26 @@ class FileList extends BaseComponent {
         const isExpanding = !expandedFolders.has(folderPath);
         
         if (isExpanding) {
-            this.expandFolder(folderPath, expandedFolders);
+            expandedFolders.add(folderPath);
+            let currentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
+            while (currentPath) {
+                expandedFolders.add(currentPath);
+                currentPath = this.fileManager.getFolderInfo(currentPath)?.parent;
+            }
         } else {
-            this.collapseFolder(folderPath, expandedFolders);
+            expandedFolders.delete(folderPath);
+            Array.from(expandedFolders).forEach(path => {
+                if (path.startsWith(folderPath + '/')) expandedFolders.delete(path);
+            });
         }
         
         this.setState({ expandedFolders });
-    }
-
-    expandFolder(folderPath, expandedFolders) {
-        expandedFolders.add(folderPath);
-        
-        // Ensure all parent folders are expanded too
-        let currentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
-        while (currentPath) {
-            expandedFolders.add(currentPath);
-            currentPath = this.fileManager.getFolderInfo(currentPath)?.parent;
-        }
-    }
-
-    collapseFolder(folderPath, expandedFolders) {
-        expandedFolders.delete(folderPath);
-        
-        // Also collapse all child folders
-        Array.from(expandedFolders).forEach(path => {
-            if (path.startsWith(folderPath + '/')) {
-                expandedFolders.delete(path);
-            }
-        });
     }
 
     renderFolderContents(folderPath, container) {
         const folder = this.fileManager.getFolderInfo(folderPath);
         if (!folder) return;
 
-        // Add subfolders first
         const subfolders = this.fileManager.getSubfolders(folderPath)
             .sort((a, b) => a.name.localeCompare(b.name));
         
@@ -307,7 +357,6 @@ class FileList extends BaseComponent {
             container.appendChild(this.createFolderItem(subfolder));
         });
 
-        // Then add files
         const files = this.fileManager.getFilesInFolder(folderPath);
         files.forEach(fileIndex => {
             const fileInfo = this.fileManager.getFile(fileIndex);
@@ -316,53 +365,45 @@ class FileList extends BaseComponent {
     }
 
     render() {
-        this.container.innerHTML = '';
-        const rootList = this.createElement('ul');
-        
-        // Add root level files first
-        const rootFiles = this.fileManager.getFilesInFolder('');
-        rootFiles.forEach(index => {
-            const fileInfo = this.fileManager.getFile(index);
-            if (fileInfo && fileInfo.isRoot) {
-                rootList.appendChild(this.createFileItem(fileInfo, index));
-            }
+        const rootList = this.createElement('ul', {class: 'file-tree'});
+
+        const rootFolders = Array.from(this.fileManager.folderStructure.values())
+            .filter(f => f.isRoot)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        const rootFiles = this.fileManager.files
+            .filter(f => f.isRoot)
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        rootFolders.forEach(folder => {
+            rootList.appendChild(this.createFolderItem(folder));
         });
-        
-        // Then add folders
-        const rootFolders = this.fileManager.getSubfolders('');
-        rootFolders.forEach(folderInfo => {
-            rootList.appendChild(this.createFolderItem(folderInfo));
+
+        rootFiles.forEach((fileInfo, index) => {
+            rootList.appendChild(this.createFileItem(fileInfo, index));
         });
-        
-        this.container.appendChild(rootList);
+
+        this.container.replaceChildren(rootList);
     }
 }
 
-// Renderer for markdown content
+// export FileList; 
+// File: utils/renderer.js
+
+
+/**
+ * Renderer for markdown content with syntax highlighting
+ */
 class BrowserRenderer {
     constructor() {
         this.configureMarked();
-        if (typeof window !== 'undefined') {
-            window.Prism = Prism;
-        }
+        if (typeof window !== 'undefined') window.Prism = Prism;
     }
 
     configureMarked() {
-        const langMappings = {
-            'js': 'javascript',
-            'py': 'python',
-            'html': 'markup',
-            'vue': 'markup',
-            'svelte': 'markup',
-            'shell': 'bash',
-            'cs': 'csharp',
-            'csharp': 'csharp',
-            'java': 'java'
-        };
-
         const highlightCode = (code, lang) => {
             try {
-                const language = langMappings[lang] || lang;
+                const language = LANGUAGE_MAPPINGS[lang] || lang;
                 return Prism.languages[language] 
                     ? Prism.highlight(code, Prism.languages[language], language)
                     : code;
@@ -388,7 +429,15 @@ class BrowserRenderer {
     }
 }
 
-// Main application class
+// export BrowserRenderer; 
+// File: app.js
+
+
+
+
+/**
+ * Main application class for FileToMarkdown viewer
+ */
 class FileToMarkdownViewer {
     constructor() {
         this.fileManager = new FileManager();
@@ -412,29 +461,21 @@ class FileToMarkdownViewer {
 
     setupComponents() {
         this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
-        this.fileListComponent.on('fileSelect', ({ index }) => {
-            this.loadFile(index);
-        });
+        this.fileListComponent.on('fileSelect', ({ index }) => this.loadFile(index));
     }
 
     setupEventListeners() {
-        // Drop zone handling
-        this.elements.dropZone.addEventListener('click', () => {
-            this.createAndClickFileInput();
-        });
+        this.elements.dropZone.addEventListener('click', () => this.createAndClickFileInput());
         
         ['dragover', 'dragleave', 'drop'].forEach(event => {
             this.elements.dropZone.addEventListener(event, e => {
                 e.preventDefault();
                 e.stopPropagation();
                 this.elements.dropZone.classList.toggle('d', event === 'dragover');
-                if (event === 'drop') {
-                    this.handleFiles(Array.from(e.dataTransfer.files));
-                }
+                if (event === 'drop') this.handleFiles(Array.from(e.dataTransfer.files));
             });
         });
 
-        // Prevent browser default drag behavior
         ['dragover', 'drop'].forEach(event => {
             document.addEventListener(event, e => {
                 e.preventDefault();
@@ -442,7 +483,6 @@ class FileToMarkdownViewer {
             });
         });
 
-        // Sidebar toggle
         this.elements.toggleButton.onclick = () => this.toggleSidebar();
         document.onkeydown = e => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
@@ -453,11 +493,9 @@ class FileToMarkdownViewer {
     }
     
     createAndClickFileInput() {
-        // Clean up any existing input
         const oldInput = document.getElementById('temp-file-input');
         if (oldInput) document.body.removeChild(oldInput);
         
-        // Create new file input
         const tempInput = document.createElement('input');
         Object.assign(tempInput, {
             type: 'file',
@@ -469,13 +507,11 @@ class FileToMarkdownViewer {
             style: 'display:none'
         });
         
-        // Set up change handler
         tempInput.addEventListener('change', (e) => {
             this.handleFiles(e.target.files);
             document.body.removeChild(tempInput);
         });
         
-        // Add to DOM and trigger click
         document.body.appendChild(tempInput);
         tempInput.click();
     }
@@ -483,9 +519,7 @@ class FileToMarkdownViewer {
     handleFiles(fileList) {
         if (this.fileManager.processFiles(fileList)) {
             this.fileListComponent.render();
-            if (this.fileManager.files.length > 0) {
-                this.loadFile(0);
-            }
+            if (this.fileManager.files.length > 0) this.loadFile(0);
         } else {
             this.showError('No markdown (.md) files found in the selected files/folders.');
         }
@@ -500,6 +534,7 @@ class FileToMarkdownViewer {
         if (!fileInfo) return;
 
         this.fileManager.setCurrentFile(index);
+        this.updateFileListSelection(index);
 
         const reader = new FileReader();
         reader.onload = e => {
@@ -507,10 +542,35 @@ class FileToMarkdownViewer {
             this.renderer.highlightAll();
             this.setupLinkHandlers();
         };
-        reader.onerror = e => {
-            this.showError(`Error reading file: ${e.target.error}`);
-        };
+        reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
         reader.readAsText(fileInfo.file);
+    }
+
+    updateFileListSelection(index) {
+        // Update FileList component selection state
+        this.fileListComponent.setState({ selectedIndex: index });
+        
+        // Ensure parent folders are expanded to show the selected file
+        const fileInfo = this.fileManager.getFile(index);
+        if (fileInfo && fileInfo.folder) {
+            this.expandParentFolders(fileInfo.folder);
+        }
+    }
+
+    expandParentFolders(folderPath) {
+        if (!folderPath) return;
+        
+        const expandedFolders = new Set(this.fileListComponent.state.expandedFolders);
+        let currentPath = folderPath;
+        
+        // Add this folder and all parent folders to the expanded set
+        while (currentPath) {
+            expandedFolders.add(currentPath);
+            const folderInfo = this.fileManager.getFolderInfo(currentPath);
+            currentPath = folderInfo?.parent;
+        }
+        
+        this.fileListComponent.setState({ expandedFolders });
     }
 
     setupLinkHandlers() {
@@ -527,58 +587,110 @@ class FileToMarkdownViewer {
     }
 
     handleInternalLink(href) {
-        const currentFile = this.fileManager.files[this.fileManager.currentFileIndex];
-        const currentPath = currentFile.path;
-        const currentDir = currentPath.split('/').slice(0, -1).join('/');
-
-        let targetPath = this.resolvePath(href, currentDir);
-        const fileIndex = this.fileManager.fileMap.get(targetPath.toLowerCase());
+        const currentFile = this.fileManager.getCurrentFile();
+        if (!currentFile) return;
+        
+        const currentDir = currentFile.folder || '';
+        const targetPath = this.resolvePath(href, currentDir);
+        
+        console.log('Resolving link:', {
+            href,
+            currentDir,
+            targetPath
+        });
+        
+        // Try to find the file by path
+        let fileIndex = this.findFileByPath(targetPath);
         
         if (fileIndex !== undefined) {
+            console.log('File found, loading index:', fileIndex);
             this.loadFile(fileIndex);
         } else {
-            this.elements.content.innerHTML = `
-                <div style="color: red; padding: 20px; border: 1px solid #ffcdd2; background: #ffebee; border-radius: 4px;">
-                    <h3>File Not Found</h3>
-                    <p>The linked file "${href}" is not loaded in the viewer.</p>
-                    <p>Please make sure to load all related Markdown files together.</p>
-                </div>
-            `;
+            // If not found, try case-insensitive search
+            console.log('File not found by exact path, trying alternative methods');
+            this.showError(`Could not find linked file: ${href}`);
         }
+    }
+    
+    findFileByPath(targetPath) {
+        // First try direct match
+        let fileIndex = this.fileManager.fileMap.get(targetPath.toLowerCase());
+        
+        // If not found and it doesn't have a root directory, try with various folders
+        if (fileIndex === undefined && !targetPath.includes('/')) {
+            // Just try to find a file with this name anywhere
+            for (let i = 0; i < this.fileManager.files.length; i++) {
+                const file = this.fileManager.files[i];
+                if (file.name.toLowerCase() === targetPath.toLowerCase()) {
+                    return i;
+                }
+            }
+        }
+        
+        return fileIndex;
     }
 
     resolvePath(href, currentDir) {
-        if (href.startsWith('./')) {
-            return currentDir + '/' + href.slice(2);
+        // Clean up path parts
+        href = href.replace(/\\/g, '/');
+        currentDir = currentDir.replace(/\\/g, '/');
+        
+        // Handle various path types
+        if (href.startsWith('/')) {
+            // Absolute path from root
+            return href.slice(1);
+        } else if (href.startsWith('./')) {
+            // Relative path from current directory
+            return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
         } else if (href.startsWith('../')) {
+            // Going up in the directory tree
             const parts = currentDir.split('/');
-            const upCount = (href.match(/^\.\.\//g) || []).length;
-            return parts.slice(0, -upCount).join('/') + '/' + href.replace(/^\.\.\//g, '');
-        } else if (!href.startsWith('/')) {
-            return currentDir + '/' + href;
+            if (parts.length <= 1) {
+                return href.slice(3);
+            }
+            const parentDir = parts.slice(0, -1).join('/');
+            return this.resolvePath(href.slice(3), parentDir);
+        } else {
+            // Treating it as a relative path from current directory
+            // If path has no directory, check if it's a file directly in current directory
+            if (!href.includes('/')) {
+                for (let i = 0; i < this.fileManager.files.length; i++) {
+                    const file = this.fileManager.files[i];
+                    if (file.name.toLowerCase() === href.toLowerCase() && 
+                        file.folder.toLowerCase() === currentDir.toLowerCase()) {
+                        return file.path;
+                    }
+                }
+            }
+            
+            // Otherwise join with current directory
+            return currentDir ? `${currentDir}/${href}` : href;
         }
-        return href;
     }
 
     toggleSidebar() {
         this.elements.sidebar.classList.toggle('hidden');
         this.elements.main.classList.toggle('expanded');
         this.elements.toggleButton.classList.toggle('n');
-        localStorage.setItem('sidebarHidden', this.elements.sidebar.classList.contains('hidden'));
+        localStorage.setItem('sidebarCollapsed', this.elements.sidebar.classList.contains('hidden'));
     }
 
     restoreSidebarState() {
-        if (localStorage.getItem('sidebarHidden') === 'true') {
-            this.elements.sidebar.classList.add('hidden');
-            this.elements.main.classList.add('expanded');
-            this.elements.toggleButton.classList.add('n');
-        }
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (sidebarCollapsed) this.toggleSidebar();
     }
 }
 
-// Export all modules
+// Initialize app on window load
+window.onload = () => {
+    window.viewer = new FileToMarkdownViewer();
+};
+
+// export FileToMarkdownViewer; 
+
+// Export all modules for global use
 window.FileManager = FileManager;
 window.FileList = FileList;
 window.DOMUtils = DOMUtils;
 window.BrowserRenderer = BrowserRenderer;
-window.FileToMarkdownViewer = FileToMarkdownViewer; 
+window.FileToMarkdownViewer = FileToMarkdownViewer;
