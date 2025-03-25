@@ -533,6 +533,15 @@ a {
   flex-shrink: 0;
 }
 
+/* Critical visibility forcing for edit mode */
+body.edit-mode .button-container {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
+
 /* Button container styles */
 .button-container {
   display: flex;

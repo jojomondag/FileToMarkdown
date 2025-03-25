@@ -505,6 +505,8 @@ class FileToMarkdownViewer {
     async saveFile() {
         if (!this.isEditorMode) return;
         
+        console.log('[DEBUG] Save button clicked');
+        
         const content = this.elements.editor.value;
         
         // Check if there's a current file
@@ -513,23 +515,86 @@ class FileToMarkdownViewer {
             return;
         }
         
-        // Save to disk if it's a file from the file system
-        const success = await this.fileManager.saveCurrentFile(content);
-        
-        if (success) {
-            // Update original content
-            this.originalContent = content;
+        try {
+            // Force body to have edit-mode class
+            document.body.classList.add('edit-mode');
             
-            // Update the view
-            if (!this.isEditorMode) {
-                this.elements.content.innerHTML = this.renderer.render(content);
-                this.renderer.highlightAll();
-                this.setupLinkHandlers();
+            console.log('[DEBUG] Before save - buttonContainer display:', this.elements.buttonContainer.style.display);
+            
+            // Save to disk if it's a file from the file system
+            const success = await this.fileManager.saveCurrentFile(content);
+            
+            console.log('[DEBUG] After save - buttonContainer display:', this.elements.buttonContainer.style.display);
+            
+            if (success) {
+                // Update original content
+                this.originalContent = content;
+                
+                // Update the view if not in editor mode (shouldn't happen, but just in case)
+                if (!this.isEditorMode) {
+                    this.elements.content.innerHTML = this.renderer.render(content);
+                    this.renderer.highlightAll();
+                    this.setupLinkHandlers();
+                }
+                
+                console.log('File saved successfully');
+                console.log('[DEBUG] After rendering - buttonContainer display:', this.elements.buttonContainer.style.display);
+                
+                // Ensure body still has edit-mode class
+                document.body.classList.add('edit-mode');
+                
+                // FORCE BUTTON VISIBILITY IMMEDIATELY
+                document.getElementById('button-container').style.display = 'flex';
+                
+                // Make sure the button container is visible and has the right class
+                this.elements.buttonContainer.style.display = 'flex';
+                this.elements.buttonContainer.classList.add('edit-mode');
+                this.elements.buttonContainer.classList.remove('view-mode');
+                
+                // Make sure both buttons are visible
+                this.elements.editButton.style.display = 'flex'; 
+                this.elements.saveButton.style.display = 'flex';
+                
+                // Set the editor button to X icon
+                this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
+                
+                // Force update button positions immediately AND after a delay
+                this.updateButtonPositions();
+                
+                // Schedule multiple checks to make sure buttons stay visible
+                setTimeout(() => {
+                    console.log('[DEBUG] First timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
+                    document.body.classList.add('edit-mode');
+                    this.elements.buttonContainer.style.display = 'flex';
+                    document.getElementById('button-container').style.display = 'flex';
+                    this.updateButtonPositions();
+                }, 10);
+                
+                setTimeout(() => {
+                    console.log('[DEBUG] Second timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
+                    document.body.classList.add('edit-mode');
+                    this.elements.buttonContainer.style.display = 'flex';
+                    document.getElementById('button-container').style.display = 'flex';
+                    this.updateButtonPositions();
+                }, 50);
+                
+                setTimeout(() => {
+                    console.log('[DEBUG] Third timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
+                    document.body.classList.add('edit-mode');
+                    this.elements.buttonContainer.style.display = 'flex';
+                    document.getElementById('button-container').style.display = 'flex';
+                    this.updateButtonPositions();
+                }, 100);
+            } else {
+                this.showError('Error saving file');
             }
+        } catch (error) {
+            console.error('Error in saveFile:', error);
+            this.showError(`Error saving file: ${error.message}`);
             
-            console.log('File saved successfully');
-        } else {
-            this.showError('Error saving file');
+            // Even on error, ensure buttons remain visible
+            document.body.classList.add('edit-mode');
+            this.elements.buttonContainer.style.display = 'flex';
         }
     }
 
