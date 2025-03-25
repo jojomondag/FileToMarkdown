@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FileToMarkdown Viewer</title>
+    <base href="/">
     <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
@@ -17,63 +18,588 @@
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
     <script src="src/bundle.js"></script>
     <style>
-body{margin:0;font-family:-apple-system,system-ui,sans-serif;line-height:1.6;background:#f6f8fa;min-height:100vh;display:flex}
-#c{margin:10px auto;background:#fff;max-width:100%;padding:15px 40px;border-radius:8px;word-wrap:break-word;box-shadow:0 2px 4px rgba(0,0,0,.1);border:1px solid #e1e4e8}
-.p,.m{transition:all .3s ease}
-.p{width:300px;border-right:1px solid #eee;height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;background:#f8fafc;box-shadow:0 2px 4px rgba(0,0,0,.1);transition:transform .3s ease}
-.p.hidden{transform:translateX(-100%)}
-.h{display:flex;align-items:center;padding:15px;border-bottom:1px solid #eee;background:#f8fafc}
-.t{font-size:1.1em;font-weight:500;color:#2c3e50;margin:0;flex:1}
-.z{border-top:2px dashed #0366d6;padding:15px;text-align:center;cursor:pointer;background:#f8fafc;transition:.2s ease;position:relative}
-.z:hover,.z.d{background:#e6f3ff}
-.z.d{border-color:#0255b3}
-.l{--guide-color:#94a3b8;--guide-style:solid;--guide-width:1.5px;--guide-spacing:24px;--icon-size:16px;--icon-position:8px;--icon-middle:calc(var(--icon-size)/2);flex:1;overflow-y:auto;padding:15px}
-.l ul{list-style:none;padding:0;margin:0}
-.l li{position:relative;margin:4px 0;min-height:28px}
-.l a{position:relative;padding:4px 8px 4px 32px;display:flex;align-items:center;color:#2c3e50;text-decoration:none;font-size:.9em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:4px;transition:.2s ease;line-height:20px;height:28px}
-.l a::before{content:"📄";position:absolute;left:var(--icon-position);top:50%;transform:translateY(-50%);opacity:.8;font-size:14px;width:var(--icon-size);height:var(--icon-size);display:flex;align-items:center;justify-content:center;z-index:1}
-.l .folder-contents{position:relative;padding-left:var(--guide-spacing)}
-.l .folder-contents::before{content:"";position:absolute;left:calc(var(--icon-position) + var(--icon-middle));top:0;bottom:8px;width:var(--guide-width);border-left:var(--guide-width) var(--guide-style) var(--guide-color)}
-.l .folder-contents>li::after{content:"";position:absolute;left:calc((var(--icon-position) + var(--icon-middle))*-1);width:calc(var(--icon-position) + var(--icon-middle));height:var(--guide-width);top:calc(50% - var(--guide-width)/2);border-top:var(--guide-width) var(--guide-style) var(--guide-color);z-index:0}
-.l a[data-folder]{cursor:pointer;color:#2c3e50;user-select:none;font-weight:500;position:relative}
-.l a[data-folder]::before{content:"📂";left:var(--icon-position);position:absolute}
-.l li.folder-item.expanded>a[data-folder]::before{content:"📂"}
-.l li.folder-item:not(.expanded)>a[data-folder]::before{content:"📁"}
-.l .folder-contents.collapsed{display:none}
-.l li.selected>a{background:#f0f4f8;color:#0366d6}
-.m{margin-left:300px;flex:1;padding:10px 40px;max-width:100%;transition:margin-left .3s ease}
-.m.expanded{margin-left:0}
-.b{position:fixed;top:5px;left:255px;z-index:1000;padding:8px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;transition:.2s ease}
-.b.n{left:10px}
-.b:hover{background:#f0f4f8;color:#0366d6}
-.e{padding:8px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;transition:.2s ease;position:fixed;display:none;z-index:1000}
-.e:hover{background:#f0f4f8;color:#0366d6}
-#s{padding:8px 12px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s ease;position:fixed;display:none;z-index:1000}
-#s:hover{background:#f0f4f8;color:#0366d6}
-#s::before{content:"Save";font-size:14px;font-weight:500}
-pre,code{background:#2d2d2d;border-radius:6px}
-pre{padding:16px;overflow-x:auto;max-width:100%;border:1px solid #444;background:#f6f8fa!important;border-radius:6px!important}
-code{font-family:SFMono-Regular,monospace;font-size:.9em;padding:.2em .4em;color:#e6e6e6}
-pre code{padding:0;background:0}
-table{border-collapse:collapse;width:100%;margin:1em 0;overflow-x:auto;display:block}
-th,td{border:1px solid #dfe2e5;padding:8px 12px;text-align:left}
-th{background:#f6f8fa}
-img{max-width:100%;height:auto;display:block;margin:1em auto}
-a{word-break:break-word}
-.controls{display:flex;gap:10px;margin-bottom:15px;}
-@media(max-width:768px){.p{transform:translateX(-100%)}.p.hidden{transform:translateX(0)}.m{margin-left:0;padding:10px}}
-@media(min-width:1600px){.p{width:350px}.m{margin-left:350px;padding:10px 60px}#c{padding:15px 60px}.b{left:305px}}
-@media(min-width:2000px){.p{width:400px}.m{margin-left:400px;padding:10px 80px}#c{padding:15px 80px}.b{left:355px}}
-.token.keyword{color:#d73a49!important}.token.string{color:#032f62!important}
+/* ===== BASE STYLES ===== */
+:root {
+  --color-background: #f6f8fa;
+  --color-text: #2c3e50;
+  --color-text-light: #666;
+  --color-border: #eee;
+  --color-border-dark: #e1e4e8;
+  --color-primary: #0366d6;
+  --color-primary-dark: #0255b3;
+  --color-hover: #f0f4f8;
+  --color-white: #fff;
+  
+  --shadow-sm: 0 2px 4px rgba(0,0,0,.1);
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  
+  --font-mono: SFMono-Regular, monospace;
+  --font-system: -apple-system, system-ui, sans-serif;
+  
+  --sidebar-width: 300px;
+  --sidebar-width-lg: 350px;
+  --sidebar-width-xl: 400px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-system);
+  line-height: 1.6;
+  background: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ===== LAYOUT ===== */
+.layout-container {
+  transition: all .3s ease;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: var(--sidebar-width);
+  border-right: 1px solid var(--color-border);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  box-shadow: var(--shadow-sm);
+  transition: transform .3s ease;
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid var(--color-border);
+  background: #f8fafc;
+}
+
+.sidebar-title {
+  font-size: 1.1em;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+  flex: 1;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-top: 2px dashed var(--color-primary);
+  padding: 20px 15px;
+  margin-top: auto;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  min-height: 120px;
+}
+
+.dropzone:hover, 
+.dropzone.active {
+  background: #e6f3ff;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.dropzone.active {
+  border-color: var(--color-primary-dark);
+  background: #d9edff;
+}
+
+.dropzone-icon {
+  margin-bottom: 10px;
+  color: var(--color-primary);
+  transition: all 0.3s ease;
+}
+
+.dropzone-text {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--color-text-light);
+  line-height: 1.4;
+}
+
+.dropzone:hover .dropzone-icon {
+  transform: translateY(-5px);
+}
+
+/* ===== FILE TREE ===== */
+.file-tree {
+  --guide-color: #94a3b8;
+  --guide-style: solid;
+  --guide-width: 1.5px;
+  --guide-spacing: 24px;
+  --icon-size: 16px;
+  --icon-position: 8px;
+  --icon-middle: calc(var(--icon-size)/2);
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.file-tree ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.file-tree li {
+  position: relative;
+  margin: 4px 0;
+  min-height: 28px;
+}
+
+.file-tree a {
+  position: relative;
+  padding: 4px 8px 4px 32px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: .9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: var(--border-radius-sm);
+  transition: .2s ease;
+  line-height: 20px;
+  height: 28px;
+}
+
+.file-tree a::before {
+  content: "📄";
+  position: absolute;
+  left: var(--icon-position);
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .8;
+  font-size: 14px;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.file-tree .folder-contents {
+  position: relative;
+  padding-left: var(--guide-spacing);
+}
+
+.file-tree .folder-contents::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--icon-position) + var(--icon-middle));
+  top: 0;
+  bottom: 8px;
+  width: var(--guide-width);
+  border-left: var(--guide-width) var(--guide-style) var(--guide-color);
+}
+
+.file-tree .folder-contents > li::after {
+  content: "";
+  position: absolute;
+  left: calc((var(--icon-position) + var(--icon-middle)) * -1);
+  width: calc(var(--icon-position) + var(--icon-middle));
+  height: var(--guide-width);
+  top: calc(50% - var(--guide-width)/2);
+  border-top: var(--guide-width) var(--guide-style) var(--guide-color);
+  z-index: 0;
+}
+
+.file-tree a[data-folder] {
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+  font-weight: 500;
+  position: relative;
+}
+
+.file-tree a[data-folder]::before {
+  content: "📂";
+  left: var(--icon-position);
+  position: absolute;
+}
+
+.file-tree li.folder-item.expanded > a[data-folder]::before {
+  content: "📂";
+}
+
+.file-tree li.folder-item:not(.expanded) > a[data-folder]::before {
+  content: "📁";
+}
+
+.file-tree .folder-contents.collapsed {
+  display: none;
+}
+
+.file-tree li.selected > a {
+  background: var(--color-hover);
+  color: var(--color-primary);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 10px 40px;
+  max-width: 100%;
+  transition: margin-left .3s ease;
+  position: relative;
+}
+
+.main-content.expanded {
+  margin-left: 0;
+}
+
+.content-container {
+  position: relative;
+  margin: 10px auto;
+  background: var(--color-white);
+  max-width: 100%;
+  padding: 50px 40px 15px;
+  border-radius: var(--border-radius);
+  word-wrap: break-word;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-dark);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  padding: 8px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: .2s ease;
+  box-shadow: var(--shadow-sm);
+  z-index: 1001;
+}
+
+.btn:hover {
+  background: var(--color-hover);
+  color: var(--color-primary);
+}
+
+.btn-menu {
+  position: fixed;
+  top: 10px;
+  left: 255px;
+  z-index: 1001;
+}
+
+.btn-menu.shifted {
+  left: 10px;
+}
+
+.btn-edit, 
+.btn-save {
+  position: absolute;
+  top: 10px;
+  z-index: 2001 !important;
+}
+
+.btn-edit {
+  right: 10px;
+}
+
+.btn-save {
+  right: 60px;
+}
+
+.btn-save::before {
+  content: "Save";
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Improved button styling for better visibility */
+.btn-edit, .btn-save {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background: white;
+  width: 40px;
+  height: 40px;
+}
+
+/* Additional styling for edit mode buttons */
+body.edit-mode .btn-edit, 
+body.edit-mode .btn-save {
+  background: #fff;
+  border: 2px solid var(--color-primary);
+}
+
+body.edit-mode .btn-edit {
+  background: #fff0f0;
+}
+
+body.edit-mode .btn-save {
+  background: #e6f7ff;
+  width: auto;
+  min-width: 70px;
+}
+
+/* ===== EDITOR ===== */
+.editor {
+  position: relative !important;
+  width: 100%;
+  height: 100%;
+  padding: 50px 20px 20px;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  border: none;
+  resize: none;
+  outline: none;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: visible !important;
+}
+
+/* ===== TYPOGRAPHY & CODE ===== */
+pre, code {
+  background: #2d2d2d;
+  border-radius: var(--border-radius);
+}
+
+pre {
+  padding: 16px;
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid #444;
+  background: var(--color-background) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: .9em;
+  padding: .2em .4em;
+  color: #e6e6e6;
+}
+
+pre code {
+  padding: 0;
+  background: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  overflow-x: auto;
+  display: block;
+}
+
+th, td {
+  border: 1px solid #dfe2e5;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background: var(--color-background);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+}
+
+a {
+  word-break: break-word;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.hidden {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 10px;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --sidebar-width: 350px;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width-lg);
+    padding: 10px 60px;
+  }
+  
+  .content-container {
+    padding: 15px 60px;
+  }
+  
+  .btn-menu {
+    left: 305px;
+  }
+}
+
+@media (min-width: 2000px) {
+  :root {
+    --sidebar-width: 400px;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width-xl);
+    padding: 10px 80px;
+  }
+  
+  .content-container {
+    padding: 15px 80px;
+  }
+  
+  .btn-menu {
+    left: 355px;
+  }
+}
+
+/* ===== SYNTAX HIGHLIGHTING ===== */
+.token.keyword {
+  color: #d73a49 !important;
+}
+
+.token.string {
+  color: #032f62 !important;
+}
+
+/* ===== DROPZONE BUTTONS ===== */
+.dropzone-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dropzone-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dropzone-btn:hover {
+  background: var(--color-hover);
+  color: var(--color-primary);
+  border-color: var(--color-primary-dark);
+}
+
+.dropzone-btn svg {
+  flex-shrink: 0;
+}
+
+/* Button container styles */
+.button-container {
+  display: flex;
+  position: fixed !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 9999 !important;
+  gap: 10px;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.button-container .btn {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background: white;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  position: static !important; /* Override absolute positioning */
+}
+
+.button-container.edit-mode .btn-edit {
+  background: #fff0f0;
+  border: 2px solid #f56565;
+}
+
+.button-container.edit-mode .btn-save {
+  background: #e6f7ff;
+  border: 2px solid #0366d6;
+  width: auto;
+  min-width: 70px;
+  display: flex !important;
+}
+
+.button-container:not(.edit-mode) .btn-save {
+  display: none !important;
+}
+
+.btn-edit:hover, .btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-edit:active, .btn-save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.btn-save::before {
+  content: "Save";
+  font-size: 14px;
+  font-weight: 500;
+}
     </style>
 </head>
 <body>
-<button class="b" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-<button class="e" id="e"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
-<div class="p"><div class="h"><h1 class="t">FileToMarkdown</h1></div><div class="l" id="l"></div><div class="z" id="z"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><p>Drop MD files here<br>or click to browse</p></div></div>
-<div class="m">
+<button class="btn btn-menu" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+<div class="sidebar"><div class="sidebar-header"><h1 class="sidebar-title">FileToMarkdown</h1></div><div class="file-tree" id="l"></div><div class="dropzone" id="z"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><p>Drop MD files here<br>or click to browse</p></div></div>
+<div class="main-content">
 <div class="controls"></div>
-<div id="c"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div>
+<div id="content" class="content-container"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div>
 </div>
 <script>
 window.addEventListener('DOMContentLoaded', () => {

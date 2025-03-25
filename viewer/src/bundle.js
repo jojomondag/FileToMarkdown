@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-25T06:36:35.113Z
+// FileToMarkdown Viewer Bundle - 2025-03-25T09:34:47.261Z
 
 // File: utils/constants.js
 const FOLDER_STATES_KEY = 'folderStates';
@@ -131,154 +131,58 @@ class BaseComponent {
  */
 class FileSync {
     constructor() {
-        this.socket = null;
-        this.isConnected = false;
-        this.watchedFiles = new Set();
-        this.listeners = new Map();
-        this.lastSaveTime = 0;
+        // No-op constructor
+        console.log('FileSync disabled - running in static mode');
     }
 
     /**
-     * Initialize the WebSocket connection
+     * Initialize the WebSocket connection - disabled for simple HTTP server
      */
     connect() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const url = `${protocol}//${window.location.host}`;
-        
-        this.socket = new WebSocket(url);
-        
-        this.socket.onopen = () => {
-            console.log('Connected to server');
-            this.isConnected = true;
-            
-            // If there are files already being watched, re-register them
-            if (this.watchedFiles.size > 0) {
-                this.sendWatchMessage(Array.from(this.watchedFiles));
-            }
-        };
-        
-        this.socket.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'fileChange') {
-                    // Get the most recent time a save was performed
-                    const timeSinceLastSave = Date.now() - this.lastSaveTime;
-                    
-                    // Only process external changes if they didn't happen immediately after a save
-                    if (timeSinceLastSave > 1000) {
-                        const callback = this.listeners.get(data.path);
-                        if (callback) {
-                            callback(data.content);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error processing server message:', error);
-            }
-        };
-        
-        this.socket.onclose = () => {
-            console.log('Disconnected from server');
-            this.isConnected = false;
-            
-            // Try to reconnect after a delay
-            setTimeout(() => this.connect(), 3000);
-        };
-        
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            this.socket.close();
-        };
+        // No-op
+        return;
     }
 
     /**
-     * Watch a file for changes
-     * @param {string} filePath - The absolute path to the file
-     * @param {Function} callback - Function to call when the file changes
+     * Watch a file for changes - no-op in HTTP mode
      */
-    watchFile(filePath, callback) {
-        if (!filePath) return;
-        
-        this.watchedFiles.add(filePath);
-        this.listeners.set(filePath, callback);
-        
-        if (this.isConnected) {
-            this.sendWatchMessage([filePath]);
-        }
+    watchFile() {
+        // No-op
+        return;
     }
 
     /**
-     * Stop watching a file
-     * @param {string} filePath - The absolute path to the file
+     * Stop watching a file - no-op in HTTP mode
      */
-    unwatchFile(filePath) {
-        if (!filePath) return;
-        
-        this.watchedFiles.delete(filePath);
-        this.listeners.delete(filePath);
+    unwatchFile() {
+        // No-op
+        return;
     }
 
     /**
-     * Send a message to watch file paths
-     * @param {Array<string>} paths - Array of file paths to watch
+     * Send a message to watch file paths - no-op in HTTP mode
      */
-    sendWatchMessage(paths) {
-        if (!this.isConnected || !paths.length) return;
-        
-        this.socket.send(JSON.stringify({
-            type: 'watch',
-            paths: paths
-        }));
+    sendWatchMessage() {
+        // No-op
+        return;
     }
 
     /**
      * Save content to a file
-     * @param {string} filePath - The absolute path to the file
-     * @param {string} content - The content to save
-     * @returns {Promise<boolean>} - Whether the save was successful
+     * @returns {Promise<boolean>} - Always returns false in HTTP mode
      */
-    async saveFile(filePath, content) {
-        try {
-            this.lastSaveTime = Date.now();
-            
-            const response = await fetch('/api/file', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    path: filePath,
-                    content
-                })
-            });
-            
-            const result = await response.json();
-            return result.success === true;
-        } catch (error) {
-            console.error('Error saving file:', error);
-            return false;
-        }
+    async saveFile() {
+        console.log('File saving not supported in static mode');
+        return false;
     }
 
     /**
      * Load content from a file
-     * @param {string} filePath - The absolute path to the file
-     * @returns {Promise<string|null>} - The file content or null if failed
+     * @returns {Promise<string|null>} - Always returns null in HTTP mode
      */
-    async loadFile(filePath) {
-        try {
-            const response = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`);
-            const result = await response.json();
-            
-            if (result.content !== undefined) {
-                return result.content;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error loading file:', error);
-            return null;
-        }
+    async loadFile() {
+        console.log('File loading not supported in static mode');
+        return null;
     }
 }
 
@@ -732,6 +636,7 @@ class BrowserRenderer {
  */
 class FileToMarkdownViewer {
     constructor() {
+        console.log('FileToMarkdownViewer constructor called');
         this.fileManager = new FileManager();
         this.renderer = new BrowserRenderer();
         this.elements = this.getElements();
@@ -742,20 +647,24 @@ class FileToMarkdownViewer {
         this.setupEditorElement();
         this.isEditorMode = false;
         this.originalContent = '';
+        this.setupFileInput(); // Set up persistent file input
     }
 
     getElements() {
         return {
-            content: document.getElementById('c'),
-            sidebar: document.querySelector('.p'),
-            main: document.querySelector('.m'),
+            content: document.getElementById('content'),
+            sidebar: document.querySelector('.sidebar'),
+            main: document.querySelector('.main-content'),
             fileList: document.getElementById('l'),
             dropZone: document.getElementById('z'),
             toggleButton: document.getElementById('b'),
             controls: document.querySelector('.controls'),
             editor: null, // Will be created later
             saveButton: null, // Will be created later
-            editButton: document.getElementById('e') // Try to get existing button
+            editButton: document.getElementById('e'), // Try to get existing button
+            fileInput: null, // Will be set up in setupFileInput
+            dirInput: null, // Will be set up in setupFileInput
+            buttonContainer: null // Will be set up in setupComponents
         };
     }
 
@@ -763,30 +672,50 @@ class FileToMarkdownViewer {
         this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
         this.fileListComponent.on('fileSelect', ({ index }) => this.loadFile(index));
         
-        // Create save button
-        this.elements.saveButton = document.createElement('button');
-        this.elements.saveButton.textContent = 'Save';
-        this.elements.saveButton.className = 'save-btn';
-        this.elements.saveButton.id = 's'; // Add ID for styling
-        this.elements.saveButton.style.display = 'none';
-        this.elements.saveButton.onclick = () => this.saveFile();
-        document.body.appendChild(this.elements.saveButton); // Add to body for absolute positioning
-        
-        // Create pencil edit button (floating in content window) if it doesn't exist
-        if (!this.elements.editButton) {
-            this.elements.editButton = document.createElement('button');
-            this.elements.editButton.id = 'e'; // Add ID for future reference
-            this.elements.editButton.className = 'e'; // Using short class name like the hamburger button
-            this.elements.editButton.style.display = 'none'; // Hide button initially
-            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
-            this.elements.editButton.onclick = () => this.toggleEditor();
-            document.body.appendChild(this.elements.editButton);
-        } else {
-            // Configure existing button
-            this.elements.editButton.style.display = 'none';
-            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
-            this.elements.editButton.onclick = () => this.toggleEditor();
+        // Remove any existing buttons from previous instances
+        const existingContainer = document.querySelector('.button-container');
+        if (existingContainer) {
+            existingContainer.parentNode.removeChild(existingContainer);
         }
+        
+        // Create a fixed container for both buttons that will stay in position
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        buttonContainer.id = 'button-container';
+        // Use fixed positioning with specific coordinates
+        buttonContainer.style.position = 'fixed';
+        buttonContainer.style.top = '10px';
+        buttonContainer.style.right = '10px';
+        buttonContainer.style.zIndex = '2000';
+        buttonContainer.style.display = 'none'; // Hidden by default
+        buttonContainer.style.gap = '10px';
+        
+        // Create edit button
+        const editButton = document.createElement('button');
+        editButton.id = 'e';
+        editButton.className = 'btn btn-edit';
+        editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+        editButton.onclick = () => this.toggleEditor();
+        
+        // Create save button
+        const saveButton = document.createElement('button');
+        saveButton.className = 'btn btn-save';
+        saveButton.id = 's';
+        saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+        saveButton.style.display = 'none'; // Hidden initially
+        saveButton.onclick = () => this.saveFile();
+        
+        // Store references to our elements
+        this.elements.saveButton = saveButton;
+        this.elements.editButton = editButton;
+        this.elements.buttonContainer = buttonContainer;
+        
+        // Add buttons to the container
+        buttonContainer.appendChild(editButton);
+        buttonContainer.appendChild(saveButton);
+        
+        // Add container to the document body
+        document.body.appendChild(buttonContainer);
     }
     
     setupEditorElement() {
@@ -797,31 +726,27 @@ class FileToMarkdownViewer {
         this.elements.editor.style.width = '100%';
         this.elements.editor.style.height = '100%';
         this.elements.editor.style.boxSizing = 'border-box';
-        this.elements.editor.style.padding = '20px';
+        this.elements.editor.style.padding = '50px 20px 20px'; // Extra top padding for buttons
         this.elements.editor.style.border = 'none';
         this.elements.editor.style.fontFamily = 'monospace';
         this.elements.editor.style.fontSize = '16px';
         this.elements.editor.style.resize = 'none';
         this.elements.editor.style.outline = 'none';
+        this.elements.editor.style.position = 'relative'; // Important for absolute positioning of buttons
         this.elements.main.appendChild(this.elements.editor);
     }
 
     setupEventListeners() {
-        this.elements.dropZone.addEventListener('click', () => this.createAndClickFileInput());
+        // Only handle drag events for the dropzone, clicks are handled separately
+        const dropZone = this.elements.dropZone;
         
+        // Handle drag and drop events
         ['dragover', 'dragleave', 'drop'].forEach(event => {
-            this.elements.dropZone.addEventListener(event, e => {
+            dropZone.addEventListener(event, e => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.elements.dropZone.classList.toggle('d', event === 'dragover');
+                dropZone.classList.toggle('active', event === 'dragover');
                 if (event === 'drop') this.handleFiles(Array.from(e.dataTransfer.files));
-            });
-        });
-
-        ['dragover', 'drop'].forEach(event => {
-            document.addEventListener(event, e => {
-                e.preventDefault();
-                e.stopPropagation();
             });
         });
 
@@ -851,73 +776,89 @@ class FileToMarkdownViewer {
         });
     }
     
-    createAndClickFileInput() {
-        const oldInput = document.getElementById('temp-file-input');
-        if (oldInput) document.body.removeChild(oldInput);
+    setupFileInput() {
+        console.log('Setting up unified file input');
         
-        const tempInput = document.createElement('input');
-        Object.assign(tempInput, {
-            type: 'file',
-            id: 'temp-file-input',
-            accept: '.md',
-            multiple: true,
-            webkitdirectory: true,
-            directory: true,
-            style: 'display:none'
+        // Remove any existing file inputs to avoid duplicates
+        const existingInput = document.getElementById('file-input');
+        if (existingInput) {
+            existingInput.parentNode.removeChild(existingInput);
+        }
+        
+        // Create a single input for files and directories
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'file-input';
+        fileInput.accept = '.md';
+        fileInput.multiple = true;
+        fileInput.style.display = 'none';
+        
+        // Change event listener for the unified input
+        fileInput.addEventListener('change', (e) => {
+            console.log('File input change detected');
+            if (e.target.files && e.target.files.length > 0) {
+                console.log(`${e.target.files.length} files/folders selected`);
+                this.handleFiles(Array.from(e.target.files));
+            }
+            
+            // Reset the input to ensure it works correctly on subsequent clicks
+            e.target.value = '';
         });
         
-        tempInput.addEventListener('change', (e) => {
-            this.handleFiles(e.target.files);
-            document.body.removeChild(tempInput);
-        });
+        document.body.appendChild(fileInput);
         
-        document.body.appendChild(tempInput);
-        tempInput.click();
+        // Store input in elements
+        this.elements.fileInput = fileInput;
+        
+        // Update the dropzone UI
+        this.updateDropzoneUI();
+        
+        console.log('Unified file input setup complete');
     }
     
-    async openFileDialog() {
-        // Use the browser's file picker API
-        try {
-            const options = {
-                types: [
-                    {
-                        description: 'Markdown Files',
-                        accept: {
-                            'text/markdown': ['.md']
-                        }
-                    }
-                ],
-                multiple: true
-            };
+    updateDropzoneUI() {
+        const dropZone = this.elements.dropZone;
+        if (!dropZone) return;
+        
+        // Clear existing content
+        dropZone.innerHTML = '';
+        
+        // Create a simple icon and text for a cleaner UI
+        const uploadIcon = document.createElement('div');
+        uploadIcon.className = 'dropzone-icon';
+        uploadIcon.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
+        
+        // Add instruction text
+        const dropText = document.createElement('p');
+        dropText.className = 'dropzone-text';
+        dropText.innerHTML = 'Click to select files or folders<br>or drop markdown files here';
+        
+        // Add elements to dropzone
+        dropZone.appendChild(uploadIcon);
+        dropZone.appendChild(dropText);
+        
+        // Remove ALL existing click event listeners by cloning the node
+        const newDropZone = dropZone.cloneNode(true);
+        dropZone.parentNode.replaceChild(newDropZone, dropZone);
+        
+        // Update our reference
+        this.elements.dropZone = newDropZone;
+        
+        // Add a single click event handler
+        newDropZone.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             
-            const fileHandles = await window.showOpenFilePicker(options);
-            if (!fileHandles || fileHandles.length === 0) return;
+            console.log('Dropzone clicked, opening file dialog');
             
-            const filePaths = [];
-            for (const handle of fileHandles) {
-                // Get the file object
-                const file = await handle.getFile();
-                // Store the path for later use
-                filePaths.push(file.path || file.name);
-            }
-            
-            if (filePaths.length > 0) {
-                // Process the files through FileManager
-                const success = await this.fileManager.processFileSystem(filePaths);
-                
-                if (success) {
-                    this.fileListComponent.render();
-                    if (this.fileManager.files.length > 0) {
-                        this.loadFile(0);
-                    }
-                } else {
-                    this.showError('No markdown (.md) files found in the selected files.');
-                }
-            }
-        } catch (error) {
-            console.error('Error opening files:', error);
-            this.showError('Error opening files: ' + error.message);
-        }
+            // Create and show a file dialog that allows directory selection
+            const input = this.elements.fileInput;
+            input.webkitdirectory = true; // Enable directory selection
+            input.directory = true;       // Non-webkit browsers
+            input.multiple = true;        // Allow multiple selection
+            input.accept = '.md';         // Still filter for markdown files
+            input.click();
+        });
     }
 
     handleFiles(fileList) {
@@ -934,7 +875,11 @@ class FileToMarkdownViewer {
 
     showError(message) {
         this.elements.content.innerHTML = `<p style="color:red">${message}</p>`;
-        // Hide the edit button when showing an error
+        
+        // Hide the button container and buttons when showing an error
+        if (this.elements.buttonContainer) {
+            this.elements.buttonContainer.style.display = 'none';
+        }
         this.elements.editButton.style.display = 'none';
         this.elements.saveButton.style.display = 'none';
     }
@@ -943,14 +888,30 @@ class FileToMarkdownViewer {
         const fileInfo = this.fileManager.getFile(index);
         if (!fileInfo) return;
 
+        // Reset edit mode to false when loading a file
+        this.isEditorMode = false;
+        
         this.fileManager.setCurrentFile(index);
         this.updateFileListSelection(index);
 
-        // Position the edit button in the top right of the content
-        this.updateButtonPositions();
+        // Show button container and edit button when a file is loaded
+        if (this.elements.buttonContainer) {
+            this.elements.buttonContainer.style.display = 'flex';
+        }
         
-        // Show edit button when a file is loaded
-        this.elements.editButton.style.display = 'flex';
+        if (this.elements.editButton) {
+            this.elements.editButton.style.display = 'flex';
+        }
+        
+        // Explicitly hide save button when loading a file (we're not in edit mode)
+        if (this.elements.saveButton) {
+            this.elements.saveButton.style.display = 'none';
+        }
+        
+        // Position the buttons
+        this.updateButtonPositions();
+        // Force an immediate update of button positions to ensure they're visible
+        setTimeout(() => this.updateButtonPositions(), 100);
 
         const reader = new FileReader();
         reader.onload = e => {
@@ -964,26 +925,48 @@ class FileToMarkdownViewer {
                 this.renderer.highlightAll();
                 this.setupLinkHandlers();
             }
+            
+            // Ensure buttons are visible after content is loaded
+            this.updateButtonPositions();
         };
         reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
         reader.readAsText(fileInfo.file);
     }
     
     updateButtonPositions() {
-        // Get the position of the content element
-        const contentRect = this.elements.content.getBoundingClientRect();
+        // Get references to our elements
+        const buttonContainer = this.elements.buttonContainer;
+        const editButton = this.elements.editButton;
+        const saveButton = this.elements.saveButton;
         
-        // Position the edit button in the top right of the content area
-        this.elements.editButton.style.position = 'fixed';
-        this.elements.editButton.style.top = `${contentRect.top + 10}px`;
-        this.elements.editButton.style.right = `${window.innerWidth - contentRect.right + 10}px`;
-        this.elements.editButton.style.zIndex = '1000';
+        // Safety check - if elements don't exist, don't do anything
+        if (!buttonContainer || !editButton || !saveButton) {
+            console.error('Missing button elements');
+            return;
+        }
         
-        // Position the save button to the left of the edit button
-        this.elements.saveButton.style.position = 'fixed';
-        this.elements.saveButton.style.top = `${contentRect.top + 10}px`;
-        this.elements.saveButton.style.right = `${window.innerWidth - contentRect.right + 60}px`; // 60px to leave space for edit button
-        this.elements.saveButton.style.zIndex = '1000';
+        // Control visibility of components based on edit mode
+        editButton.style.display = 'flex'; // Edit button always visible when a file is loaded
+        
+        // STRICT CONTROL: Save button is ONLY visible in editor mode
+        saveButton.style.display = this.isEditorMode === true ? 'flex' : 'none';
+        
+        // Add or remove edit-mode class on the container
+        if (this.isEditorMode) {
+            buttonContainer.classList.add('edit-mode');
+            buttonContainer.classList.remove('view-mode');
+            editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
+        } else {
+            buttonContainer.classList.remove('edit-mode');
+            buttonContainer.classList.add('view-mode');
+            editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+            
+            // Force hide save button outside edit mode
+            saveButton.style.display = 'none';
+        }
+        
+        // Make sure the container itself is visible
+        buttonContainer.style.display = 'flex';
     }
 
     updateFileListSelection(index) {
@@ -1111,30 +1094,41 @@ class FileToMarkdownViewer {
     toggleEditor() {
         this.isEditorMode = !this.isEditorMode;
         
+        // Ensure we have valid references to our UI elements
+        if (!this.elements.buttonContainer || !this.elements.saveButton || !this.elements.editButton) {
+            console.error('Missing UI elements for editor mode');
+            return;
+        }
+        
+        // Immediately set the save button visibility based on the new mode
+        this.elements.saveButton.style.display = this.isEditorMode ? 'flex' : 'none';
+        
         if (this.isEditorMode) {
+            // Add edit-mode class to body for styling
+            document.body.classList.add('edit-mode');
+            
             // Switch to editor mode
             this.elements.editor.style.display = 'block';
             this.elements.content.style.display = 'none';
-            this.elements.saveButton.style.display = 'flex';
-            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>';
-            
-            // Update button positions
-            this.updateButtonPositions();
             
             // Load current content into editor
             this.elements.editor.value = this.originalContent;
         } else {
+            // Remove edit-mode class from body
+            document.body.classList.remove('edit-mode');
+            
             // Switch to preview mode
             this.elements.editor.style.display = 'none';
             this.elements.content.style.display = 'block';
-            this.elements.saveButton.style.display = 'none';
-            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
             
             // Render the editor content for preview (without saving)
             this.elements.content.innerHTML = this.renderer.render(this.elements.editor.value);
             this.renderer.highlightAll();
             this.setupLinkHandlers();
         }
+        
+        // Always update button positions/state after mode change
+        this.updateButtonPositions();
     }
     
     async saveFile() {
@@ -1171,7 +1165,7 @@ class FileToMarkdownViewer {
     toggleSidebar() {
         this.elements.sidebar.classList.toggle('hidden');
         this.elements.main.classList.toggle('expanded');
-        this.elements.toggleButton.classList.toggle('n');
+        this.elements.toggleButton.classList.toggle('shifted');
         localStorage.setItem('sidebarCollapsed', this.elements.sidebar.classList.contains('hidden'));
         
         // Re-position the buttons after sidebar toggle

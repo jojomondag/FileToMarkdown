@@ -3,154 +3,58 @@
  */
 class FileSync {
     constructor() {
-        this.socket = null;
-        this.isConnected = false;
-        this.watchedFiles = new Set();
-        this.listeners = new Map();
-        this.lastSaveTime = 0;
+        // No-op constructor
+        console.log('FileSync disabled - running in static mode');
     }
 
     /**
-     * Initialize the WebSocket connection
+     * Initialize the WebSocket connection - disabled for simple HTTP server
      */
     connect() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const url = `${protocol}//${window.location.host}`;
-        
-        this.socket = new WebSocket(url);
-        
-        this.socket.onopen = () => {
-            console.log('Connected to server');
-            this.isConnected = true;
-            
-            // If there are files already being watched, re-register them
-            if (this.watchedFiles.size > 0) {
-                this.sendWatchMessage(Array.from(this.watchedFiles));
-            }
-        };
-        
-        this.socket.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'fileChange') {
-                    // Get the most recent time a save was performed
-                    const timeSinceLastSave = Date.now() - this.lastSaveTime;
-                    
-                    // Only process external changes if they didn't happen immediately after a save
-                    if (timeSinceLastSave > 1000) {
-                        const callback = this.listeners.get(data.path);
-                        if (callback) {
-                            callback(data.content);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Error processing server message:', error);
-            }
-        };
-        
-        this.socket.onclose = () => {
-            console.log('Disconnected from server');
-            this.isConnected = false;
-            
-            // Try to reconnect after a delay
-            setTimeout(() => this.connect(), 3000);
-        };
-        
-        this.socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            this.socket.close();
-        };
+        // No-op
+        return;
     }
 
     /**
-     * Watch a file for changes
-     * @param {string} filePath - The absolute path to the file
-     * @param {Function} callback - Function to call when the file changes
+     * Watch a file for changes - no-op in HTTP mode
      */
-    watchFile(filePath, callback) {
-        if (!filePath) return;
-        
-        this.watchedFiles.add(filePath);
-        this.listeners.set(filePath, callback);
-        
-        if (this.isConnected) {
-            this.sendWatchMessage([filePath]);
-        }
+    watchFile() {
+        // No-op
+        return;
     }
 
     /**
-     * Stop watching a file
-     * @param {string} filePath - The absolute path to the file
+     * Stop watching a file - no-op in HTTP mode
      */
-    unwatchFile(filePath) {
-        if (!filePath) return;
-        
-        this.watchedFiles.delete(filePath);
-        this.listeners.delete(filePath);
+    unwatchFile() {
+        // No-op
+        return;
     }
 
     /**
-     * Send a message to watch file paths
-     * @param {Array<string>} paths - Array of file paths to watch
+     * Send a message to watch file paths - no-op in HTTP mode
      */
-    sendWatchMessage(paths) {
-        if (!this.isConnected || !paths.length) return;
-        
-        this.socket.send(JSON.stringify({
-            type: 'watch',
-            paths: paths
-        }));
+    sendWatchMessage() {
+        // No-op
+        return;
     }
 
     /**
      * Save content to a file
-     * @param {string} filePath - The absolute path to the file
-     * @param {string} content - The content to save
-     * @returns {Promise<boolean>} - Whether the save was successful
+     * @returns {Promise<boolean>} - Always returns false in HTTP mode
      */
-    async saveFile(filePath, content) {
-        try {
-            this.lastSaveTime = Date.now();
-            
-            const response = await fetch('/api/file', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    path: filePath,
-                    content
-                })
-            });
-            
-            const result = await response.json();
-            return result.success === true;
-        } catch (error) {
-            console.error('Error saving file:', error);
-            return false;
-        }
+    async saveFile() {
+        console.log('File saving not supported in static mode');
+        return false;
     }
 
     /**
      * Load content from a file
-     * @param {string} filePath - The absolute path to the file
-     * @returns {Promise<string|null>} - The file content or null if failed
+     * @returns {Promise<string|null>} - Always returns null in HTTP mode
      */
-    async loadFile(filePath) {
-        try {
-            const response = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`);
-            const result = await response.json();
-            
-            if (result.content !== undefined) {
-                return result.content;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error loading file:', error);
-            return null;
-        }
+    async loadFile() {
+        console.log('File loading not supported in static mode');
+        return null;
     }
 }
 
