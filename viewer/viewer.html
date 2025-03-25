@@ -46,6 +46,11 @@ body{margin:0;font-family:-apple-system,system-ui,sans-serif;line-height:1.6;bac
 .b{position:fixed;top:5px;left:255px;z-index:1000;padding:8px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;transition:.2s ease}
 .b.n{left:10px}
 .b:hover{background:#f0f4f8;color:#0366d6}
+.e{padding:8px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;transition:.2s ease;position:fixed;display:none;z-index:1000}
+.e:hover{background:#f0f4f8;color:#0366d6}
+#s{padding:8px 12px;background:#fff;border:1px solid #eee;border-radius:4px;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s ease;position:fixed;display:none;z-index:1000}
+#s:hover{background:#f0f4f8;color:#0366d6}
+#s::before{content:"Save";font-size:14px;font-weight:500}
 pre,code{background:#2d2d2d;border-radius:6px}
 pre{padding:16px;overflow-x:auto;max-width:100%;border:1px solid #444;background:#f6f8fa!important;border-radius:6px!important}
 code{font-family:SFMono-Regular,monospace;font-size:.9em;padding:.2em .4em;color:#e6e6e6}
@@ -55,6 +60,7 @@ th,td{border:1px solid #dfe2e5;padding:8px 12px;text-align:left}
 th{background:#f6f8fa}
 img{max-width:100%;height:auto;display:block;margin:1em auto}
 a{word-break:break-word}
+.controls{display:flex;gap:10px;margin-bottom:15px;}
 @media(max-width:768px){.p{transform:translateX(-100%)}.p.hidden{transform:translateX(0)}.m{margin-left:0;padding:10px}}
 @media(min-width:1600px){.p{width:350px}.m{margin-left:350px;padding:10px 60px}#c{padding:15px 60px}.b{left:305px}}
 @media(min-width:2000px){.p{width:400px}.m{margin-left:400px;padding:10px 80px}#c{padding:15px 80px}.b{left:355px}}
@@ -63,8 +69,16 @@ a{word-break:break-word}
 </head>
 <body>
 <button class="b" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+<button class="e" id="e"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>
 <div class="p"><div class="h"><h1 class="t">FileToMarkdown</h1></div><div class="l" id="l"></div><div class="z" id="z"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><p>Drop MD files here<br>or click to browse</p></div></div>
-<div class="m"><div id="c"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div></div>
-<script>window.onload=()=>{window.viewer=new FileToMarkdownViewer()};</script>
+<div class="m">
+<div class="controls"></div>
+<div id="c"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    window.app = new FileToMarkdownViewer();
+});
+</script>
 </body>
 </html>

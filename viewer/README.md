@@ -1,76 +1,62 @@
-# FileToMarkdown Viewer
+# FileToMarkdown with Two-Way File Sync
 
-A lightweight viewer for Markdown files with syntax highlighting and file navigation.
+This project is a Markdown viewer with two-way file synchronization between the browser and the file system. It allows you to:
+
+1. Open Markdown files from your file system
+2. Edit them in the browser
+3. Save changes back to the original files
+4. Automatically see updates when files are changed outside the browser
 
 ## Features
 
-- View multiple Markdown files
-- Files tree navigation 
-- Syntax highlighting for code blocks
-- Support for internal links between Markdown files
-- Drag and drop file loading
+- 🔄 Two-way file synchronization
+- 📝 Built-in Markdown editor
+- 🔍 Markdown preview
+- 📂 File browser
+- 🔗 Internal link navigation between files
 
-## Project Structure
+## Getting Started
 
-```
-viewer/
-├── viewer.html       # Main HTML file
-├── src/
-│   ├── bundle.js     # Combined JavaScript (generated)
-│   ├── build.js      # Build script
-│   ├── app.js        # Main application logic
-│   ├── components/   # UI components
-│   │   ├── BaseComponent.js
-│   │   └── FileList.js
-│   ├── utils/        # Utility modules
-│   │   ├── constants.js
-│   │   ├── domUtils.js
-│   │   ├── fileManager.js
-│   │   └── renderer.js
-│   └── styles/       # CSS styles
-│       ├── main.css
-│       └── filetree.css
-```
+### Prerequisites
 
-## Development
+- [Node.js](https://nodejs.org/) (v14+)
 
-### Setup
+### Installation
 
 1. Clone the repository
-2. Navigate to the viewer directory
-3. No additional dependencies are required for development
-
-### Build Process
-
-The project uses a simple build system to bundle the modular JavaScript files into a single `bundle.js` file. 
-
-To build the project:
+2. Install dependencies:
 
 ```bash
-# Navigate to the src directory
-cd src
-
-# Run the build script
-node build.js
+npm install
 ```
 
-### Code Organization
+### Usage
 
-- **Components**: Reusable UI components reside in the `src/components/` directory.
-- **Utils**: Helper functions and utilities are in the `src/utils/` directory.
-- **Styles**: CSS styles are in the `src/styles/` directory.
-- **App**: The main application logic is in `src/app.js`.
+1. Start the server:
 
-### Important Notes
+```bash
+npm start
+```
 
-1. **Avoid editing bundle.js directly** - Always edit the source files and then rebuild.
-2. **CSS Naming** - The project uses a minimal CSS naming convention with short class names.
+2. Open your browser at http://localhost:9876
 
-## Usage
+3. Click "Open from Disk" to select Markdown files from your file system
 
-Open `viewer.html` in a web browser and either:
-- Drag and drop Markdown files onto the designated drop zone
-- Click the drop zone to browse for files
+4. Edit files using the "Edit" button and save changes with the "Save" button or Ctrl+S
+
+## Technical Details
+
+The application uses:
+
+- Express.js for the server
+- WebSockets for real-time file updates
+- Chokidar for file system monitoring
+- Browser File System Access API for file handling
+
+## Keyboard Shortcuts
+
+- `Ctrl+B` or `Cmd+B`: Toggle sidebar
+- `Ctrl+S` or `Cmd+S`: Save current file (when in edit mode)
 
 ## License
 

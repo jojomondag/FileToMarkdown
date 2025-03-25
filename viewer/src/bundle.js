@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-23T11:27:56.690Z
+// FileToMarkdown Viewer Bundle - 2025-03-25T06:36:35.113Z
 
 // File: utils/constants.js
 const FOLDER_STATES_KEY = 'folderStates';
@@ -125,7 +125,166 @@ class BaseComponent {
 }
 
 // export BaseComponent; 
+// File: utils/fileSync.js
+/**
+ * Utility class for syncing files between the browser and the local file system
+ */
+class FileSync {
+    constructor() {
+        this.socket = null;
+        this.isConnected = false;
+        this.watchedFiles = new Set();
+        this.listeners = new Map();
+        this.lastSaveTime = 0;
+    }
+
+    /**
+     * Initialize the WebSocket connection
+     */
+    connect() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${protocol}//${window.location.host}`;
+        
+        this.socket = new WebSocket(url);
+        
+        this.socket.onopen = () => {
+            console.log('Connected to server');
+            this.isConnected = true;
+            
+            // If there are files already being watched, re-register them
+            if (this.watchedFiles.size > 0) {
+                this.sendWatchMessage(Array.from(this.watchedFiles));
+            }
+        };
+        
+        this.socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'fileChange') {
+                    // Get the most recent time a save was performed
+                    const timeSinceLastSave = Date.now() - this.lastSaveTime;
+                    
+                    // Only process external changes if they didn't happen immediately after a save
+                    if (timeSinceLastSave > 1000) {
+                        const callback = this.listeners.get(data.path);
+                        if (callback) {
+                            callback(data.content);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error processing server message:', error);
+            }
+        };
+        
+        this.socket.onclose = () => {
+            console.log('Disconnected from server');
+            this.isConnected = false;
+            
+            // Try to reconnect after a delay
+            setTimeout(() => this.connect(), 3000);
+        };
+        
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.socket.close();
+        };
+    }
+
+    /**
+     * Watch a file for changes
+     * @param {string} filePath - The absolute path to the file
+     * @param {Function} callback - Function to call when the file changes
+     */
+    watchFile(filePath, callback) {
+        if (!filePath) return;
+        
+        this.watchedFiles.add(filePath);
+        this.listeners.set(filePath, callback);
+        
+        if (this.isConnected) {
+            this.sendWatchMessage([filePath]);
+        }
+    }
+
+    /**
+     * Stop watching a file
+     * @param {string} filePath - The absolute path to the file
+     */
+    unwatchFile(filePath) {
+        if (!filePath) return;
+        
+        this.watchedFiles.delete(filePath);
+        this.listeners.delete(filePath);
+    }
+
+    /**
+     * Send a message to watch file paths
+     * @param {Array<string>} paths - Array of file paths to watch
+     */
+    sendWatchMessage(paths) {
+        if (!this.isConnected || !paths.length) return;
+        
+        this.socket.send(JSON.stringify({
+            type: 'watch',
+            paths: paths
+        }));
+    }
+
+    /**
+     * Save content to a file
+     * @param {string} filePath - The absolute path to the file
+     * @param {string} content - The content to save
+     * @returns {Promise<boolean>} - Whether the save was successful
+     */
+    async saveFile(filePath, content) {
+        try {
+            this.lastSaveTime = Date.now();
+            
+            const response = await fetch('/api/file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    path: filePath,
+                    content
+                })
+            });
+            
+            const result = await response.json();
+            return result.success === true;
+        } catch (error) {
+            console.error('Error saving file:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Load content from a file
+     * @param {string} filePath - The absolute path to the file
+     * @returns {Promise<string|null>} - The file content or null if failed
+     */
+    async loadFile(filePath) {
+        try {
+            const response = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`);
+            const result = await response.json();
+            
+            if (result.content !== undefined) {
+                return result.content;
+            }
+            return null;
+        } catch (error) {
+            console.error('Error loading file:', error);
+            return null;
+        }
+    }
+}
+
+// export FileSync; 
 // File: utils/fileManager.js
+
 
 
 class FileManager {
@@ -135,6 +294,19 @@ class FileManager {
         this.folderStructure = new Map();
         this.currentFileIndex = -1;
         this.rootFolder = null;
+        this.fileSync = new FileSync();
+        this.fileSync.connect();
+        this.syncedFiles = new Map(); // Map of file paths to their real paths
+    }
+
+    // Clear all loaded files and folder structure
+    clearFiles() {
+        this.files = [];
+        this.fileMap.clear();
+        this.folderStructure.clear();
+        this.currentFileIndex = -1;
+        this.rootFolder = null;
+        this.syncedFiles.clear();
     }
 
     processFiles(fileList) {
@@ -158,8 +330,14 @@ class FileManager {
                     name: pathParts[pathParts.length - 1],
                     folder: pathParts.slice(0, -1).join('/'),
                     depth: pathParts.length - 1,
-                    isRoot: pathParts.length === 1
+                    isRoot: pathParts.length === 1,
+                    realPath: file.path || null // Store the real file path if available
                 };
+                
+                // Store real path mapping if available
+                if (fileInfo.realPath) {
+                    this.syncedFiles.set(relativePath, fileInfo.realPath);
+                }
 
                 let currentPath = '';
                 pathParts.slice(0, -1).forEach((part, index) => {
@@ -197,6 +375,112 @@ class FileManager {
             return true;
         }
         return false;
+    }
+
+    // New method to process files from the file system
+    async processFileSystem(filePaths) {
+        const markdownFiles = [];
+        this.folderStructure.clear();
+        this.syncedFiles.clear();
+        
+        for (const filePath of filePaths) {
+            if (filePath.toLowerCase().endsWith(FILE_EXTENSIONS.MARKDOWN)) {
+                try {
+                    // Get the content through the server
+                    const content = await this.fileSync.loadFile(filePath);
+                    if (content === null) continue;
+                    
+                    // Create a synthetic file object
+                    const fileName = filePath.split(/[\/\\]/).pop();
+                    const file = new File([content], fileName, { type: 'text/markdown' });
+                    
+                    // Create the file info
+                    const fileInfo = {
+                        file: file,
+                        path: fileName, // Use just the filename as the path internally
+                        name: fileName,
+                        folder: '',
+                        depth: 0,
+                        isRoot: true,
+                        realPath: filePath // Store the real file path
+                    };
+                    
+                    // Map the synthetic path to the real path
+                    this.syncedFiles.set(fileName, filePath);
+                    
+                    markdownFiles.push(fileInfo);
+                } catch (error) {
+                    console.error(`Error processing file ${filePath}:`, error);
+                }
+            }
+        }
+        
+        if (markdownFiles.length) {
+            this.files = markdownFiles;
+            this.updateFileMap();
+            this.setupFileWatchers();
+            return true;
+        }
+        return false;
+    }
+    
+    // Set up watchers for synced files
+    setupFileWatchers() {
+        // Clear any existing watches
+        this.syncedFiles.forEach((realPath) => {
+            this.fileSync.unwatchFile(realPath);
+        });
+        
+        // Set up new watches
+        this.syncedFiles.forEach((realPath, relativePath) => {
+            const fileIndex = this.fileMap.get(relativePath.toLowerCase());
+            if (fileIndex !== undefined) {
+                this.fileSync.watchFile(realPath, (content) => {
+                    this.updateFileContent(fileIndex, content);
+                });
+            }
+        });
+    }
+    
+    // Update file content when it changes on disk
+    updateFileContent(fileIndex, content) {
+        const fileInfo = this.files[fileIndex];
+        if (fileInfo) {
+            // Create a new File object with the updated content
+            const newFile = new File([content], fileInfo.name, { type: 'text/markdown' });
+            fileInfo.file = newFile;
+            
+            // Notify listeners that the file has changed
+            this.notifyFileChanged(fileIndex);
+        }
+    }
+    
+    // Custom event system for file changes
+    notifyFileChanged(fileIndex) {
+        // Dispatch a custom event
+        window.dispatchEvent(new CustomEvent('fileChanged', {
+            detail: { fileIndex }
+        }));
+    }
+    
+    // Save the current file back to disk
+    async saveCurrentFile(content) {
+        const fileInfo = this.getCurrentFile();
+        if (!fileInfo) return false;
+        
+        // Get the real path
+        const realPath = this.syncedFiles.get(fileInfo.path);
+        if (!realPath) return false;
+        
+        // Save through the server
+        const success = await this.fileSync.saveFile(realPath, content);
+        if (success) {
+            // Update our local file object
+            const newFile = new File([content], fileInfo.name, { type: 'text/markdown' });
+            fileInfo.file = newFile;
+        }
+        
+        return success;
     }
 
     getFolderInfo(path) {
@@ -257,6 +541,14 @@ class FileManager {
             return currentDir ? `${currentDir}/${href}` : href;
         }
         return href.slice(1);
+    }
+    
+    // Get the real file path for a file
+    getRealPath(fileIndex) {
+        const fileInfo = this.getFile(fileIndex);
+        if (!fileInfo) return null;
+        
+        return this.syncedFiles.get(fileInfo.path) || null;
     }
 }
 
@@ -446,6 +738,10 @@ class FileToMarkdownViewer {
         this.setupComponents();
         this.setupEventListeners();
         this.restoreSidebarState();
+        this.setupFileChangeListener();
+        this.setupEditorElement();
+        this.isEditorMode = false;
+        this.originalContent = '';
     }
 
     getElements() {
@@ -455,13 +751,59 @@ class FileToMarkdownViewer {
             main: document.querySelector('.m'),
             fileList: document.getElementById('l'),
             dropZone: document.getElementById('z'),
-            toggleButton: document.getElementById('b')
+            toggleButton: document.getElementById('b'),
+            controls: document.querySelector('.controls'),
+            editor: null, // Will be created later
+            saveButton: null, // Will be created later
+            editButton: document.getElementById('e') // Try to get existing button
         };
     }
 
     setupComponents() {
         this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
         this.fileListComponent.on('fileSelect', ({ index }) => this.loadFile(index));
+        
+        // Create save button
+        this.elements.saveButton = document.createElement('button');
+        this.elements.saveButton.textContent = 'Save';
+        this.elements.saveButton.className = 'save-btn';
+        this.elements.saveButton.id = 's'; // Add ID for styling
+        this.elements.saveButton.style.display = 'none';
+        this.elements.saveButton.onclick = () => this.saveFile();
+        document.body.appendChild(this.elements.saveButton); // Add to body for absolute positioning
+        
+        // Create pencil edit button (floating in content window) if it doesn't exist
+        if (!this.elements.editButton) {
+            this.elements.editButton = document.createElement('button');
+            this.elements.editButton.id = 'e'; // Add ID for future reference
+            this.elements.editButton.className = 'e'; // Using short class name like the hamburger button
+            this.elements.editButton.style.display = 'none'; // Hide button initially
+            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+            this.elements.editButton.onclick = () => this.toggleEditor();
+            document.body.appendChild(this.elements.editButton);
+        } else {
+            // Configure existing button
+            this.elements.editButton.style.display = 'none';
+            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+            this.elements.editButton.onclick = () => this.toggleEditor();
+        }
+    }
+    
+    setupEditorElement() {
+        // Create the editor textarea
+        this.elements.editor = document.createElement('textarea');
+        this.elements.editor.className = 'editor';
+        this.elements.editor.style.display = 'none';
+        this.elements.editor.style.width = '100%';
+        this.elements.editor.style.height = '100%';
+        this.elements.editor.style.boxSizing = 'border-box';
+        this.elements.editor.style.padding = '20px';
+        this.elements.editor.style.border = 'none';
+        this.elements.editor.style.fontFamily = 'monospace';
+        this.elements.editor.style.fontSize = '16px';
+        this.elements.editor.style.resize = 'none';
+        this.elements.editor.style.outline = 'none';
+        this.elements.main.appendChild(this.elements.editor);
     }
 
     setupEventListeners() {
@@ -488,8 +830,25 @@ class FileToMarkdownViewer {
             if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
                 e.preventDefault();
                 this.toggleSidebar();
+            } else if ((e.ctrlY || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (this.isEditorMode) {
+                    this.saveFile();
+                }
             }
         };
+    }
+    
+    setupFileChangeListener() {
+        // Listen for file changes from the file system
+        window.addEventListener('fileChanged', (event) => {
+            const { fileIndex } = event.detail;
+            
+            // If this is the current file and we're not in editor mode, reload it
+            if (fileIndex === this.fileManager.currentFileIndex && !this.isEditorMode) {
+                this.loadFile(fileIndex);
+            }
+        });
     }
     
     createAndClickFileInput() {
@@ -515,8 +874,56 @@ class FileToMarkdownViewer {
         document.body.appendChild(tempInput);
         tempInput.click();
     }
+    
+    async openFileDialog() {
+        // Use the browser's file picker API
+        try {
+            const options = {
+                types: [
+                    {
+                        description: 'Markdown Files',
+                        accept: {
+                            'text/markdown': ['.md']
+                        }
+                    }
+                ],
+                multiple: true
+            };
+            
+            const fileHandles = await window.showOpenFilePicker(options);
+            if (!fileHandles || fileHandles.length === 0) return;
+            
+            const filePaths = [];
+            for (const handle of fileHandles) {
+                // Get the file object
+                const file = await handle.getFile();
+                // Store the path for later use
+                filePaths.push(file.path || file.name);
+            }
+            
+            if (filePaths.length > 0) {
+                // Process the files through FileManager
+                const success = await this.fileManager.processFileSystem(filePaths);
+                
+                if (success) {
+                    this.fileListComponent.render();
+                    if (this.fileManager.files.length > 0) {
+                        this.loadFile(0);
+                    }
+                } else {
+                    this.showError('No markdown (.md) files found in the selected files.');
+                }
+            }
+        } catch (error) {
+            console.error('Error opening files:', error);
+            this.showError('Error opening files: ' + error.message);
+        }
+    }
 
     handleFiles(fileList) {
+        // Clear existing files to prevent duplication
+        this.fileManager.clearFiles();
+        
         if (this.fileManager.processFiles(fileList)) {
             this.fileListComponent.render();
             if (this.fileManager.files.length > 0) this.loadFile(0);
@@ -527,6 +934,9 @@ class FileToMarkdownViewer {
 
     showError(message) {
         this.elements.content.innerHTML = `<p style="color:red">${message}</p>`;
+        // Hide the edit button when showing an error
+        this.elements.editButton.style.display = 'none';
+        this.elements.saveButton.style.display = 'none';
     }
 
     loadFile(index) {
@@ -536,14 +946,44 @@ class FileToMarkdownViewer {
         this.fileManager.setCurrentFile(index);
         this.updateFileListSelection(index);
 
+        // Position the edit button in the top right of the content
+        this.updateButtonPositions();
+        
+        // Show edit button when a file is loaded
+        this.elements.editButton.style.display = 'flex';
+
         const reader = new FileReader();
         reader.onload = e => {
-            this.elements.content.innerHTML = this.renderer.render(e.target.result);
-            this.renderer.highlightAll();
-            this.setupLinkHandlers();
+            const content = e.target.result;
+            this.originalContent = content;
+            
+            if (this.isEditorMode) {
+                this.elements.editor.value = content;
+            } else {
+                this.elements.content.innerHTML = this.renderer.render(content);
+                this.renderer.highlightAll();
+                this.setupLinkHandlers();
+            }
         };
         reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
         reader.readAsText(fileInfo.file);
+    }
+    
+    updateButtonPositions() {
+        // Get the position of the content element
+        const contentRect = this.elements.content.getBoundingClientRect();
+        
+        // Position the edit button in the top right of the content area
+        this.elements.editButton.style.position = 'fixed';
+        this.elements.editButton.style.top = `${contentRect.top + 10}px`;
+        this.elements.editButton.style.right = `${window.innerWidth - contentRect.right + 10}px`;
+        this.elements.editButton.style.zIndex = '1000';
+        
+        // Position the save button to the left of the edit button
+        this.elements.saveButton.style.position = 'fixed';
+        this.elements.saveButton.style.top = `${contentRect.top + 10}px`;
+        this.elements.saveButton.style.right = `${window.innerWidth - contentRect.right + 60}px`; // 60px to leave space for edit button
+        this.elements.saveButton.style.zIndex = '1000';
     }
 
     updateFileListSelection(index) {
@@ -667,12 +1107,75 @@ class FileToMarkdownViewer {
             return currentDir ? `${currentDir}/${href}` : href;
         }
     }
+    
+    toggleEditor() {
+        this.isEditorMode = !this.isEditorMode;
+        
+        if (this.isEditorMode) {
+            // Switch to editor mode
+            this.elements.editor.style.display = 'block';
+            this.elements.content.style.display = 'none';
+            this.elements.saveButton.style.display = 'flex';
+            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>';
+            
+            // Update button positions
+            this.updateButtonPositions();
+            
+            // Load current content into editor
+            this.elements.editor.value = this.originalContent;
+        } else {
+            // Switch to preview mode
+            this.elements.editor.style.display = 'none';
+            this.elements.content.style.display = 'block';
+            this.elements.saveButton.style.display = 'none';
+            this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
+            
+            // Render the editor content for preview (without saving)
+            this.elements.content.innerHTML = this.renderer.render(this.elements.editor.value);
+            this.renderer.highlightAll();
+            this.setupLinkHandlers();
+        }
+    }
+    
+    async saveFile() {
+        if (!this.isEditorMode) return;
+        
+        const content = this.elements.editor.value;
+        
+        // Check if there's a current file
+        if (this.fileManager.currentFileIndex === -1) {
+            this.showError('No file selected to save');
+            return;
+        }
+        
+        // Save to disk if it's a file from the file system
+        const success = await this.fileManager.saveCurrentFile(content);
+        
+        if (success) {
+            // Update original content
+            this.originalContent = content;
+            
+            // Update the view
+            if (!this.isEditorMode) {
+                this.elements.content.innerHTML = this.renderer.render(content);
+                this.renderer.highlightAll();
+                this.setupLinkHandlers();
+            }
+            
+            console.log('File saved successfully');
+        } else {
+            this.showError('Error saving file');
+        }
+    }
 
     toggleSidebar() {
         this.elements.sidebar.classList.toggle('hidden');
         this.elements.main.classList.toggle('expanded');
         this.elements.toggleButton.classList.toggle('n');
         localStorage.setItem('sidebarCollapsed', this.elements.sidebar.classList.contains('hidden'));
+        
+        // Re-position the buttons after sidebar toggle
+        setTimeout(() => this.updateButtonPositions(), 300); // Wait for transition to complete
     }
 
     restoreSidebarState() {
@@ -681,16 +1184,22 @@ class FileToMarkdownViewer {
     }
 }
 
-// Initialize app on window load
-window.onload = () => {
-    window.viewer = new FileToMarkdownViewer();
-};
-
-// export FileToMarkdownViewer; 
+// Initialize the application
+window.addEventListener('DOMContentLoaded', () => {
+    window.app = new FileToMarkdownViewer();
+    
+    // Add window resize event listener to update button positions
+    window.addEventListener('resize', () => {
+        if (window.app.fileManager.currentFileIndex !== -1) {
+            window.app.updateButtonPositions();
+        }
+    });
+}); 
 
 // Export all modules for global use
 window.FileManager = FileManager;
 window.FileList = FileList;
 window.DOMUtils = DOMUtils;
 window.BrowserRenderer = BrowserRenderer;
+window.FileSync = FileSync;
 window.FileToMarkdownViewer = FileToMarkdownViewer;
