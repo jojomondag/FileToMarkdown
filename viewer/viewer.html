@@ -311,52 +311,6 @@ body {
   left: 10px;
 }
 
-.btn-edit, 
-.btn-save {
-  position: absolute;
-  top: 10px;
-  z-index: 2001 !important;
-}
-
-.btn-edit {
-  right: 10px;
-}
-
-.btn-save {
-  right: 60px;
-}
-
-.btn-save::before {
-  content: "Save";
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Improved button styling for better visibility */
-.btn-edit, .btn-save {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  background: white;
-  width: 40px;
-  height: 40px;
-}
-
-/* Additional styling for edit mode buttons */
-body.edit-mode .btn-edit, 
-body.edit-mode .btn-save {
-  background: #fff;
-  border: 2px solid var(--color-primary);
-}
-
-body.edit-mode .btn-edit {
-  background: #fff0f0;
-}
-
-body.edit-mode .btn-save {
-  background: #e6f7ff;
-  width: auto;
-  min-width: 70px;
-}
-
 /* ===== EDITOR ===== */
 .editor {
   position: relative !important;
@@ -500,39 +454,6 @@ a {
   color: #032f62 !important;
 }
 
-/* ===== DROPZONE BUTTONS ===== */
-.dropzone-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.dropzone-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: #fff;
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.dropzone-btn:hover {
-  background: var(--color-hover);
-  color: var(--color-primary);
-  border-color: var(--color-primary-dark);
-}
-
-.dropzone-btn svg {
-  flex-shrink: 0;
-}
-
 /* Critical visibility forcing for edit mode */
 body.edit-mode .button-container {
   display: flex !important;
@@ -607,7 +528,6 @@ body.edit-mode .button-container {
 <button class="btn btn-menu" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
 <div class="sidebar"><div class="sidebar-header"><h1 class="sidebar-title">FileToMarkdown</h1></div><div class="file-tree" id="l"></div><div class="dropzone" id="z"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><p>Drop MD files here<br>or click to browse</p></div></div>
 <div class="main-content">
-<div class="controls"></div>
 <div id="content" class="content-container"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div>
 </div>
 <script>

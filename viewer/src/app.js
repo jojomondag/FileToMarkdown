@@ -7,7 +7,6 @@ import FileList from './components/FileList';
  */
 class FileToMarkdownViewer {
     constructor() {
-        console.log('FileToMarkdownViewer constructor called');
         this.fileManager = new FileManager();
         this.renderer = new BrowserRenderer();
         this.elements = this.getElements();
@@ -29,12 +28,10 @@ class FileToMarkdownViewer {
             fileList: document.getElementById('l'),
             dropZone: document.getElementById('z'),
             toggleButton: document.getElementById('b'),
-            controls: document.querySelector('.controls'),
             editor: null, // Will be created later
             saveButton: null, // Will be created later
             editButton: document.getElementById('e'), // Try to get existing button
             fileInput: null, // Will be set up in setupFileInput
-            dirInput: null, // Will be set up in setupFileInput
             buttonContainer: null // Will be set up in setupComponents
         };
     }
@@ -148,8 +145,6 @@ class FileToMarkdownViewer {
     }
     
     setupFileInput() {
-        console.log('Setting up unified file input');
-        
         // Remove any existing file inputs to avoid duplicates
         const existingInput = document.getElementById('file-input');
         if (existingInput) {
@@ -166,9 +161,7 @@ class FileToMarkdownViewer {
         
         // Change event listener for the unified input
         fileInput.addEventListener('change', (e) => {
-            console.log('File input change detected');
             if (e.target.files && e.target.files.length > 0) {
-                console.log(`${e.target.files.length} files/folders selected`);
                 this.handleFiles(Array.from(e.target.files));
             }
             
@@ -183,8 +176,6 @@ class FileToMarkdownViewer {
         
         // Update the dropzone UI
         this.updateDropzoneUI();
-        
-        console.log('Unified file input setup complete');
     }
     
     updateDropzoneUI() {
@@ -220,8 +211,6 @@ class FileToMarkdownViewer {
             e.preventDefault();
             e.stopPropagation();
             
-            console.log('Dropzone clicked, opening file dialog');
-            
             // Create and show a file dialog that allows directory selection
             const input = this.elements.fileInput;
             input.webkitdirectory = true; // Enable directory selection
@@ -247,12 +236,10 @@ class FileToMarkdownViewer {
     showError(message) {
         this.elements.content.innerHTML = `<p style="color:red">${message}</p>`;
         
-        // Hide the button container and buttons when showing an error
+        // Hide the button container when showing an error
         if (this.elements.buttonContainer) {
             this.elements.buttonContainer.style.display = 'none';
         }
-        this.elements.editButton.style.display = 'none';
-        this.elements.saveButton.style.display = 'none';
     }
 
     loadFile(index) {
@@ -265,22 +252,14 @@ class FileToMarkdownViewer {
         this.fileManager.setCurrentFile(index);
         this.updateFileListSelection(index);
 
-        // Show button container and edit button when a file is loaded
+        // Show button container when a file is loaded
         if (this.elements.buttonContainer) {
             this.elements.buttonContainer.style.display = 'flex';
         }
         
-        if (this.elements.editButton) {
-            this.elements.editButton.style.display = 'flex';
-        }
-        
-        // Explicitly hide save button when loading a file (we're not in edit mode)
-        if (this.elements.saveButton) {
-            this.elements.saveButton.style.display = 'none';
-        }
-        
-        // Position the buttons
+        // Update button positions
         this.updateButtonPositions();
+        
         // Force an immediate update of button positions to ensure they're visible
         setTimeout(() => this.updateButtonPositions(), 100);
 
@@ -316,28 +295,22 @@ class FileToMarkdownViewer {
             return;
         }
         
-        // Control visibility of components based on edit mode
-        editButton.style.display = 'flex'; // Edit button always visible when a file is loaded
+        // Set base visibility
+        buttonContainer.style.display = 'flex';
+        editButton.style.display = 'flex';
         
-        // STRICT CONTROL: Save button is ONLY visible in editor mode
-        saveButton.style.display = this.isEditorMode === true ? 'flex' : 'none';
-        
-        // Add or remove edit-mode class on the container
+        // Update container classes and button appearance based on mode
         if (this.isEditorMode) {
             buttonContainer.classList.add('edit-mode');
             buttonContainer.classList.remove('view-mode');
             editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
+            saveButton.style.display = 'flex';
         } else {
             buttonContainer.classList.remove('edit-mode');
             buttonContainer.classList.add('view-mode');
             editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
-            
-            // Force hide save button outside edit mode
             saveButton.style.display = 'none';
         }
-        
-        // Make sure the container itself is visible
-        buttonContainer.style.display = 'flex';
     }
 
     updateFileListSelection(index) {
@@ -387,21 +360,13 @@ class FileToMarkdownViewer {
         const currentDir = currentFile.folder || '';
         const targetPath = this.resolvePath(href, currentDir);
         
-        console.log('Resolving link:', {
-            href,
-            currentDir,
-            targetPath
-        });
-        
         // Try to find the file by path
         let fileIndex = this.findFileByPath(targetPath);
         
         if (fileIndex !== undefined) {
-            console.log('File found, loading index:', fileIndex);
             this.loadFile(fileIndex);
         } else {
             // If not found, try case-insensitive search
-            console.log('File not found by exact path, trying alternative methods');
             this.showError(`Could not find linked file: ${href}`);
         }
     }
@@ -505,8 +470,6 @@ class FileToMarkdownViewer {
     async saveFile() {
         if (!this.isEditorMode) return;
         
-        console.log('[DEBUG] Save button clicked');
-        
         const content = this.elements.editor.value;
         
         // Check if there's a current file
@@ -519,12 +482,8 @@ class FileToMarkdownViewer {
             // Force body to have edit-mode class
             document.body.classList.add('edit-mode');
             
-            console.log('[DEBUG] Before save - buttonContainer display:', this.elements.buttonContainer.style.display);
-            
             // Save to disk if it's a file from the file system
             const success = await this.fileManager.saveCurrentFile(content);
-            
-            console.log('[DEBUG] After save - buttonContainer display:', this.elements.buttonContainer.style.display);
             
             if (success) {
                 // Update original content
@@ -538,53 +497,17 @@ class FileToMarkdownViewer {
                 }
                 
                 console.log('File saved successfully');
-                console.log('[DEBUG] After rendering - buttonContainer display:', this.elements.buttonContainer.style.display);
                 
-                // Ensure body still has edit-mode class
+                // Ensure correct UI state
                 document.body.classList.add('edit-mode');
-                
-                // FORCE BUTTON VISIBILITY IMMEDIATELY
                 document.getElementById('button-container').style.display = 'flex';
-                
-                // Make sure the button container is visible and has the right class
-                this.elements.buttonContainer.style.display = 'flex';
-                this.elements.buttonContainer.classList.add('edit-mode');
-                this.elements.buttonContainer.classList.remove('view-mode');
-                
-                // Make sure both buttons are visible
-                this.elements.editButton.style.display = 'flex'; 
-                this.elements.saveButton.style.display = 'flex';
-                
-                // Set the editor button to X icon
-                this.elements.editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
-                
-                // Force update button positions immediately AND after a delay
                 this.updateButtonPositions();
                 
-                // Schedule multiple checks to make sure buttons stay visible
+                // Single delayed check to ensure buttons remain visible
                 setTimeout(() => {
-                    console.log('[DEBUG] First timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
                     document.body.classList.add('edit-mode');
-                    this.elements.buttonContainer.style.display = 'flex';
-                    document.getElementById('button-container').style.display = 'flex';
-                    this.updateButtonPositions();
-                }, 10);
-                
-                setTimeout(() => {
-                    console.log('[DEBUG] Second timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
-                    document.body.classList.add('edit-mode');
-                    this.elements.buttonContainer.style.display = 'flex';
-                    document.getElementById('button-container').style.display = 'flex';
                     this.updateButtonPositions();
                 }, 50);
-                
-                setTimeout(() => {
-                    console.log('[DEBUG] Third timeout - buttonContainer display:', this.elements.buttonContainer.style.display);
-                    document.body.classList.add('edit-mode');
-                    this.elements.buttonContainer.style.display = 'flex';
-                    document.getElementById('button-container').style.display = 'flex';
-                    this.updateButtonPositions();
-                }, 100);
             } else {
                 this.showError('Error saving file');
             }
