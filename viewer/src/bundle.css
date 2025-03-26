@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T09:26:56.912Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T16:02:40.270Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -172,6 +172,7 @@ a {
   background: #f8fafc;
   box-shadow: var(--shadow-sm);
   transition: transform .3s ease;
+  z-index: 1000;
 }
 
 .sidebar.hidden {
@@ -523,6 +524,7 @@ a {
 
 .main-content.expanded {
   margin-left: 0;
+  padding-left: 70px; /* Extra space to avoid colliding with the hamburger button */
 }
 
 .content-container {
@@ -560,15 +562,215 @@ a {
   color: var(--color-primary);
 }
 
+/* Button menu positioning */
 .btn-menu {
   position: fixed;
   top: 10px;
-  left: 255px;
+  left: 10px;
+  z-index: 1001;
+  background: var(--color-white);
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform .3s ease, left .3s ease;
+}
+
+/* Move the button right when sidebar is visible */
+body:not(.sidebar-hidden) .btn-menu {
+  left: calc(var(--sidebar-width) - 50px);
+}
+
+/* When sidebar is hidden, keep the button visible */
+.sidebar.hidden ~ .btn-menu {
+  left: 10px;
+}
+
+/* Content structure */
+.content-container {
+  position: relative; /* Ensure positioning context for absolute child elements */
+}
+
+.markdown-content {
+  width: 100%;
+  height: 100%;
+  overflow-wrap: break-word;
+}
+
+/* Edit button positioning */
+.content-buttons {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 10px;
   z-index: 1001;
 }
 
-.btn-menu.shifted {
-  left: 10px;
+/* Button styling */
+.btn-edit, .btn-save {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover, .btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: var(--color-hover);
+}
+
+.btn-edit {
+  background: #fff;
+  color: var(--color-text);
+}
+
+.btn-save {
+  background: #e6f7ff;
+  border: 1px solid #0366d6;
+  color: #0366d6;
+}
+
+/* Save button states */
+.btn-save.saving {
+  background: #f0f9ff;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.btn-save.saved {
+  background: #f0fff4;
+  border-color: #38a169;
+  color: #38a169;
+}
+
+.btn-save.error {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
+/* Save button visibility control */
+.content-buttons .btn-save {
+  display: none !important; /* Hide by default */
+}
+
+body.edit-mode .content-buttons .btn-save {
+  display: flex !important; /* Only show in edit mode */
+}
+
+/* ===== NOTIFICATIONS ===== */
+.file-change-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #d1ecf1;
+  color: #0c5460;
+  padding: 10px 15px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 9999;
+  max-width: 300px;
+  animation: slideIn 0.3s ease-out;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== CONFLICT DIALOG ===== */
+.conflict-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.conflict-dialog {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 90%;
+  animation: scaleIn 0.2s ease-out;
+}
+
+.conflict-dialog h3 {
+  margin-top: 0;
+  color: #e53e3e;
+  font-size: 1.2em;
+}
+
+.conflict-dialog p {
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.conflict-dialog .button-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.conflict-dialog button {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  font-weight: 500;
+}
+
+.conflict-dialog button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.conflict-dialog .keep-mine {
+  background-color: #3182ce;
+}
+
+.conflict-dialog .use-external {
+  background-color: #718096;
+}
+
+.conflict-dialog .merge {
+  background-color: #38a169;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ===== EDITOR ===== */
@@ -602,65 +804,5 @@ body.edit-mode .button-container {
   opacity: 1 !important;
   z-index: 10000 !important;
   pointer-events: auto !important;
-}
-
-/* Button container styles */
-.button-container {
-  display: flex;
-  position: fixed !important;
-  top: 10px !important;
-  right: 10px !important;
-  z-index: 9999 !important;
-  gap: 10px;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-}
-
-.button-container .btn {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  background: white;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--border-radius-sm);
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: 1px solid var(--color-border);
-  position: static !important; /* Override absolute positioning */
-}
-
-.button-container.edit-mode .btn-edit {
-  background: #fff0f0;
-  border: 2px solid #f56565;
-}
-
-.button-container.edit-mode .btn-save {
-  background: #e6f7ff;
-  border: 2px solid #0366d6;
-  width: auto;
-  min-width: 70px;
-  display: flex !important;
-}
-
-.button-container:not(.edit-mode) .btn-save {
-  display: none !important;
-}
-
-.btn-edit:hover, .btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.btn-edit:active, .btn-save:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-}
-
-.btn-save::before {
-  content: "Save";
-  font-size: 14px;
-  font-weight: 500;
 } 
 

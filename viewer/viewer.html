@@ -24,10 +24,32 @@
     <script src="src/bundle.js"></script>
 </head>
 <body>
-<button class="btn btn-menu" id="b"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
-<div class="sidebar"><div class="sidebar-header"><h1 class="sidebar-title">FileToMarkdown</h1></div><div class="file-tree" id="l"></div><div class="dropzone" id="z"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg><p>Drop MD files here<br>or click to browse</p></div></div>
+<button class="btn btn-menu" id="b">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+    </svg>
+</button>
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1 class="sidebar-title">FileToMarkdown</h1>
+    </div>
+    <div class="file-tree" id="l"></div>
+    <div class="dropzone" id="z">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        </svg>
+        <p>Click to select folders<br>with markdown files</p>
+    </div>
+</div>
 <div class="main-content">
-<div id="content" class="content-container"><h2>Welcome to FileToMarkdown Viewer</h2><p>To view a markdown file:</p><ul><li>Drop a markdown file onto the drop zone, or</li><li>Click the drop zone to browse for markdown files</li></ul></div>
+    <div id="content" class="content-container">
+        <h2>Welcome to FileToMarkdown Viewer</h2>
+        <p>To view a markdown file:</p>
+        <ul>
+            <li>Drop a markdown file onto the drop zone, or</li>
+            <li>Click the drop zone to browse for markdown files</li>
+        </ul>
+    </div>
 </div>
 <script>
 // Initialize app after all scripts are loaded

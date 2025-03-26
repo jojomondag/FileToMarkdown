@@ -244,14 +244,71 @@ class FileManager {
         window.dispatchEvent(new CustomEvent('fileListChanged'));
     }
 
-    // Save the current file
+    /**
+     * Save the current file with new content
+     */
     async saveCurrentFile(content) {
-        if (this.currentFileIndex < 0) return { success: false, message: 'No file selected' };
+        const fileInfo = this.getCurrentFile();
+        if (!fileInfo) return false;
         
-        const fileInfo = this.files[this.currentFileIndex];
-        if (!fileInfo) return { success: false, message: 'File not found' };
+        // Store the content in the file info
+        fileInfo.content = content;
         
-        return await this.saveFile(fileInfo, content);
+        try {
+            // Method 1: Use the File System Access API if available
+            if (fileInfo.file && fileInfo.file.handle) {
+                const handle = fileInfo.file.handle;
+                
+                // Always check for permission first to avoid errors
+                const options = { mode: 'readwrite' };
+                if ((await handle.queryPermission(options)) !== 'granted') {
+                    const permission = await handle.requestPermission(options);
+                    if (permission !== 'granted') {
+                        console.error('Permission to write to file was denied');
+                        return false;
+                    }
+                }
+                
+                // Get a writable stream
+                const writable = await handle.createWritable();
+                
+                // Write the content
+                await writable.write(content);
+                
+                // Close the file
+                await writable.close();
+                
+                console.log('File saved successfully using File System Access API');
+                return true;
+            }
+            
+            // Method 2: Use the server API as a fallback
+            if (fileInfo.path) {
+                // Use the server API to save the file
+                const response = await fetch('/api/file', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        path: fileInfo.path,
+                        content
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                }
+                
+                console.log('File saved successfully using server API');
+                return true;
+            }
+        } catch (error) {
+            console.error('Error saving file:', error);
+            throw error;
+        }
+        
+        return false;
     }
 
     // Get file type from name

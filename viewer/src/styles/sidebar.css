@@ -11,6 +11,7 @@
   background: #f8fafc;
   box-shadow: var(--shadow-sm);
   transition: transform .3s ease;
+  z-index: 1000;
 }
 
 .sidebar.hidden {
