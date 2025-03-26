@@ -1,7 +1,6 @@
 import FileManager from './utils/fileManager';
 import BrowserRenderer from './utils/renderer';
 import FileList from './components/FileList';
-import Database from './utils/database';
 import Header from './components/Header';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
@@ -15,47 +14,25 @@ class FileToMarkdownViewer {
         this.renderer = new BrowserRenderer();
         this.elements = this.getElements();
         
-        // Debug localStorage contents
-        console.log('========= DEBUG LOCALSTORAGE =========');
-        console.log('Available localStorage keys:');
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            console.log(`Key: ${key}, Size: ${localStorage.getItem(key).length} bytes`);
-        }
-        
-        // Check for our specific keys
-        console.log('Our localStorage keys:');
-        console.log('LOADED_FILES_KEY:', localStorage.getItem('fileToMarkdown_loadedFiles') ? 'exists' : 'not found');
-        console.log('LOADED_FILES_FOLDERS_KEY:', localStorage.getItem('fileToMarkdown_loadedFiles_folders') ? 'exists' : 'not found');
-        console.log('LOADED_FILES_CURRENT_INDEX:', localStorage.getItem('fileToMarkdown_loadedFiles_currentIndex') ? 'exists' : 'not found');
-        console.log('======================================');
-        
         this.setupComponents();
         this.setupEventListeners();
-        this.restoreSidebarState();
         this.setupFileChangeListener();
         this.setupEditorElement();
         this.isEditorMode = false;
         this.originalContent = '';
-        this.setupFileInput(); // Set up persistent file input
+        this.setupFileInput();
         
-        // Try to restore the previously opened files when the page loads
-        this.restoreFilesOnLoad();
-        
-        // Set up beforeunload event to save files to localStorage
-        window.addEventListener('beforeunload', () => {
-            // Save current files to localStorage
+        window.addEventListener('beforeunload', (event) => {
             if (this.fileManager.files && this.fileManager.files.length > 0) {
-                this.fileManager.saveFilesToLocalStorage();
-                
-                // If we're in editor mode, save the current file content
                 if (this.isEditorMode && this.elements.editor.value) {
                     const fileInfo = this.fileManager.getCurrentFile();
                     if (fileInfo) {
                         fileInfo.content = this.elements.editor.value;
-                        this.fileManager.saveFilesToLocalStorage();
                     }
                 }
+                const message = 'You have unsaved changes. Are you sure you want to leave?';
+                event.returnValue = message;
+                return message;
             }
         });
     }
@@ -68,11 +45,11 @@ class FileToMarkdownViewer {
             fileList: document.getElementById('l'),
             dropZone: document.getElementById('z'),
             toggleButton: document.getElementById('b'),
-            editor: null, // Will be created later
-            saveButton: null, // Will be created later
-            editButton: document.getElementById('e'), // Try to get existing button
-            fileInput: null, // Will be set up in setupFileInput
-            buttonContainer: null // Will be set up in setupComponents
+            editor: null,
+            saveButton: null,
+            editButton: document.getElementById('e'),
+            fileInput: null,
+            buttonContainer: null
         };
     }
 
@@ -80,67 +57,57 @@ class FileToMarkdownViewer {
         this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
         this.fileListComponent.on('fileSelect', ({ index }) => this.loadFile(index));
         
-        // Remove any existing buttons from previous instances
         const existingContainer = document.querySelector('.button-container');
         if (existingContainer) {
             existingContainer.parentNode.removeChild(existingContainer);
         }
         
-        // Create a fixed container for both buttons that will stay in position
         const buttonContainer = document.createElement('div');
         buttonContainer.className = 'button-container';
         buttonContainer.id = 'button-container';
-        // Use fixed positioning with specific coordinates
         buttonContainer.style.position = 'fixed';
         buttonContainer.style.top = '10px';
         buttonContainer.style.right = '10px';
         buttonContainer.style.zIndex = '2000';
-        buttonContainer.style.display = 'none'; // Hidden by default
+        buttonContainer.style.display = 'none';
         buttonContainer.style.gap = '10px';
         
-        // Create edit button
         const editButton = document.createElement('button');
         editButton.id = 'e';
         editButton.className = 'btn btn-edit';
         editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
         editButton.onclick = () => this.toggleEditor();
         
-        // Create save button
         const saveButton = document.createElement('button');
         saveButton.className = 'btn btn-save';
         saveButton.id = 's';
         saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-        saveButton.style.display = 'none'; // Hidden initially
+        saveButton.style.display = 'none';
         saveButton.onclick = () => this.saveFile();
         
-        // Store references to our elements
         this.elements.saveButton = saveButton;
         this.elements.editButton = editButton;
         this.elements.buttonContainer = buttonContainer;
         
-        // Add buttons to the container
         buttonContainer.appendChild(editButton);
         buttonContainer.appendChild(saveButton);
-        
-        // Add container to the document body
         document.body.appendChild(buttonContainer);
     }
     
     setupEditorElement() {
-        // Create the editor textarea
         this.elements.editor = document.createElement('textarea');
         this.elements.editor.className = 'editor';
         this.elements.editor.style.display = 'none';
         this.elements.editor.style.width = '100%';
         this.elements.editor.style.height = '100%';
         this.elements.editor.style.boxSizing = 'border-box';
-        this.elements.editor.style.padding = '50px 20px 20px'; // Extra top padding for buttons
+        this.elements.editor.style.padding = '50px 20px 20px';
         this.elements.editor.style.border = 'none';
         this.elements.editor.style.fontFamily = 'monospace';
         this.elements.editor.style.fontSize = '16px';
         this.elements.editor.style.resize = 'none';
         this.elements.editor.style.outline = 'none';
-        this.elements.editor.style.position = 'relative'; // Important for absolute positioning of buttons
+        this.elements.editor.style.position = 'relative';
         this.elements.main.appendChild(this.elements.editor);
     }
 
@@ -148,7 +115,6 @@ class FileToMarkdownViewer {
         // Only handle drag events for the dropzone, clicks are handled separately
         const dropZone = this.elements.dropZone;
         
-        // Handle drag and drop events
         ['dragover', 'dragleave', 'drop'].forEach(event => {
             dropZone.addEventListener(event, e => {
                 e.preventDefault();
@@ -173,11 +139,8 @@ class FileToMarkdownViewer {
     }
     
     setupFileChangeListener() {
-        // Listen for file changes from the file system
         window.addEventListener('fileChanged', (event) => {
             const { fileIndex } = event.detail;
-            
-            // If this is the current file and we're not in editor mode, reload it
             if (fileIndex === this.fileManager.currentFileIndex && !this.isEditorMode) {
                 this.loadFile(fileIndex);
             }
@@ -239,53 +202,8 @@ class FileToMarkdownViewer {
         dropZone.appendChild(uploadIcon);
         dropZone.appendChild(dropText);
         
-        // Check if we have recent files
-        const recentFiles = this.fileManager.getRecentFiles();
-        if (recentFiles.length > 0) {
-            // Add recent files section
-            const recentSection = document.createElement('div');
-            recentSection.className = 'recent-files-section';
-            
-            const recentTitle = document.createElement('h3');
-            recentTitle.className = 'recent-title';
-            recentTitle.textContent = 'Recent Files';
-            recentSection.appendChild(recentTitle);
-            
-            // Add recent files list (show up to 5 most recent)
-            const recentList = document.createElement('ul');
-            recentList.className = 'recent-list';
-            
-            recentFiles.slice(0, 5).forEach((recent) => {
-                const item = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = '#';
-                link.textContent = recent.name;
-                link.title = recent.path;
-                
-                // Add click handler to open recent file
-                link.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    const success = await this.fileManager.openRecentFile(recent);
-                    if (success) {
-                        this.loadFile(0);
-                    }
-                });
-                
-                item.appendChild(link);
-                recentList.appendChild(item);
-            });
-            
-            recentSection.appendChild(recentList);
-            dropZone.appendChild(recentSection);
-        }
-        
         // Add click handler
         dropZone.onclick = async (e) => {
-            // Only trigger file selector if clicking on the dropzone itself or its icon/text
-            if (e.target.closest('.recent-files-section')) {
-                return; // Skip if clicking on recent files section
-            }
-            
             e.preventDefault();
             e.stopPropagation();
             
@@ -331,17 +249,10 @@ class FileToMarkdownViewer {
             // Load the first file
             this.loadFile(this.fileManager.currentFileIndex);
             
-            // Make sure files are saved to localStorage
-            this.fileManager.saveFilesToLocalStorage();
-            
             return true;
-        } else {
-            console.log('No files processed');
-            
-            // Reset the dropzone UI
-            this.updateDropzoneUI();
-            return false;
         }
+        
+        return false;
     }
 
     showError(message) {
@@ -656,91 +567,31 @@ class FileToMarkdownViewer {
         this.elements.sidebar.classList.toggle('hidden');
         this.elements.main.classList.toggle('expanded');
         this.elements.toggleButton.classList.toggle('shifted');
-        localStorage.setItem('sidebarCollapsed', this.elements.sidebar.classList.contains('hidden'));
         
         // Re-position the buttons after sidebar toggle
         setTimeout(() => this.updateButtonPositions(), 300); // Wait for transition to complete
-    }
-
-    restoreSidebarState() {
-        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-        if (sidebarCollapsed) this.toggleSidebar();
-    }
-
-    /**
-     * Try to restore files from the previous session when the page loads
-     */
-    async restoreFilesOnLoad() {
-        console.log('Attempting to restore files on load');
-        
-        // First, try to see if the fileManager already restored a session
-        if (this.fileManager.sessionRestored || this.fileManager.files.length > 0) {
-            console.log('Files already restored by fileManager, loading current file');
-            if (this.fileManager.currentFileIndex >= 0) {
-                this.loadFile(this.fileManager.currentFileIndex);
-                
-                // Show the button container since we have a file loaded
-                if (this.elements.buttonContainer) {
-                    this.elements.buttonContainer.style.display = 'flex';
-                }
-                
-                // Hide the drop zone
-                if (this.elements.dropZone) {
-                    this.elements.dropZone.style.display = 'none';
-                }
-                
-                // Show the main content area
-                this.elements.main.style.display = 'block';
-                
-                return true;
-            }
-        }
-        
-        // Check if we have files in localStorage
-        try {
-            const filesLoaded = this.fileManager.loadFilesFromLocalStorage();
-            if (filesLoaded && this.fileManager.files.length > 0) {
-                console.log('Files loaded from localStorage, loading current file');
-                if (this.fileManager.currentFileIndex >= 0) {
-                    this.loadFile(this.fileManager.currentFileIndex);
-                    
-                    // Show the button container
-                    if (this.elements.buttonContainer) {
-                        this.elements.buttonContainer.style.display = 'flex';
-                    }
-                    
-                    // Hide the drop zone
-                    if (this.elements.dropZone) {
-                        this.elements.dropZone.style.display = 'none';
-                    }
-                    
-                    // Show the main content area
-                    this.elements.main.style.display = 'block';
-                    
-                    // Force re-render of the file tree
-                    this.fileListComponent.render();
-                    
-                    return true;
-                }
-            }
-        } catch (error) {
-            console.error('Error restoring files from localStorage:', error);
-        }
-        
-        // No files were restored, show the drop zone
-        if (this.elements.dropZone) {
-            this.elements.dropZone.style.display = 'block';
-        }
-        return false;
     }
 }
 
 // Create and initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing FileToMarkdown Viewer...');
+    
+    // Create app instance
     const app = new FileToMarkdownViewer();
     
-    // Expose app to window for debugging
+    // Expose app and fileManager to window for debugging and manual operations
     window.app = app;
+    window.fileManager = app.fileManager;
     
+    // Log initialization status
     console.log('FileToMarkdown Viewer initialized');
-}); 
+    console.log('FileManager instance available at window.fileManager');
+    
+    // Dispatch a custom event to notify that the app is ready
+    window.dispatchEvent(new CustomEvent('appInitialized', {
+        detail: { fileManager: app.fileManager }
+    }));
+});
+
+export default FileToMarkdownViewer; 

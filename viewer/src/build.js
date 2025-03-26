@@ -30,7 +30,6 @@ let bundleContent = `// FileToMarkdown Viewer Bundle - ${new Date().toISOString(
 
 // Function to process a file and extract its exported content
 function processFile(filePath) {
-    console.log(`Processing ${filePath}...`);
     try {
         let content = fs.readFileSync(path.join(__dirname, filePath), 'utf8');
         content = content.replace(/import .* from .*/g, '');
@@ -38,9 +37,6 @@ function processFile(filePath) {
         content = content.replace(/export default (\w+)/g, '// export $1');
         return content;
     } catch (err) {
-        console.error(`ERROR reading file ${filePath}: ${err.message}`);
-        console.error(`File path attempted: ${path.join(__dirname, filePath)}`);
-        console.error(err.stack);
         throw err;
     }
 }
@@ -48,14 +44,10 @@ function processFile(filePath) {
 // Process each file
 files.forEach(file => {
     try {
-        console.log(`Starting to process file: ${file}`);
         bundleContent += `// File: ${file}\n`;
         bundleContent += processFile(file);
         bundleContent += '\n';
-        console.log(`Successfully processed file: ${file}`);
-    } catch (err) {
-        console.error(`FATAL ERROR processing ${file}: ${err.message}`);
-    }
+    } catch (err) {}
 });
 
 // Add exports at the end
@@ -72,8 +64,4 @@ window.FileToMarkdownViewer = FileToMarkdownViewer;
 // Write the bundle file
 try {
     fs.writeFileSync(bundlePath, bundleContent);
-    console.log(`Bundle created at ${bundlePath}`);
-} catch (err) {
-    console.error(`Error writing bundle file: ${err.message}`);
-    console.error(err.stack);
-} 
+} catch (err) {} 

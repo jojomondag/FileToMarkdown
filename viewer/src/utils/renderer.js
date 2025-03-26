@@ -10,19 +10,15 @@ class BrowserRenderer {
     }
 
     configureMarked() {
-        const highlightCode = (code, lang) => {
-            try {
-                const language = LANGUAGE_MAPPINGS[lang] || lang;
-                return Prism.languages[language] 
-                    ? Prism.highlight(code, Prism.languages[language], language)
-                    : code;
-            } catch {
-                return code;
-            }
-        };
-
         marked.setOptions({
-            highlight: highlightCode,
+            highlight: (code, lang) => {
+                try {
+                    const language = LANGUAGE_MAPPINGS[lang] || lang;
+                    return Prism.languages[language] 
+                        ? Prism.highlight(code, Prism.languages[language], language)
+                        : code;
+                } catch { return code; }
+            },
             langPrefix: 'language-',
             gfm: true,
             breaks: true

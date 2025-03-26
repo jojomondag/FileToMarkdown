@@ -1,5 +1,3 @@
-export const FOLDER_STATES_KEY = 'folderStates';
-
 export const CSS_CLASSES = {
     COLLAPSED: 'collapsed',
     FOLDER_CONTENT: 'folder-content'
