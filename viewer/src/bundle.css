@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T16:28:30.531Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T20:52:18.057Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -373,29 +373,23 @@ a {
 
 .file-tree .folder-contents {
   position: relative;
-  padding-left: var(--guide-spacing);
+  padding-left: 0;
   list-style: none;
-  margin: 0;
-  border-left: 1px solid #e1e4e8;
+  margin: 0 0 0 28px;
+  border-left: var(--guide-width) var(--guide-style) var(--guide-color);
 }
 
 .file-tree .folder-contents::before {
-  content: "";
-  position: absolute;
-  left: calc(var(--icon-position) + var(--icon-middle));
-  top: 0;
-  bottom: 8px;
-  width: var(--guide-width);
-  border-left: var(--guide-width) var(--guide-style) var(--guide-color);
+  content: none;
 }
 
 .file-tree .folder-contents > li::after {
   content: "";
   position: absolute;
-  left: calc((var(--icon-position) + var(--icon-middle)) * -1);
-  width: calc(var(--icon-position) + var(--icon-middle));
+  left: -12px;
+  width: 12px;
   height: var(--guide-width);
-  top: calc(50% - var(--guide-width)/2);
+  top: 14px;
   border-top: var(--guide-width) var(--guide-style) var(--guide-color);
   z-index: 0;
 }
@@ -522,13 +516,46 @@ a {
   color: white;
 }
 
-/* Indentation levels */
-.file-tree [data-depth="0"] { padding-left: 0.5em; }
-.file-tree [data-depth="1"] { padding-left: 1.5em; }
-.file-tree [data-depth="2"] { padding-left: 2.5em; }
-.file-tree [data-depth="3"] { padding-left: 3.5em; }
-.file-tree [data-depth="4"] { padding-left: 4.5em; }
-.file-tree [data-depth="5"] { padding-left: 5.5em; }
+/* Remove indentation levels based on data-depth and use nesting instead */
+.file-tree [data-depth] { 
+  padding-left: 0;
+}
+
+/* Make all folders have consistent styling */
+.file-tree li.folder-item {
+  margin-bottom: 8px;
+  position: relative;
+}
+
+/* Style for folder items to look like containers */
+.file-tree li.folder-item > a[data-folder] {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px 4px 0 0;
+  border-left: 3px solid var(--color-primary-light);
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+/* Hover effect for folder items */
+.file-tree li.folder-item > a[data-folder]:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-left-color: var(--color-primary);
+}
+
+/* Make main folder stand out at the top */
+.file-tree > li.folder-item {
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+/* Add visual distinction for nested levels */
+.file-tree > li.folder-item > a[data-folder] {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.file-tree > li.folder-item > .folder-contents > li.folder-item > a[data-folder] {
+  background-color: rgba(0, 0, 0, 0.03);
+}
 
 /* Animation */
 .file-tree .folder-contents {

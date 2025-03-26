@@ -240,11 +240,24 @@ class FileToMarkdownViewer {
         // Listen for file changes from the server fallback
         window.addEventListener('fileChanged', (event) => {
             const { fileIndex } = event.detail;
-            if (fileIndex === this.fileManager.currentFileIndex && !this.isEditorMode) {
-                this.loadFile(fileIndex);
+            
+            // If the changed file is currently loaded, load it again
+            if (fileIndex === this.fileManager.currentFileIndex) {
+                // Only refresh if we're not in edit mode
+                if (!this.isEditorMode) {
+                    console.log('Reloading current file due to external change');
+                    this.loadFile(fileIndex);
+                } else {
+                    // If in edit mode, show a notification
+                    const fileInfo = this.fileManager.getFile(fileIndex);
+                    this.showFileChangeNotification(fileInfo.name);
+                }
             }
         });
-
+        
+        // Add file content monitoring for the current open file
+        let isCheckingCurrentFile = false;
+        
         // Setup file watcher using File System Access API
         this.fileWatchers = new Map();
         
@@ -321,11 +334,94 @@ class FileToMarkdownViewer {
                         }
                     }
                     
-                    // Check for removed files
+                    // Check for removed files - CONSERVATIVE APPROACH FOR SIDEBAR STABILITY
                     const removedFiles = [];
                     for (const file of this.fileManager.files) {
-                        if (file.path.startsWith(dirPath) && !currentFiles.has(file.path.toLowerCase())) {
-                            removedFiles.push(file.path);
+                        // Only consider files in this directory for removal
+                        if (this.fileManager.comparePaths(file.path, dirPath)) {
+                            let found = false;
+                            // Check all entries in the directory to see if the file still exists
+                            for (const [entryPath] of currentFiles) {
+                                if (this.fileManager.comparePaths(file.path, entryPath)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                console.log(`File may be removed: ${file.path}, checking...`);
+                                // Double-check by trying to get the file directly
+                                try {
+                                    // Extract relative path more carefully
+                                    const relativePath = file.path.replace(dirPath, '').replace(/^\/+/, '');
+                                    
+                                    // Try multiple methods to verify if the file is really gone
+                                    let fileExists = false;
+                                    
+                                    try {
+                                        // Method 1: Try to get file handle directly
+                                        await dirHandle.getFileHandle(relativePath)
+                                            .then(() => { fileExists = true; })
+                                            .catch(() => {});
+                                            
+                                        if (!fileExists) {
+                                            // Method 2: If path contains subdirectories, traverse them
+                                            if (relativePath.includes('/')) {
+                                                const pathParts = relativePath.split('/');
+                                                let currentHandle = dirHandle;
+                                                let pathTraversed = true;
+                                                
+                                                // Navigate to parent directory
+                                                for (let i = 0; i < pathParts.length - 1; i++) {
+                                                    try {
+                                                        currentHandle = await currentHandle.getDirectoryHandle(pathParts[i]);
+                                                    } catch (err) {
+                                                        pathTraversed = false;
+                                                        break;
+                                                    }
+                                                }
+                                                
+                                                // If we reached the parent directory, check for the file
+                                                if (pathTraversed) {
+                                                    const fileName = pathParts[pathParts.length - 1];
+                                                    try {
+                                                        await currentHandle.getFileHandle(fileName);
+                                                        fileExists = true;
+                                                    } catch (err) {
+                                                        // File truly doesn't exist
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // If file doesn't exist after thorough checking, mark for removal
+                                        if (!fileExists) {
+                                            console.log(`Confirmed file is missing: ${file.path}`);
+                                            // Only remove after multiple checks in different refresh cycles
+                                            if (file._markedForRemoval) {
+                                                removedFiles.push(file.path);
+                                            } else {
+                                                // Mark for removal but don't remove yet - needs confirmation in next cycle
+                                                file._markedForRemoval = true;
+                                                console.log(`Marking file for potential removal: ${file.path}`);
+                                            }
+                                        } else {
+                                            // File exists, reset any removal markers
+                                            file._markedForRemoval = false;
+                                        }
+                                    } catch (err) {
+                                        console.log(`Error checking file existence for ${file.path}: ${err}`);
+                                        // Be conservative - don't remove if we can't confirm
+                                        file._markedForRemoval = false;
+                                    }
+                                } catch (error) {
+                                    // If we can't check, don't remove the file
+                                    console.log(`Couldn't verify if file ${file.path} exists, keeping it`);
+                                    file._markedForRemoval = false;
+                                }
+                            } else {
+                                // File was found, reset any removal markers
+                                file._markedForRemoval = false;
+                            }
                         }
                     }
                     
@@ -995,6 +1091,7 @@ class FileToMarkdownViewer {
         try {
             // Store the directory handle for change monitoring
             if (path) {
+                console.log(`Registering directory for monitoring: ${path}`);
                 this.fileManager.addDirectoryHandle(path, directoryHandle);
             }
 
@@ -1002,8 +1099,8 @@ class FileToMarkdownViewer {
                 const entryPath = path ? `${path}/${entry.name}` : entry.name;
 
                 if (entry.kind === 'file') {
-                     // Check if it's potentially a markdown file BEFORE getting the handle/file
-                     if (/\.(md|markdown|mdown)$/i.test(entry.name)) {
+                    // Check if it's potentially a markdown file BEFORE getting the handle/file
+                    if (/\.(md|markdown|mdown)$/i.test(entry.name)) {
                         try {
                             const fileHandle = await directoryHandle.getFileHandle(entry.name);
                             const file = await fileHandle.getFile();
@@ -1014,12 +1111,15 @@ class FileToMarkdownViewer {
                             file.handle = fileHandle; // Store the handle for saving and file watching!
                             
                             // Pre-load the file content for change detection
-                            file.content = await file.text();
+                            try {
+                                file.content = await file.text();
+                            } catch (err) {
+                                console.warn(`Could not pre-load content for ${entryPath}`, err);
+                            }
 
                             files.push(file);
                         } catch (error) {
                             console.error(`Error processing file ${entryPath}:`, error);
-                            // Optionally notify the user about specific file errors
                         }
                     }
                 } else if (entry.kind === 'directory') {
@@ -1027,8 +1127,9 @@ class FileToMarkdownViewer {
                         // Get subdirectory handle
                         const subDirHandle = await directoryHandle.getDirectoryHandle(entry.name);
                         
-                        // Store the subdirectory handle for change monitoring
+                        // Register the directory handle for monitoring
                         this.fileManager.addDirectoryHandle(entryPath, subDirHandle);
+                        console.log(`Registered subdirectory for monitoring: ${entryPath}`);
                         
                         // Process the subdirectory recursively
                         const subDirFiles = await this.getFilesFromDirectoryHandle(subDirHandle, entryPath);

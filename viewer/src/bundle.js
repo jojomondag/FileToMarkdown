@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-26T16:28:30.524Z
+// FileToMarkdown Viewer Bundle - 2025-03-26T20:52:18.050Z
 
 // File: utils/constants.js
 /**
@@ -707,6 +707,10 @@ class FileManager {
 
     // Reconstruct folder structure from file paths
     reconstructFolderStructure() {
+        // Keep a backup of the old structure for comparison
+        const previousStructure = new Map(this.folderStructure);
+        
+        // Clear the current structure
         this.folderStructure.clear();
         
         // First pass: create folders
@@ -721,6 +725,7 @@ class FileManager {
                 currentPath = currentPath ? `${currentPath}/${part}` : part;
                 
                 if (!this.folderStructure.has(currentPath)) {
+                    // Create new folder entry
                     this.folderStructure.set(currentPath, {
                         name: part,
                         path: currentPath,
@@ -742,6 +747,57 @@ class FileManager {
         for (const fileInfo of this.files) {
             if (fileInfo.folder && this.folderStructure.has(fileInfo.folder)) {
                 this.folderStructure.get(fileInfo.folder).files.add(fileInfo.path);
+            }
+        }
+        
+        // Log structure changes for debugging
+        const oldFolders = Array.from(previousStructure.keys());
+        const newFolders = Array.from(this.folderStructure.keys());
+        
+        const added = newFolders.filter(f => !previousStructure.has(f));
+        const removed = oldFolders.filter(f => !this.folderStructure.has(f));
+        
+        if (added.length > 0 || removed.length > 0) {
+            console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
+        }
+        
+        // Check for lost files and add them to the root if needed
+        this.ensureAllFilesAreAccessible();
+    }
+
+    // Ensure all files are accessible within the folder structure
+    ensureAllFilesAreAccessible() {
+        // Find files that are not in any folder
+        const orphanedFiles = this.files.filter(fileInfo => {
+            // Skip files without folder information
+            if (!fileInfo.folder) return false;
+            
+            // Check if the folder exists in structure
+            return !this.folderStructure.has(fileInfo.folder);
+        });
+        
+        if (orphanedFiles.length > 0) {
+            console.warn(`Found ${orphanedFiles.length} orphaned files - attempting recovery`);
+            
+            // Try to fix folder paths for orphaned files
+            for (const fileInfo of orphanedFiles) {
+                // Check if any parent folder exists
+                const pathParts = fileInfo.folder.split('/');
+                
+                // Try progressively shorter paths
+                for (let i = pathParts.length - 1; i > 0; i--) {
+                    const partialPath = pathParts.slice(0, i).join('/');
+                    if (this.folderStructure.has(partialPath)) {
+                        // Found a valid parent folder
+                        console.log(`Reassigning ${fileInfo.path} to folder ${partialPath}`);
+                        fileInfo.folder = partialPath;
+                        fileInfo.depth = pathParts.length - 1;
+                        
+                        // Add to this folder
+                        this.folderStructure.get(partialPath).files.add(fileInfo.path);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -781,12 +837,149 @@ class FileManager {
 
     // Add a directory handle
     addDirectoryHandle(path, handle) {
+        // Normalize path for consistency
+        path = this.normalizePath(path);
+        
+        console.log(`Adding directory handle for: ${path}`);
         this.directoryHandles.set(path, handle);
+        
+        // Log number of directories being monitored
+        console.log(`Now monitoring ${this.directoryHandles.size} directories`);
     }
 
     // Remove a directory handle
     removeDirectoryHandle(path) {
         this.directoryHandles.delete(path);
+    }
+
+    // Remove files by path with improved safety
+    removeFiles(filePaths) {
+        if (!filePaths || filePaths.length === 0) return false;
+        
+        // Safety check - don't remove too many files at once
+        const maxFilesToRemove = Math.max(5, Math.floor(this.files.length * 0.2));
+        if (filePaths.length > maxFilesToRemove) {
+            console.warn(`Attempted to remove ${filePaths.length} files at once, exceeding safety threshold of ${maxFilesToRemove}`);
+            return false;
+        }
+        
+        console.log(`FileManager: Removing ${filePaths.length} files`);
+        
+        // Keep track of removed indices to adjust the currentFileIndex later
+        const removedIndices = [];
+        let currentFileRemoved = false;
+        
+        // First, find all the file indices to remove
+        filePaths.forEach(path => {
+            const fileIndex = this.findFileByPath(path);
+            if (fileIndex !== undefined) {
+                removedIndices.push(fileIndex);
+                
+                // Check if we're removing the current file
+                if (fileIndex === this.currentFileIndex) {
+                    currentFileRemoved = true;
+                }
+            }
+        });
+        
+        // Sort indices in descending order to avoid index shifting problems when removing
+        removedIndices.sort((a, b) => b - a);
+        
+        // Remove files from the array
+        removedIndices.forEach(index => {
+            this.files.splice(index, 1);
+        });
+        
+        // Update current file index if needed
+        if (currentFileRemoved) {
+            // Try to set current file to the previous one or first one
+            if (this.files.length > 0) {
+                this.currentFileIndex = Math.min(this.currentFileIndex, this.files.length - 1);
+            } else {
+                this.currentFileIndex = -1;
+            }
+        } else if (this.currentFileIndex !== -1) {
+            // Adjust current file index if removed files were before it
+            let offset = 0;
+            removedIndices.forEach(index => {
+                if (index < this.currentFileIndex) {
+                    offset++;
+                }
+            });
+            this.currentFileIndex -= offset;
+        }
+        
+        // Rebuild folder structure and file map
+        this.reconstructFolderStructure();
+        this.updateFileMap();
+        
+        // Notify about file list change
+        this.notifyFileListChanged();
+        
+        return true;
+    }
+
+    /**
+     * Compare two file paths with robust normalization
+     * Returns true if paths refer to the same file or if one path contains the other
+     */
+    comparePaths(path1, path2) {
+        if (!path1 || !path2) return false;
+        
+        // Normalize paths (remove trailing slashes, handle backslashes, ensure consistent casing)
+        const normalizedPath1 = this.normalizePath(path1).toLowerCase();
+        const normalizedPath2 = this.normalizePath(path2).toLowerCase();
+        
+        // Direct equality check
+        if (normalizedPath1 === normalizedPath2) return true;
+        
+        // Check if one path is contained within the other (for directory membership)
+        // Ensure we check with trailing slash to avoid partial filename matches
+        if (normalizedPath1.endsWith('/') || normalizedPath2.endsWith('/')) {
+            // One is already a directory path
+            return normalizedPath1.startsWith(normalizedPath2) || normalizedPath2.startsWith(normalizedPath1);
+        } else {
+            // Add slashes for proper directory boundary checking
+            return normalizedPath1.startsWith(normalizedPath2 + '/') || 
+                   normalizedPath2.startsWith(normalizedPath1 + '/') ||
+                   // Handle case where one path might be a file and the other a directory containing it
+                   normalizedPath1 === normalizedPath2.split('/').slice(0, -1).join('/') ||
+                   normalizedPath2 === normalizedPath1.split('/').slice(0, -1).join('/');
+        }
+    }
+    
+    /**
+     * Enhanced path normalization 
+     */
+    normalizePath(path) {
+        if (!path) return '';
+        
+        // Convert backslashes to forward slashes (Windows paths)
+        path = path.replace(/\\/g, '/');
+        
+        // Ensure no double slashes
+        while (path.includes('//')) {
+            path = path.replace(/\/\//g, '/');
+        }
+        
+        // Handle trailing slash consistently
+        if (path.endsWith('/') && path.length > 1) {
+            path = path.slice(0, -1);
+        }
+        
+        // Ensure root paths are properly formatted
+        if (path === '') {
+            return '/';
+        }
+        
+        return path;
+    }
+
+    /**
+     * Get all directory handles (for debugging)
+     */
+    getMonitoredDirectories() {
+        return Array.from(this.directoryHandles.keys());
     }
 }
 
@@ -803,21 +996,28 @@ class FileList extends BaseComponent {
         // Register this component with the file manager
         this.fileManager.registerFileListComponent(this);
         
-        // Set initial state
+        // Set initial state with persisted expanded folders if available
+        const savedExpandedFolders = this.getSavedExpandedFolders();
         this.state = {
             selectedIndex: this.fileManager.currentFileIndex || -1,
-            expandedFolders: new Set()
+            expandedFolders: savedExpandedFolders || new Set(),
+            lastKnownFolders: new Set() // Track known folders for stability
         };
+        
+        // Initialize with a snapshot of current folders
+        this.updateKnownFoldersSnapshot();
         
         // Ensure file list is rerendered when files are added
         window.addEventListener('fileListChanged', () => {
             console.log('FileList component received fileListChanged event');
             
+            // Update folder knowledge before updating state
+            this.synchronizeFolderState();
+            
             // Update selected index to match file manager's current file
             this.setState({ 
-                selectedIndex: this.fileManager.currentFileIndex || -1,
-                // Keep expanded folders state
-                expandedFolders: this.state.expandedFolders
+                selectedIndex: this.fileManager.currentFileIndex || -1
+                // Don't override expandedFolders here - synchronizeFolderState handled it
             });
             
             // Force render
@@ -830,10 +1030,124 @@ class FileList extends BaseComponent {
             setTimeout(() => this.render(), 0);
         }
     }
+    
+    // Keep track of folder structure for stability
+    updateKnownFoldersSnapshot() {
+        const folderPaths = Array.from(this.fileManager.folderStructure.keys());
+        this.state.lastKnownFolders = new Set(folderPaths);
+        console.log(`Updated known folders snapshot: ${folderPaths.length} folders`);
+    }
+    
+    // Add a safeguard mechanism to ensure folder structure remains stable
+    
+    // Right after the synchronizeFolderState method and before saveExpandedFolders
+    
+    // Ensure folder structure integrity with resilient caching
+    ensureFolderStructureIntegrity() {
+        if (!this.fileManager || !this.fileManager.folderStructure) return;
+        
+        // Create a snapshot of the current folder structure if needed
+        if (!this._folderStructureCache) {
+            this._folderStructureCache = new Map();
+        }
+        
+        // Update cache with new folders from current structure
+        for (const [path, folderInfo] of this.fileManager.folderStructure.entries()) {
+            this._folderStructureCache.set(path, {
+                ...folderInfo,
+                children: new Set(folderInfo.children),
+                files: new Set(folderInfo.files)
+            });
+        }
+        
+        // Check for missing folders in the current structure
+        let missingFolderCount = 0;
+        let restoredFileCount = 0;
+        
+        for (const [cachedPath, cachedFolder] of this._folderStructureCache.entries()) {
+            // If a folder is missing from current structure but exists in cache
+            if (!this.fileManager.folderStructure.has(cachedPath)) {
+                console.warn(`Folder missing from structure: ${cachedPath}, attempting recovery`);
+                
+                // Check if files in this cached folder still exist in the file manager
+                const stillExistingFiles = Array.from(cachedFolder.files).filter(filePath => {
+                    // Find if file still exists in fileManager.files
+                    return this.fileManager.files.some(file => 
+                        this.fileManager.comparePaths(file.path, filePath)
+                    );
+                });
+                
+                // If there are still files belonging to this folder, restore it
+                if (stillExistingFiles.length > 0) {
+                    console.log(`Restoring folder ${cachedPath} with ${stillExistingFiles.length} files`);
+                    
+                    // Create a new folder entry in the folder structure
+                    this.fileManager.folderStructure.set(cachedPath, {
+                        ...cachedFolder,
+                        children: new Set(),  // Start with empty children
+                        files: new Set(stillExistingFiles)  // Only include files that still exist
+                    });
+                    
+                    // Fix parent relationship
+                    if (cachedFolder.parent && this.fileManager.folderStructure.has(cachedFolder.parent)) {
+                        this.fileManager.folderStructure.get(cachedFolder.parent).children.add(cachedPath);
+                    }
+                    
+                    // Update file paths to ensure they have the correct folder
+                    stillExistingFiles.forEach(filePath => {
+                        const fileIndex = this.fileManager.findFileByPath(filePath);
+                        if (fileIndex !== undefined) {
+                            this.fileManager.files[fileIndex].folder = cachedPath;
+                            restoredFileCount++;
+                        }
+                    });
+                    
+                    missingFolderCount++;
+                }
+            }
+        }
+        
+        // Log restoration results if any
+        if (missingFolderCount > 0) {
+            console.log(`Restored ${missingFolderCount} folders and ${restoredFileCount} file associations`);
+            
+            // Trigger an update of the file map after restoration
+            this.fileManager.updateFileMap();
+        }
+    }
+
+    // Helper to save expanded folders to localStorage
+    saveExpandedFolders() {
+        try {
+            const expandedArray = Array.from(this.state.expandedFolders);
+            localStorage.setItem('expandedFolders', JSON.stringify(expandedArray));
+        } catch (e) {
+            console.error('Error saving expanded folders state:', e);
+        }
+    }
+
+    // Helper to get saved expanded folders from localStorage
+    getSavedExpandedFolders() {
+        try {
+            const savedFolders = localStorage.getItem('expandedFolders');
+            if (savedFolders) {
+                const folderArray = JSON.parse(savedFolders);
+                return new Set(folderArray);
+            }
+        } catch (e) {
+            console.error('Error getting saved expanded folders:', e);
+        }
+        return new Set();
+    }
 
     // Update the setState method
     setState(newState) {
         super.setState(newState);
+        
+        // Save expanded folders state whenever it changes
+        if (newState.expandedFolders) {
+            this.saveExpandedFolders();
+        }
     }
 
     // Called when the component is mounted to the DOM
@@ -844,6 +1158,14 @@ class FileList extends BaseComponent {
         setTimeout(() => {
             if (this.fileManager.files.length > 0) {
                 console.log('Delayed re-render of file list after mount');
+                
+                // Make sure we load saved expanded folders state
+                const savedExpandedFolders = this.getSavedExpandedFolders();
+                if (savedExpandedFolders && savedExpandedFolders.size > 0) {
+                    // Synchronize with current folder structure for stability
+                    this.synchronizeFolderState();
+                }
+                
                 this.render();
             }
         }, 200);
@@ -904,6 +1226,7 @@ class FileList extends BaseComponent {
         
         if (isExpanding) {
             expandedFolders.add(folderPath);
+            // Expand all parent folders to ensure proper hierarchy
             let currentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
             while (currentPath) {
                 expandedFolders.add(currentPath);
@@ -911,12 +1234,16 @@ class FileList extends BaseComponent {
             }
         } else {
             expandedFolders.delete(folderPath);
+            // Collapse all child folders
             Array.from(expandedFolders).forEach(path => {
                 if (path.startsWith(folderPath + '/')) expandedFolders.delete(path);
             });
         }
         
         this.setState({ expandedFolders });
+        
+        // Save expanded folders state explicitly after toggling
+        this.saveExpandedFolders();
     }
 
     renderFolderContents(folderPath, container) {
@@ -995,6 +1322,70 @@ class FileList extends BaseComponent {
         }
 
         this.container.replaceChildren(rootList);
+    }
+
+    // Now modify the synchronizeFolderState method to call the safeguard
+    synchronizeFolderState() {
+        // Check for folder structure integrity first
+        this.ensureFolderStructureIntegrity();
+        
+        // Rest of the original method...
+        // Get current folders from file manager
+        const currentFolders = new Set(this.fileManager.folderStructure.keys());
+        
+        // Get previous snapshot of folders
+        const previousFolders = this.state.lastKnownFolders;
+        
+        // Get current expanded folders (with localStorage backup)
+        const expandedFolders = new Set(this.state.expandedFolders);
+        const savedExpandedFolders = this.getSavedExpandedFolders() || new Set();
+        
+        // Merge current expanded with saved expanded for resilience
+        for (const folder of savedExpandedFolders) {
+            expandedFolders.add(folder);
+        }
+        
+        // Remove any expanded state for folders that no longer exist
+        for (const folder of expandedFolders) {
+            if (!currentFolders.has(folder)) {
+                expandedFolders.delete(folder);
+            }
+        }
+        
+        // If a parent folder was previously expanded, ensure it stays expanded
+        for (const folder of currentFolders) {
+            const pathParts = folder.split('/');
+            if (pathParts.length > 1) {
+                // Check if any parent folder was expanded
+                let pathSoFar = '';
+                for (let i = 0; i < pathParts.length - 1; i++) {
+                    pathSoFar = pathSoFar ? `${pathSoFar}/${pathParts[i]}` : pathParts[i];
+                    if (expandedFolders.has(pathSoFar)) {
+                        // Parent folder is expanded, so this one should be visible
+                        expandedFolders.add(folder);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Auto-expand any root folders for better UX
+        for (const folder of currentFolders) {
+            if (!folder.includes('/')) {
+                expandedFolders.add(folder);
+            }
+        }
+        
+        // Update state
+        this.setState({ expandedFolders });
+        
+        // Update the known folders snapshot
+        this.state.lastKnownFolders = currentFolders;
+        
+        // Save to localStorage
+        this.saveExpandedFolders();
+        
+        console.log(`Folder state synchronized: ${expandedFolders.size} expanded folders`);
     }
 }
 
@@ -1282,11 +1673,24 @@ class FileToMarkdownViewer {
         // Listen for file changes from the server fallback
         window.addEventListener('fileChanged', (event) => {
             const { fileIndex } = event.detail;
-            if (fileIndex === this.fileManager.currentFileIndex && !this.isEditorMode) {
-                this.loadFile(fileIndex);
+            
+            // If the changed file is currently loaded, load it again
+            if (fileIndex === this.fileManager.currentFileIndex) {
+                // Only refresh if we're not in edit mode
+                if (!this.isEditorMode) {
+                    console.log('Reloading current file due to external change');
+                    this.loadFile(fileIndex);
+                } else {
+                    // If in edit mode, show a notification
+                    const fileInfo = this.fileManager.getFile(fileIndex);
+                    this.showFileChangeNotification(fileInfo.name);
+                }
             }
         });
-
+        
+        // Add file content monitoring for the current open file
+        let isCheckingCurrentFile = false;
+        
         // Setup file watcher using File System Access API
         this.fileWatchers = new Map();
         
@@ -1363,11 +1767,94 @@ class FileToMarkdownViewer {
                         }
                     }
                     
-                    // Check for removed files
+                    // Check for removed files - CONSERVATIVE APPROACH FOR SIDEBAR STABILITY
                     const removedFiles = [];
                     for (const file of this.fileManager.files) {
-                        if (file.path.startsWith(dirPath) && !currentFiles.has(file.path.toLowerCase())) {
-                            removedFiles.push(file.path);
+                        // Only consider files in this directory for removal
+                        if (this.fileManager.comparePaths(file.path, dirPath)) {
+                            let found = false;
+                            // Check all entries in the directory to see if the file still exists
+                            for (const [entryPath] of currentFiles) {
+                                if (this.fileManager.comparePaths(file.path, entryPath)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                console.log(`File may be removed: ${file.path}, checking...`);
+                                // Double-check by trying to get the file directly
+                                try {
+                                    // Extract relative path more carefully
+                                    const relativePath = file.path.replace(dirPath, '').replace(/^\/+/, '');
+                                    
+                                    // Try multiple methods to verify if the file is really gone
+                                    let fileExists = false;
+                                    
+                                    try {
+                                        // Method 1: Try to get file handle directly
+                                        await dirHandle.getFileHandle(relativePath)
+                                            .then(() => { fileExists = true; })
+                                            .catch(() => {});
+                                            
+                                        if (!fileExists) {
+                                            // Method 2: If path contains subdirectories, traverse them
+                                            if (relativePath.includes('/')) {
+                                                const pathParts = relativePath.split('/');
+                                                let currentHandle = dirHandle;
+                                                let pathTraversed = true;
+                                                
+                                                // Navigate to parent directory
+                                                for (let i = 0; i < pathParts.length - 1; i++) {
+                                                    try {
+                                                        currentHandle = await currentHandle.getDirectoryHandle(pathParts[i]);
+                                                    } catch (err) {
+                                                        pathTraversed = false;
+                                                        break;
+                                                    }
+                                                }
+                                                
+                                                // If we reached the parent directory, check for the file
+                                                if (pathTraversed) {
+                                                    const fileName = pathParts[pathParts.length - 1];
+                                                    try {
+                                                        await currentHandle.getFileHandle(fileName);
+                                                        fileExists = true;
+                                                    } catch (err) {
+                                                        // File truly doesn't exist
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // If file doesn't exist after thorough checking, mark for removal
+                                        if (!fileExists) {
+                                            console.log(`Confirmed file is missing: ${file.path}`);
+                                            // Only remove after multiple checks in different refresh cycles
+                                            if (file._markedForRemoval) {
+                                                removedFiles.push(file.path);
+                                            } else {
+                                                // Mark for removal but don't remove yet - needs confirmation in next cycle
+                                                file._markedForRemoval = true;
+                                                console.log(`Marking file for potential removal: ${file.path}`);
+                                            }
+                                        } else {
+                                            // File exists, reset any removal markers
+                                            file._markedForRemoval = false;
+                                        }
+                                    } catch (err) {
+                                        console.log(`Error checking file existence for ${file.path}: ${err}`);
+                                        // Be conservative - don't remove if we can't confirm
+                                        file._markedForRemoval = false;
+                                    }
+                                } catch (error) {
+                                    // If we can't check, don't remove the file
+                                    console.log(`Couldn't verify if file ${file.path} exists, keeping it`);
+                                    file._markedForRemoval = false;
+                                }
+                            } else {
+                                // File was found, reset any removal markers
+                                file._markedForRemoval = false;
+                            }
                         }
                     }
                     
@@ -2037,6 +2524,7 @@ class FileToMarkdownViewer {
         try {
             // Store the directory handle for change monitoring
             if (path) {
+                console.log(`Registering directory for monitoring: ${path}`);
                 this.fileManager.addDirectoryHandle(path, directoryHandle);
             }
 
@@ -2044,8 +2532,8 @@ class FileToMarkdownViewer {
                 const entryPath = path ? `${path}/${entry.name}` : entry.name;
 
                 if (entry.kind === 'file') {
-                     // Check if it's potentially a markdown file BEFORE getting the handle/file
-                     if (/\.(md|markdown|mdown)$/i.test(entry.name)) {
+                    // Check if it's potentially a markdown file BEFORE getting the handle/file
+                    if (/\.(md|markdown|mdown)$/i.test(entry.name)) {
                         try {
                             const fileHandle = await directoryHandle.getFileHandle(entry.name);
                             const file = await fileHandle.getFile();
@@ -2056,12 +2544,15 @@ class FileToMarkdownViewer {
                             file.handle = fileHandle; // Store the handle for saving and file watching!
                             
                             // Pre-load the file content for change detection
-                            file.content = await file.text();
+                            try {
+                                file.content = await file.text();
+                            } catch (err) {
+                                console.warn(`Could not pre-load content for ${entryPath}`, err);
+                            }
 
                             files.push(file);
                         } catch (error) {
                             console.error(`Error processing file ${entryPath}:`, error);
-                            // Optionally notify the user about specific file errors
                         }
                     }
                 } else if (entry.kind === 'directory') {
@@ -2069,8 +2560,9 @@ class FileToMarkdownViewer {
                         // Get subdirectory handle
                         const subDirHandle = await directoryHandle.getDirectoryHandle(entry.name);
                         
-                        // Store the subdirectory handle for change monitoring
+                        // Register the directory handle for monitoring
                         this.fileManager.addDirectoryHandle(entryPath, subDirHandle);
+                        console.log(`Registered subdirectory for monitoring: ${entryPath}`);
                         
                         // Process the subdirectory recursively
                         const subDirFiles = await this.getFilesFromDirectoryHandle(subDirHandle, entryPath);

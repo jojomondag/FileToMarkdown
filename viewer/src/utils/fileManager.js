@@ -424,6 +424,10 @@ class FileManager {
 
     // Reconstruct folder structure from file paths
     reconstructFolderStructure() {
+        // Keep a backup of the old structure for comparison
+        const previousStructure = new Map(this.folderStructure);
+        
+        // Clear the current structure
         this.folderStructure.clear();
         
         // First pass: create folders
@@ -438,6 +442,7 @@ class FileManager {
                 currentPath = currentPath ? `${currentPath}/${part}` : part;
                 
                 if (!this.folderStructure.has(currentPath)) {
+                    // Create new folder entry
                     this.folderStructure.set(currentPath, {
                         name: part,
                         path: currentPath,
@@ -459,6 +464,57 @@ class FileManager {
         for (const fileInfo of this.files) {
             if (fileInfo.folder && this.folderStructure.has(fileInfo.folder)) {
                 this.folderStructure.get(fileInfo.folder).files.add(fileInfo.path);
+            }
+        }
+        
+        // Log structure changes for debugging
+        const oldFolders = Array.from(previousStructure.keys());
+        const newFolders = Array.from(this.folderStructure.keys());
+        
+        const added = newFolders.filter(f => !previousStructure.has(f));
+        const removed = oldFolders.filter(f => !this.folderStructure.has(f));
+        
+        if (added.length > 0 || removed.length > 0) {
+            console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
+        }
+        
+        // Check for lost files and add them to the root if needed
+        this.ensureAllFilesAreAccessible();
+    }
+
+    // Ensure all files are accessible within the folder structure
+    ensureAllFilesAreAccessible() {
+        // Find files that are not in any folder
+        const orphanedFiles = this.files.filter(fileInfo => {
+            // Skip files without folder information
+            if (!fileInfo.folder) return false;
+            
+            // Check if the folder exists in structure
+            return !this.folderStructure.has(fileInfo.folder);
+        });
+        
+        if (orphanedFiles.length > 0) {
+            console.warn(`Found ${orphanedFiles.length} orphaned files - attempting recovery`);
+            
+            // Try to fix folder paths for orphaned files
+            for (const fileInfo of orphanedFiles) {
+                // Check if any parent folder exists
+                const pathParts = fileInfo.folder.split('/');
+                
+                // Try progressively shorter paths
+                for (let i = pathParts.length - 1; i > 0; i--) {
+                    const partialPath = pathParts.slice(0, i).join('/');
+                    if (this.folderStructure.has(partialPath)) {
+                        // Found a valid parent folder
+                        console.log(`Reassigning ${fileInfo.path} to folder ${partialPath}`);
+                        fileInfo.folder = partialPath;
+                        fileInfo.depth = pathParts.length - 1;
+                        
+                        // Add to this folder
+                        this.folderStructure.get(partialPath).files.add(fileInfo.path);
+                        break;
+                    }
+                }
             }
         }
     }
@@ -498,12 +554,149 @@ class FileManager {
 
     // Add a directory handle
     addDirectoryHandle(path, handle) {
+        // Normalize path for consistency
+        path = this.normalizePath(path);
+        
+        console.log(`Adding directory handle for: ${path}`);
         this.directoryHandles.set(path, handle);
+        
+        // Log number of directories being monitored
+        console.log(`Now monitoring ${this.directoryHandles.size} directories`);
     }
 
     // Remove a directory handle
     removeDirectoryHandle(path) {
         this.directoryHandles.delete(path);
+    }
+
+    // Remove files by path with improved safety
+    removeFiles(filePaths) {
+        if (!filePaths || filePaths.length === 0) return false;
+        
+        // Safety check - don't remove too many files at once
+        const maxFilesToRemove = Math.max(5, Math.floor(this.files.length * 0.2));
+        if (filePaths.length > maxFilesToRemove) {
+            console.warn(`Attempted to remove ${filePaths.length} files at once, exceeding safety threshold of ${maxFilesToRemove}`);
+            return false;
+        }
+        
+        console.log(`FileManager: Removing ${filePaths.length} files`);
+        
+        // Keep track of removed indices to adjust the currentFileIndex later
+        const removedIndices = [];
+        let currentFileRemoved = false;
+        
+        // First, find all the file indices to remove
+        filePaths.forEach(path => {
+            const fileIndex = this.findFileByPath(path);
+            if (fileIndex !== undefined) {
+                removedIndices.push(fileIndex);
+                
+                // Check if we're removing the current file
+                if (fileIndex === this.currentFileIndex) {
+                    currentFileRemoved = true;
+                }
+            }
+        });
+        
+        // Sort indices in descending order to avoid index shifting problems when removing
+        removedIndices.sort((a, b) => b - a);
+        
+        // Remove files from the array
+        removedIndices.forEach(index => {
+            this.files.splice(index, 1);
+        });
+        
+        // Update current file index if needed
+        if (currentFileRemoved) {
+            // Try to set current file to the previous one or first one
+            if (this.files.length > 0) {
+                this.currentFileIndex = Math.min(this.currentFileIndex, this.files.length - 1);
+            } else {
+                this.currentFileIndex = -1;
+            }
+        } else if (this.currentFileIndex !== -1) {
+            // Adjust current file index if removed files were before it
+            let offset = 0;
+            removedIndices.forEach(index => {
+                if (index < this.currentFileIndex) {
+                    offset++;
+                }
+            });
+            this.currentFileIndex -= offset;
+        }
+        
+        // Rebuild folder structure and file map
+        this.reconstructFolderStructure();
+        this.updateFileMap();
+        
+        // Notify about file list change
+        this.notifyFileListChanged();
+        
+        return true;
+    }
+
+    /**
+     * Compare two file paths with robust normalization
+     * Returns true if paths refer to the same file or if one path contains the other
+     */
+    comparePaths(path1, path2) {
+        if (!path1 || !path2) return false;
+        
+        // Normalize paths (remove trailing slashes, handle backslashes, ensure consistent casing)
+        const normalizedPath1 = this.normalizePath(path1).toLowerCase();
+        const normalizedPath2 = this.normalizePath(path2).toLowerCase();
+        
+        // Direct equality check
+        if (normalizedPath1 === normalizedPath2) return true;
+        
+        // Check if one path is contained within the other (for directory membership)
+        // Ensure we check with trailing slash to avoid partial filename matches
+        if (normalizedPath1.endsWith('/') || normalizedPath2.endsWith('/')) {
+            // One is already a directory path
+            return normalizedPath1.startsWith(normalizedPath2) || normalizedPath2.startsWith(normalizedPath1);
+        } else {
+            // Add slashes for proper directory boundary checking
+            return normalizedPath1.startsWith(normalizedPath2 + '/') || 
+                   normalizedPath2.startsWith(normalizedPath1 + '/') ||
+                   // Handle case where one path might be a file and the other a directory containing it
+                   normalizedPath1 === normalizedPath2.split('/').slice(0, -1).join('/') ||
+                   normalizedPath2 === normalizedPath1.split('/').slice(0, -1).join('/');
+        }
+    }
+    
+    /**
+     * Enhanced path normalization 
+     */
+    normalizePath(path) {
+        if (!path) return '';
+        
+        // Convert backslashes to forward slashes (Windows paths)
+        path = path.replace(/\\/g, '/');
+        
+        // Ensure no double slashes
+        while (path.includes('//')) {
+            path = path.replace(/\/\//g, '/');
+        }
+        
+        // Handle trailing slash consistently
+        if (path.endsWith('/') && path.length > 1) {
+            path = path.slice(0, -1);
+        }
+        
+        // Ensure root paths are properly formatted
+        if (path === '') {
+            return '/';
+        }
+        
+        return path;
+    }
+
+    /**
+     * Get all directory handles (for debugging)
+     */
+    getMonitoredDirectories() {
+        return Array.from(this.directoryHandles.keys());
     }
 }
 
