@@ -1,0 +1,152 @@
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  padding: 10px 40px;
+  max-width: 100%;
+  transition: margin-left .3s ease;
+  position: relative;
+}
+
+.main-content.expanded {
+  margin-left: 0;
+}
+
+.content-container {
+  position: relative;
+  margin: 10px auto;
+  background: var(--color-white);
+  max-width: 100%;
+  padding: 50px 40px 15px;
+  border-radius: var(--border-radius);
+  word-wrap: break-word;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-dark);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  padding: 8px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: .2s ease;
+  box-shadow: var(--shadow-sm);
+  z-index: 1001;
+}
+
+.btn:hover {
+  background: var(--color-hover);
+  color: var(--color-primary);
+}
+
+.btn-menu {
+  position: fixed;
+  top: 10px;
+  left: 255px;
+  z-index: 1001;
+}
+
+.btn-menu.shifted {
+  left: 10px;
+}
+
+/* ===== EDITOR ===== */
+.editor {
+  position: relative !important;
+  width: 100%;
+  height: 100%;
+  padding: 50px 20px 20px;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  border: none;
+  resize: none;
+  outline: none;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: visible !important;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* Critical visibility forcing for edit mode */
+body.edit-mode .button-container {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
+
+/* Button container styles */
+.button-container {
+  display: flex;
+  position: fixed !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 9999 !important;
+  gap: 10px;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+.button-container .btn {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background: white;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  position: static !important; /* Override absolute positioning */
+}
+
+.button-container.edit-mode .btn-edit {
+  background: #fff0f0;
+  border: 2px solid #f56565;
+}
+
+.button-container.edit-mode .btn-save {
+  background: #e6f7ff;
+  border: 2px solid #0366d6;
+  width: auto;
+  min-width: 70px;
+  display: flex !important;
+}
+
+.button-container:not(.edit-mode) .btn-save {
+  display: none !important;
+}
+
+.btn-edit:hover, .btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-edit:active, .btn-save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.btn-save::before {
+  content: "Save";
+  font-size: 14px;
+  font-weight: 500;
+} 

@@ -4,6 +4,7 @@ import FileList from './components/FileList';
 import Header from './components/Header';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
+import { createElementWithAttributes } from './utils/domUtils';
 
 /**
  * Main application class for FileToMarkdown viewer
@@ -14,29 +15,40 @@ class FileToMarkdownViewer {
         this.renderer = new BrowserRenderer();
         this.elements = this.getElements();
         
+        this.isEditorMode = false;
+        this.originalContent = '';
+        
+        // Setup UI components and event listeners
         this.setupComponents();
         this.setupEventListeners();
         this.setupFileChangeListener();
         this.setupEditorElement();
-        this.isEditorMode = false;
-        this.originalContent = '';
         this.setupFileInput();
         
-        window.addEventListener('beforeunload', (event) => {
-            if (this.fileManager.files && this.fileManager.files.length > 0) {
-                if (this.isEditorMode && this.elements.editor.value) {
-                    const fileInfo = this.fileManager.getCurrentFile();
-                    if (fileInfo) {
-                        fileInfo.content = this.elements.editor.value;
-                    }
-                }
-                const message = 'You have unsaved changes. Are you sure you want to leave?';
-                event.returnValue = message;
-                return message;
-            }
-        });
+        // Add beforeunload event listener to prevent accidental closing with unsaved changes
+        window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
     }
 
+    /**
+     * Handle beforeunload event to warn about unsaved changes
+     */
+    handleBeforeUnload(event) {
+        if (this.fileManager.files && this.fileManager.files.length > 0) {
+            if (this.isEditorMode && this.elements.editor.value) {
+                const fileInfo = this.fileManager.getCurrentFile();
+                if (fileInfo) {
+                    fileInfo.content = this.elements.editor.value;
+                }
+            }
+            const message = 'You have unsaved changes. Are you sure you want to leave?';
+            event.returnValue = message;
+            return message;
+        }
+    }
+
+    /**
+     * Get DOM elements references
+     */
     getElements() {
         return {
             content: document.getElementById('content'),
@@ -53,38 +65,60 @@ class FileToMarkdownViewer {
         };
     }
 
+    /**
+     * Setup UI components
+     */
     setupComponents() {
+        // Initialize file list component
         this.fileListComponent = new FileList(this.elements.fileList, this.fileManager);
         this.fileListComponent.on('fileSelect', ({ index }) => this.loadFile(index));
         
+        // Create button container for edit/save buttons
+        this.setupButtonContainer();
+    }
+    
+    /**
+     * Create button container for edit/save buttons
+     */
+    setupButtonContainer() {
+        // Remove existing container if present
         const existingContainer = document.querySelector('.button-container');
         if (existingContainer) {
             existingContainer.parentNode.removeChild(existingContainer);
         }
         
-        const buttonContainer = document.createElement('div');
-        buttonContainer.className = 'button-container';
-        buttonContainer.id = 'button-container';
-        buttonContainer.style.position = 'fixed';
-        buttonContainer.style.top = '10px';
-        buttonContainer.style.right = '10px';
-        buttonContainer.style.zIndex = '2000';
-        buttonContainer.style.display = 'none';
-        buttonContainer.style.gap = '10px';
+        // Create button container
+        const buttonContainer = createElementWithAttributes('div', {
+            className: 'button-container',
+            id: 'button-container',
+            style: {
+                position: 'fixed',
+                top: '10px',
+                right: '10px',
+                zIndex: '2000',
+                display: 'none',
+                gap: '10px'
+            }
+        });
         
-        const editButton = document.createElement('button');
-        editButton.id = 'e';
-        editButton.className = 'btn btn-edit';
-        editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
-        editButton.onclick = () => this.toggleEditor();
+        // Create edit button
+        const editButton = createElementWithAttributes('button', {
+            id: 'e',
+            className: 'btn btn-edit',
+            innerHTML: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>',
+            onclick: () => this.toggleEditor()
+        });
         
-        const saveButton = document.createElement('button');
-        saveButton.className = 'btn btn-save';
-        saveButton.id = 's';
-        saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-        saveButton.style.display = 'none';
-        saveButton.onclick = () => this.saveFile();
+        // Create save button
+        const saveButton = createElementWithAttributes('button', {
+            className: 'btn btn-save',
+            id: 's',
+            innerHTML: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+            style: { display: 'none' },
+            onclick: () => this.saveFile()
+        });
         
+        // Store references and append to DOM
         this.elements.saveButton = saveButton;
         this.elements.editButton = editButton;
         this.elements.buttonContainer = buttonContainer;
@@ -94,25 +128,35 @@ class FileToMarkdownViewer {
         document.body.appendChild(buttonContainer);
     }
     
+    /**
+     * Setup editor element
+     */
     setupEditorElement() {
-        this.elements.editor = document.createElement('textarea');
-        this.elements.editor.className = 'editor';
-        this.elements.editor.style.display = 'none';
-        this.elements.editor.style.width = '100%';
-        this.elements.editor.style.height = '100%';
-        this.elements.editor.style.boxSizing = 'border-box';
-        this.elements.editor.style.padding = '50px 20px 20px';
-        this.elements.editor.style.border = 'none';
-        this.elements.editor.style.fontFamily = 'monospace';
-        this.elements.editor.style.fontSize = '16px';
-        this.elements.editor.style.resize = 'none';
-        this.elements.editor.style.outline = 'none';
-        this.elements.editor.style.position = 'relative';
+        this.elements.editor = createElementWithAttributes('textarea', {
+            className: 'editor',
+            style: {
+                display: 'none',
+                width: '100%',
+                height: '100%',
+                boxSizing: 'border-box',
+                padding: '50px 20px 20px',
+                border: 'none',
+                fontFamily: 'monospace',
+                fontSize: '16px',
+                resize: 'none',
+                outline: 'none',
+                position: 'relative'
+            }
+        });
+        
         this.elements.main.appendChild(this.elements.editor);
     }
 
+    /**
+     * Setup event listeners
+     */
     setupEventListeners() {
-        // Only handle drag events for the dropzone, clicks are handled separately
+        // Handle drag events for drop zone
         const dropZone = this.elements.dropZone;
         
         ['dragover', 'dragleave', 'drop'].forEach(event => {
@@ -124,12 +168,13 @@ class FileToMarkdownViewer {
             });
         });
 
+        // Handle button clicks and keyboard shortcuts
         this.elements.toggleButton.onclick = () => this.toggleSidebar();
         document.onkeydown = e => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
                 e.preventDefault();
                 this.toggleSidebar();
-            } else if ((e.ctrlY || e.metaKey) && e.key === 's') {
+            } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
                 if (this.isEditorMode) {
                     this.saveFile();
@@ -138,6 +183,9 @@ class FileToMarkdownViewer {
         };
     }
     
+    /**
+     * Setup file change listener
+     */
     setupFileChangeListener() {
         window.addEventListener('fileChanged', (event) => {
             const { fileIndex } = event.detail;
@@ -147,6 +195,9 @@ class FileToMarkdownViewer {
         });
     }
     
+    /**
+     * Setup file input for opening files
+     */
     setupFileInput() {
         // Remove any existing file inputs to avoid duplicates
         const existingInput = document.getElementById('file-input');
@@ -155,32 +206,31 @@ class FileToMarkdownViewer {
         }
         
         // Create a single input for files and directories
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.id = 'file-input';
-        fileInput.accept = '.md';
-        fileInput.multiple = true;
-        fileInput.style.display = 'none';
-        
-        // Change event listener for the unified input
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-                this.handleFiles(Array.from(e.target.files));
+        const fileInput = createElementWithAttributes('input', {
+            type: 'file',
+            id: 'file-input',
+            accept: '.md',
+            multiple: true,
+            style: { display: 'none' },
+            onchange: (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    this.handleFiles(Array.from(e.target.files));
+                }
+                // Reset the input for subsequent uses
+                e.target.value = '';
             }
-            
-            // Reset the input to ensure it works correctly on subsequent clicks
-            e.target.value = '';
         });
         
         document.body.appendChild(fileInput);
-        
-        // Store input in elements
         this.elements.fileInput = fileInput;
         
         // Update the dropzone UI
         this.updateDropzoneUI();
     }
     
+    /**
+     * Update dropzone UI
+     */
     updateDropzoneUI() {
         const dropZone = this.elements.dropZone;
         if (!dropZone) return;
@@ -189,45 +239,55 @@ class FileToMarkdownViewer {
         dropZone.innerHTML = '';
         
         // Create a simple icon and text for a cleaner UI
-        const uploadIcon = document.createElement('div');
-        uploadIcon.className = 'dropzone-icon';
-        uploadIcon.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>';
+        const uploadIcon = createElementWithAttributes('div', {
+            className: 'dropzone-icon',
+            innerHTML: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>'
+        });
         
         // Add instruction text
-        const dropText = document.createElement('p');
-        dropText.className = 'dropzone-text';
-        dropText.innerHTML = 'Click to select files or folders<br>or drop markdown files here';
+        const dropText = createElementWithAttributes('p', {
+            className: 'dropzone-text',
+            innerHTML: 'Click to select files or folders<br>or drop markdown files here'
+        });
         
         // Add elements to dropzone
         dropZone.appendChild(uploadIcon);
         dropZone.appendChild(dropText);
         
-        // Add click handler
-        dropZone.onclick = async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // First try to use File System Access API if supported
-            if ('showOpenFilePicker' in window) {
-                try {
-                    // Use the FileManager to handle files from File System API
-                    const success = await this.fileManager.processFilesFromFileSystemAPI();
-                    
-                    if (success) {
-                        // Display the first file by default
-                        this.loadFile(0);
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error opening files with File System API:', error);
+        // Add click handler using the file system access API if available
+        dropZone.onclick = this.handleDropzoneClick.bind(this);
+    }
+    
+    /**
+     * Handle dropzone click
+     */
+    async handleDropzoneClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // First try to use File System Access API if supported
+        if ('showOpenFilePicker' in window) {
+            try {
+                // Use the FileManager to handle files from File System API
+                const success = await this.fileManager.processFilesFromFileSystemAPI();
+                
+                if (success) {
+                    // Display the first file by default
+                    this.loadFile(0);
+                    return;
                 }
+            } catch (error) {
+                console.error('Error opening files with File System API:', error);
             }
-            
-            // Fall back to standard file input if File System API failed or is not supported
-            this.elements.fileInput.click();
-        };
+        }
+        
+        // Fall back to standard file input if File System API failed or is not supported
+        this.elements.fileInput.click();
     }
 
+    /**
+     * Handle files from drop or file input
+     */
     async handleFiles(files) {
         console.log('Handling files:', files.length);
         
@@ -248,20 +308,20 @@ class FileToMarkdownViewer {
             
             // Load the first file
             this.loadFile(this.fileManager.currentFileIndex);
-            
-            return true;
+        } else {
+            // Update dropzone to show error
+            this.showError('Failed to process files');
         }
-        
-        return false;
     }
-
+    
+    /**
+     * Show error message in dropzone
+     */
     showError(message) {
-        this.elements.content.innerHTML = `<p style="color:red">${message}</p>`;
+        this.elements.dropZone.innerHTML = `<p class="error">${message}</p>`;
         
-        // Hide the button container when showing an error
-        if (this.elements.buttonContainer) {
-            this.elements.buttonContainer.style.display = 'none';
-        }
+        // Reset the dropzone after a delay
+        setTimeout(() => this.updateDropzoneUI(), 3000);
     }
 
     loadFile(index) {
@@ -383,92 +443,27 @@ class FileToMarkdownViewer {
     }
 
     setupLinkHandlers() {
-        const links = this.elements.content.getElementsByTagName('a');
-        Array.from(links).forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && href.endsWith('.md')) {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handleInternalLink(href);
-                });
-            }
+        const content = this.elements.content;
+        content.querySelectorAll('a').forEach(link => {
+            link.onclick = (e) => {
+                e.preventDefault();
+                const href = link.getAttribute('href');
+                if (!href) return;
+
+                const currentFile = this.fileManager.getCurrentFile();
+                const currentDir = currentFile ? currentFile.folder : '';
+                const resolvedPath = this.fileManager.resolvePath(href, currentDir);
+                const fileIndex = this.fileManager.findFileByPath(resolvedPath);
+
+                if (fileIndex !== undefined) {
+                    this.loadFile(fileIndex);
+                } else {
+                    console.error('File not found:', resolvedPath);
+                }
+            };
         });
     }
 
-    handleInternalLink(href) {
-        const currentFile = this.fileManager.getCurrentFile();
-        if (!currentFile) return;
-        
-        const currentDir = currentFile.folder || '';
-        const targetPath = this.resolvePath(href, currentDir);
-        
-        // Try to find the file by path
-        let fileIndex = this.findFileByPath(targetPath);
-        
-        if (fileIndex !== undefined) {
-            this.loadFile(fileIndex);
-        } else {
-            // If not found, try case-insensitive search
-            this.showError(`Could not find linked file: ${href}`);
-        }
-    }
-    
-    findFileByPath(targetPath) {
-        // First try direct match
-        let fileIndex = this.fileManager.fileMap.get(targetPath.toLowerCase());
-        
-        // If not found and it doesn't have a root directory, try with various folders
-        if (fileIndex === undefined && !targetPath.includes('/')) {
-            // Just try to find a file with this name anywhere
-            for (let i = 0; i < this.fileManager.files.length; i++) {
-                const file = this.fileManager.files[i];
-                if (file.name.toLowerCase() === targetPath.toLowerCase()) {
-                    return i;
-                }
-            }
-        }
-        
-        return fileIndex;
-    }
-
-    resolvePath(href, currentDir) {
-        // Clean up path parts
-        href = href.replace(/\\/g, '/');
-        currentDir = currentDir.replace(/\\/g, '/');
-        
-        // Handle various path types
-        if (href.startsWith('/')) {
-            // Absolute path from root
-            return href.slice(1);
-        } else if (href.startsWith('./')) {
-            // Relative path from current directory
-            return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
-        } else if (href.startsWith('../')) {
-            // Going up in the directory tree
-            const parts = currentDir.split('/');
-            if (parts.length <= 1) {
-                return href.slice(3);
-            }
-            const parentDir = parts.slice(0, -1).join('/');
-            return this.resolvePath(href.slice(3), parentDir);
-        } else {
-            // Treating it as a relative path from current directory
-            // If path has no directory, check if it's a file directly in current directory
-            if (!href.includes('/')) {
-                for (let i = 0; i < this.fileManager.files.length; i++) {
-                    const file = this.fileManager.files[i];
-                    if (file.name.toLowerCase() === href.toLowerCase() && 
-                        file.folder.toLowerCase() === currentDir.toLowerCase()) {
-                        return file.path;
-                    }
-                }
-            }
-            
-            // Otherwise join with current directory
-            return currentDir ? `${currentDir}/${href}` : href;
-        }
-    }
-    
     toggleEditor() {
         this.isEditorMode = !this.isEditorMode;
         

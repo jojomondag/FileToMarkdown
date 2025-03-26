@@ -1,68 +1,191 @@
-/* File Tree Specific Styles */
+/* ===== FILE TREE ===== */
 .file-tree {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --guide-color: #94a3b8;
+  --guide-style: solid;
+  --guide-width: 1.5px;
+  --guide-spacing: 24px;
+  --icon-size: 16px;
+  --icon-position: 8px;
+  --icon-middle: calc(var(--icon-size)/2);
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  list-style: none;
+  margin: 0;
+  font-family: var(--font-system);
+}
+
+.file-tree ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .file-tree li {
-    margin: 0;
-    padding: 0;
-    position: relative;
+  position: relative;
+  margin: 4px 0;
+  min-height: 28px;
+  padding: 0;
+}
+
+.file-tree a {
+  position: relative;
+  padding: 4px 8px 4px 32px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: .9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: var(--border-radius-sm);
+  transition: .2s ease;
+  line-height: 20px;
+  height: 28px;
+}
+
+.file-tree a::before {
+  content: "📄";
+  position: absolute;
+  left: var(--icon-position);
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .8;
+  font-size: 14px;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
 }
 
 .file-tree .folder-contents {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    margin-left: 1.2em;
-    border-left: 1px solid #e1e4e8;
+  position: relative;
+  padding-left: var(--guide-spacing);
+  list-style: none;
+  margin: 0;
+  border-left: 1px solid #e1e4e8;
+}
+
+.file-tree .folder-contents::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--icon-position) + var(--icon-middle));
+  top: 0;
+  bottom: 8px;
+  width: var(--guide-width);
+  border-left: var(--guide-width) var(--guide-style) var(--guide-color);
+}
+
+.file-tree .folder-contents > li::after {
+  content: "";
+  position: absolute;
+  left: calc((var(--icon-position) + var(--icon-middle)) * -1);
+  width: calc(var(--icon-position) + var(--icon-middle));
+  height: var(--guide-width);
+  top: calc(50% - var(--guide-width)/2);
+  border-top: var(--guide-width) var(--guide-style) var(--guide-color);
+  z-index: 0;
+}
+
+.file-tree a[data-folder] {
+  cursor: pointer;
+  color: var(--color-text);
+  user-select: none;
+  font-weight: 500;
+  position: relative;
+}
+
+.file-tree a[data-folder]::before {
+  content: "📂";
+  left: var(--icon-position);
+  position: absolute;
+}
+
+.file-tree li.folder-item.expanded > a[data-folder]::before {
+  content: "📂";
+}
+
+.file-tree li.folder-item:not(.expanded) > a[data-folder]::before {
+  content: "📁";
 }
 
 .file-tree .folder-contents.collapsed {
-    display: none;
+  display: none;
 }
 
-.file-tree .file-item a,
-.file-tree .folder-item > a {
-    display: block;
-    padding: 4px 0;
-    text-decoration: none;
-    color: #2c3e50;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    position: relative;
+.file-tree li.selected > a {
+  background: var(--color-hover);
+  color: var(--color-primary);
 }
 
-/* Icons */
-.file-tree .file-item a::before {
-    content: "📄";
-    margin-right: 5px;
-    opacity: 0.7;
+.file-tree a:hover {
+  background: var(--color-hover);
 }
 
-.file-tree .folder-item > a::before {
-    content: "📁";
-    margin-right: 5px;
+/* Recent files section */
+.file-tree .recent-header,
+.file-tree .project-header {
+  margin: 8px 0;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.95em;
 }
 
-.file-tree .folder-item.expanded > a::before {
-    content: "📂";
+.file-tree .recent-header a {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
 }
 
-/* Hover states */
-.file-tree .file-item a:hover,
-.file-tree .folder-item > a:hover {
-    background-color: #f6f8fa;
-    color: #0366d6;
+.file-tree .recent-header a::before {
+  content: "📂";
+  margin-right: 8px;
+  font-size: 14px;
 }
 
-/* Selected state */
-.file-tree .file-item.selected > a {
-    background-color: #e6f3ff;
-    color: #0366d6;
+.file-tree .recent-header a.expanded::before {
+  content: "📂";
+}
+
+.file-tree .recent-header a:not(.expanded)::before {
+  content: "📁";
+}
+
+.file-tree .file-separator {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 10px 8px;
+}
+
+.file-tree .recent-files {
+  margin-left: 8px;
+}
+
+.file-tree .recent-file {
+  margin: 6px 0;
+}
+
+.file-tree .recent-file .file-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-tree .recent-file .timestamp {
+  font-size: 0.8em;
+  color: var(--color-text-light);
+  margin-left: 32px;
+  margin-top: -2px;
+}
+
+.file-tree .empty-message {
+  padding: 12px 8px;
+  color: var(--color-text-light);
+  font-style: italic;
+  text-align: center;
 }
 
 /* Indentation levels */
@@ -73,19 +196,7 @@
 .file-tree [data-depth="4"] { padding-left: 4.5em; }
 .file-tree [data-depth="5"] { padding-left: 5.5em; }
 
-/* Tree lines */
-.file-tree .folder-contents::before {
-    content: "";
-    position: absolute;
-    left: -1px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: #e1e4e8;
-    opacity: 0.4;
-}
-
 /* Animation */
 .file-tree .folder-contents {
-    transition: all 0.15s ease-out;
+  transition: all 0.15s ease-out;
 } 

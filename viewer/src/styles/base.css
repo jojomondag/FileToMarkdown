@@ -1,0 +1,156 @@
+/* ===== BASE STYLES ===== */
+:root {
+  --color-background: #f6f8fa;
+  --color-text: #2c3e50;
+  --color-text-light: #666;
+  --color-border: #eee;
+  --color-border-dark: #e1e4e8;
+  --color-primary: #0366d6;
+  --color-primary-dark: #0255b3;
+  --color-hover: #f0f4f8;
+  --color-white: #fff;
+  
+  --shadow-sm: 0 2px 4px rgba(0,0,0,.1);
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  
+  --font-mono: SFMono-Regular, monospace;
+  --font-system: -apple-system, system-ui, sans-serif;
+  
+  --sidebar-width: 300px;
+  --sidebar-width-lg: 350px;
+  --sidebar-width-xl: 400px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-system);
+  line-height: 1.6;
+  background: var(--color-background);
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ===== LAYOUT ===== */
+.layout-container {
+  transition: all .3s ease;
+}
+
+/* Typography */
+pre, code {
+  background: #2d2d2d;
+  border-radius: var(--border-radius);
+}
+
+pre {
+  padding: 16px;
+  overflow-x: auto;
+  max-width: 100%;
+  border: 1px solid #444;
+  background: var(--color-background) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: .9em;
+  padding: .2em .4em;
+  color: #e6e6e6;
+}
+
+pre code {
+  padding: 0;
+  background: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  overflow-x: auto;
+  display: block;
+}
+
+th, td {
+  border: 1px solid #dfe2e5;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background: var(--color-background);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+}
+
+a {
+  word-break: break-word;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.hidden {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 10px;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --sidebar-width: 350px;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width-lg);
+    padding: 10px 60px;
+  }
+  
+  .content-container {
+    padding: 15px 60px;
+  }
+  
+  .btn-menu {
+    left: 305px;
+  }
+}
+
+@media (min-width: 2000px) {
+  :root {
+    --sidebar-width: 400px;
+  }
+  
+  .main-content {
+    margin-left: var(--sidebar-width-xl);
+    padding: 10px 80px;
+  }
+  
+  .content-container {
+    padding: 15px 80px;
+  }
+  
+  .btn-menu {
+    left: 355px;
+  }
+}
+
+/* ===== SYNTAX HIGHLIGHTING ===== */
+.token.keyword {
+  color: #d73a49 !important;
+}
+
+.token.string {
+  color: #032f62 !important;
+} 

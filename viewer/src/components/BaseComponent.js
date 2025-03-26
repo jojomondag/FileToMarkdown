@@ -36,7 +36,7 @@ class BaseComponent {
 
     unmount() {
         this.events.clear();
-        this.container.innerHTML = '';
+        DOMUtils.clearElement(this.container);
     }
 }
 

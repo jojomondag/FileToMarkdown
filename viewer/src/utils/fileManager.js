@@ -1,11 +1,14 @@
-import { FILE_EXTENSIONS } from './constants';
-
 class FileManager {
     constructor() {
         this.files = [];
         this.fileMap = new Map();
         this.folderStructure = new Map();
         this.currentFileIndex = -1;
+        this.supportsFileSystem = 'showOpenFilePicker' in window;
+        this.fileTypes = [{ 
+            description: 'Markdown Files', 
+            accept: { 'text/markdown': ['.md'], 'text/plain': ['.txt'] } 
+        }];
     }
 
     // Clear all loaded files and folder structure
@@ -14,6 +17,34 @@ class FileManager {
         this.fileMap.clear();
         this.folderStructure.clear();
         this.currentFileIndex = -1;
+    }
+
+    // Process files from File System Access API
+    async processFilesFromFileSystemAPI() {
+        if (!this.supportsFileSystem) return false;
+        
+        try {
+            const handles = await window.showOpenFilePicker({
+                multiple: true,
+                types: this.fileTypes
+            });
+            
+            if (!handles || handles.length === 0) return false;
+            
+            const files = await Promise.all(handles.map(async handle => {
+                const file = await handle.getFile();
+                // Store the file handle for later saving
+                file.handle = handle;
+                return file;
+            }));
+            
+            // Process the files through the normal flow
+            const processed = await this.processFiles(files);
+            return processed > 0;
+        } catch (error) {
+            console.error('Error opening files with File System API:', error);
+            return false;
+        }
     }
 
     // Process files from a file list
@@ -33,7 +64,9 @@ class FileManager {
                 file: file,
                 content: null,
                 isRoot: true,
-                depth: 0
+                depth: 0,
+                // If file has a handle (from FileSystem API), store it
+                handle: file.handle || null
             };
             
             if (file.webkitRelativePath) {
@@ -162,6 +195,49 @@ class FileManager {
         }
     }
 
+    // Save content to a file using File System Access API if available, falls back to server API
+    async saveFile(fileInfo, content) {
+        if (!fileInfo) return { success: false, message: 'No file info provided' };
+        
+        try {
+            // If we have a handle from File System API, use it
+            if (this.supportsFileSystem && fileInfo.handle) {
+                try {
+                    const writable = await fileInfo.handle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    
+                    // Update the content in our data structure
+                    fileInfo.content = content;
+                    
+                    return { success: true };
+                } catch (error) {
+                    console.error('Error saving with File System API:', error);
+                    // Fall back to server API
+                }
+            }
+            
+            // Fall back to server API if File System API failed or isn't supported
+            const response = await fetch('/api/file', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: fileInfo.path, content })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update the content in our data structure
+                fileInfo.content = content;
+                return { success: true };
+            } else {
+                return { success: false, message: result.error || 'Unknown error' };
+            }
+        } catch (error) {
+            return { success: false, message: error.message || 'Error saving file' };
+        }
+    }
+
     // Notify listeners that the file list has changed
     notifyFileListChanged() {
         // Dispatch a custom event
@@ -175,8 +251,7 @@ class FileManager {
         const fileInfo = this.files[this.currentFileIndex];
         if (!fileInfo) return { success: false, message: 'File not found' };
         
-        fileInfo.content = content;
-        return { success: true };
+        return await this.saveFile(fileInfo, content);
     }
 
     // Get file type from name
@@ -227,7 +302,60 @@ class FileManager {
 
     // Find file by path
     findFileByPath(path) {
-        return this.fileMap.get(path.toLowerCase());
+        // First try direct match
+        let fileIndex = this.fileMap.get(path.toLowerCase());
+        
+        // If not found and it doesn't have a root directory, try with various folders
+        if (fileIndex === undefined && !path.includes('/')) {
+            // Just try to find a file with this name anywhere
+            for (let i = 0; i < this.files.length; i++) {
+                const file = this.files[i];
+                if (file.name.toLowerCase() === path.toLowerCase()) {
+                    return i;
+                }
+            }
+        }
+        
+        return fileIndex;
+    }
+
+    // Resolve a relative path to an absolute path
+    resolvePath(href, currentDir) {
+        // Clean up path parts
+        href = href.replace(/\\/g, '/');
+        currentDir = currentDir.replace(/\\/g, '/');
+        
+        // Handle various path types
+        if (href.startsWith('/')) {
+            // Absolute path from root
+            return href.slice(1);
+        } else if (href.startsWith('./')) {
+            // Relative path from current directory
+            return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
+        } else if (href.startsWith('../')) {
+            // Going up in the directory tree
+            const parts = currentDir.split('/');
+            if (parts.length <= 1) {
+                return href.slice(3);
+            }
+            const parentDir = parts.slice(0, -1).join('/');
+            return this.resolvePath(href.slice(3), parentDir);
+        } else {
+            // Treating it as a relative path from current directory
+            // If path has no directory, check if it's a file directly in current directory
+            if (!href.includes('/')) {
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    if (file.name.toLowerCase() === href.toLowerCase() && 
+                        file.folder.toLowerCase() === currentDir.toLowerCase()) {
+                        return file.path;
+                    }
+                }
+            }
+            
+            // Otherwise join with current directory
+            return currentDir ? `${currentDir}/${href}` : href;
+        }
     }
 
     // Register the FileList component for state tracking
