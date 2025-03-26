@@ -9,6 +9,8 @@ class FileManager {
             description: 'Markdown Files', 
             accept: { 'text/markdown': ['.md'], 'text/plain': ['.txt'] } 
         }];
+        // Add a map to store directory handles for file system monitoring
+        this.directoryHandles = new Map();
     }
 
     // Clear all loaded files and folder structure
@@ -459,6 +461,49 @@ class FileManager {
                 this.folderStructure.get(fileInfo.folder).files.add(fileInfo.path);
             }
         }
+    }
+
+    // Process files from a directory picker
+    async processDirectoryFromFileSystemAPI() {
+        if (!this.supportsFileSystem) return false;
+        
+        try {
+            const dirHandle = await window.showDirectoryPicker();
+            if (!dirHandle) return false;
+            
+            // Store the directory handle for later watching
+            const dirPath = dirHandle.name;
+            this.directoryHandles.set(dirPath, dirHandle);
+            
+            // Get all markdown files from the directory
+            const files = await this.getFilesFromDirectoryHandle(dirHandle, dirPath);
+            
+            // Process the files
+            if (files.length > 0) {
+                const processed = await this.processFiles(files);
+                return processed > 0;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error('Error opening directory with File System API:', error);
+            return false;
+        }
+    }
+
+    // Get all directory handles
+    getDirectoryHandles() {
+        return this.directoryHandles;
+    }
+
+    // Add a directory handle
+    addDirectoryHandle(path, handle) {
+        this.directoryHandles.set(path, handle);
+    }
+
+    // Remove a directory handle
+    removeDirectoryHandle(path) {
+        this.directoryHandles.delete(path);
     }
 }
 

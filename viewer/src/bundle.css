@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T16:02:40.270Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-03-26T16:28:30.531Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -496,6 +496,30 @@ a {
   color: var(--color-text-light);
   font-style: italic;
   text-align: center;
+}
+
+/* Add directory button */
+.file-tree .add-directory-item {
+  margin: 0 0 15px 0;
+  text-align: center;
+}
+
+.file-tree .add-directory-button {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--border-radius-sm);
+  padding: 6px 12px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-weight: 500;
+}
+
+.file-tree .add-directory-button:hover {
+  background-color: var(--color-primary);
+  color: white;
 }
 
 /* Indentation levels */

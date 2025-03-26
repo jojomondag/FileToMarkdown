@@ -144,6 +144,29 @@ class FileList extends BaseComponent {
         
         const rootList = this.createElement('ul', {class: 'file-tree'});
         
+        // Create "Add Directory" button at the top
+        const addDirItem = this.createElement('li', {class: 'add-directory-item'});
+        const addDirButton = this.createElement('button', {
+            class: 'add-directory-button',
+            title: 'Add directory to watch'
+        }, '+ Add Directory');
+        
+        addDirButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                // Attempt to add a directory using the File System API
+                const result = await this.fileManager.processDirectoryFromFileSystemAPI();
+                if (!result) {
+                    console.warn('No directory was selected or it contained no markdown files');
+                }
+            } catch (error) {
+                console.error('Error adding directory:', error);
+            }
+        });
+        
+        addDirItem.appendChild(addDirButton);
+        rootList.appendChild(addDirItem);
+        
         // Get files and folders to display
         const rootFolders = Array.from(this.fileManager.folderStructure.values())
             .filter(f => f.isRoot)
