@@ -16,6 +16,125 @@
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-csharp.min.js"></script>
+    
+    <!-- localStorage Debug Script -->
+    <script>
+        // Check if localStorage is available
+        function checkLocalStorage() {
+            try {
+                const testKey = 'test_storage';
+                localStorage.setItem(testKey, testKey);
+                const testValue = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (testValue === testKey) {
+                    console.log('✅ localStorage is working properly');
+                    
+                    // Check for our specific keys
+                    console.log('--- localStorage Debug Info ---');
+                    console.log('Available keys in localStorage:');
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        console.log(`${key}: ${localStorage.getItem(key).length} bytes`);
+                    }
+                    
+                    // Check our app's specific keys
+                    const keys = [
+                        'fileToMarkdown_loadedFiles',
+                        'fileToMarkdown_loadedFiles_folders',
+                        'fileToMarkdown_loadedFiles_currentIndex',
+                        'fileToMarkdown_recentFiles',
+                        'fileToMarkdown_expandedFolders'
+                    ];
+                    
+                    console.log('\nApplication storage keys:');
+                    keys.forEach(key => {
+                        const exists = localStorage.getItem(key) !== null;
+                        console.log(`- ${key}: ${exists ? 'exists' : 'not found'}`);
+                    });
+                    
+                    return true;
+                } else {
+                    console.error('❌ localStorage test failed - values don\'t match');
+                    return false;
+                }
+            } catch (e) {
+                console.error('❌ localStorage is not available:', e);
+                return false;
+            }
+        }
+        
+        // Run the check immediately
+        const localStorageAvailable = checkLocalStorage();
+        
+        // Show a warning if localStorage is not available
+        if (!localStorageAvailable) {
+            window.addEventListener('DOMContentLoaded', () => {
+                const warningDiv = document.createElement('div');
+                warningDiv.style.position = 'fixed';
+                warningDiv.style.top = '0';
+                warningDiv.style.left = '0';
+                warningDiv.style.right = '0';
+                warningDiv.style.padding = '10px';
+                warningDiv.style.background = '#f44336';
+                warningDiv.style.color = 'white';
+                warningDiv.style.textAlign = 'center';
+                warningDiv.style.zIndex = '9999';
+                warningDiv.innerHTML = 'Warning: localStorage is not available. Your files will not be saved between page refreshes.';
+                document.body.appendChild(warningDiv);
+            });
+        }
+        
+        // Add manual save function
+        window.addEventListener('DOMContentLoaded', () => {
+            // Create save button
+            const saveButton = document.createElement('button');
+            saveButton.className = 'save-storage-btn';
+            saveButton.innerText = 'Save Files to localStorage';
+            saveButton.onclick = function() {
+                try {
+                    // Get the app instance
+                    if (window.app && window.app.fileManager) {
+                        window.app.fileManager.saveFilesToLocalStorage();
+                        
+                        // Show confirmation
+                        this.innerText = 'Saved!';
+                        setTimeout(() => {
+                            this.innerText = 'Save Files to localStorage';
+                        }, 2000);
+                        
+                        // Log the result
+                        console.log('✅ Manually saved files to localStorage');
+                        
+                        // Run the check to verify
+                        checkLocalStorage();
+                    } else {
+                        console.error('❌ App instance not found');
+                        this.innerText = 'Error!';
+                        setTimeout(() => {
+                            this.innerText = 'Save Files to localStorage';
+                        }, 2000);
+                    }
+                } catch (e) {
+                    console.error('❌ Error saving to localStorage:', e);
+                    this.innerText = 'Error!';
+                    setTimeout(() => {
+                        this.innerText = 'Save Files to localStorage';
+                    }, 2000);
+                }
+            };
+            
+            // Insert before dropzone
+            const sidebarEl = document.querySelector('.sidebar');
+            const dropzoneEl = document.querySelector('.dropzone');
+            if (sidebarEl && dropzoneEl) {
+                sidebarEl.insertBefore(saveButton, dropzoneEl);
+            } else {
+                console.log('Could not find sidebar or dropzone elements');
+            }
+        });
+    </script>
+    
     <script src="src/bundle.js"></script>
     <style>
 /* ===== BASE STYLES ===== */
@@ -91,6 +210,26 @@ body {
   flex: 1;
 }
 
+/* Save to localStorage button */
+.save-storage-btn {
+  display: block;
+  margin: 10px auto;
+  padding: 8px 15px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-storage-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
 .dropzone {
   display: flex;
   flex-direction: column;
@@ -133,6 +272,54 @@ body {
 
 .dropzone:hover .dropzone-icon {
   transform: translateY(-5px);
+}
+
+/* Recent files in dropzone */
+.recent-files-section {
+  margin-top: 20px;
+  width: 100%;
+  border-top: 1px solid var(--color-border);
+  padding-top: 15px;
+}
+
+.recent-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-list li {
+  margin: 5px 0;
+}
+
+.recent-list a {
+  display: block;
+  padding: 8px 12px;
+  background: var(--color-white);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-list a:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 /* ===== FILE TREE ===== */
@@ -249,6 +436,73 @@ body {
 .file-tree li.selected > a {
   background: var(--color-hover);
   color: var(--color-primary);
+}
+
+.file-tree a:hover {
+  background: var(--color-hover);
+}
+
+/* Recent files section */
+.file-tree .recent-header,
+.file-tree .project-header {
+  margin: 8px 0;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.95em;
+}
+
+.file-tree .recent-header a {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+
+.file-tree .recent-header a::before {
+  content: "📂";
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.file-tree .recent-header a.expanded::before {
+  content: "📂";
+}
+
+.file-tree .recent-header a:not(.expanded)::before {
+  content: "📁";
+}
+
+.file-tree .file-separator {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: 10px 8px;
+}
+
+.file-tree .recent-files {
+  margin-left: 8px;
+}
+
+.file-tree .recent-file {
+  margin: 6px 0;
+}
+
+.file-tree .recent-file .file-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-tree .recent-file .timestamp {
+  font-size: 0.8em;
+  color: var(--color-text-light);
+  margin-left: 32px;
+  margin-top: -2px;
+}
+
+.file-tree .empty-message {
+  padding: 12px 8px;
+  color: var(--color-text-light);
+  font-style: italic;
+  text-align: center;
 }
 
 /* ===== MAIN CONTENT ===== */

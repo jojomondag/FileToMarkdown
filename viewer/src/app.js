@@ -1,6 +1,10 @@
 import FileManager from './utils/fileManager';
 import BrowserRenderer from './utils/renderer';
 import FileList from './components/FileList';
+import Database from './utils/database';
+import Header from './components/Header';
+import Editor from './components/Editor';
+import Preview from './components/Preview';
 
 /**
  * Main application class for FileToMarkdown viewer
@@ -10,6 +14,22 @@ class FileToMarkdownViewer {
         this.fileManager = new FileManager();
         this.renderer = new BrowserRenderer();
         this.elements = this.getElements();
+        
+        // Debug localStorage contents
+        console.log('========= DEBUG LOCALSTORAGE =========');
+        console.log('Available localStorage keys:');
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            console.log(`Key: ${key}, Size: ${localStorage.getItem(key).length} bytes`);
+        }
+        
+        // Check for our specific keys
+        console.log('Our localStorage keys:');
+        console.log('LOADED_FILES_KEY:', localStorage.getItem('fileToMarkdown_loadedFiles') ? 'exists' : 'not found');
+        console.log('LOADED_FILES_FOLDERS_KEY:', localStorage.getItem('fileToMarkdown_loadedFiles_folders') ? 'exists' : 'not found');
+        console.log('LOADED_FILES_CURRENT_INDEX:', localStorage.getItem('fileToMarkdown_loadedFiles_currentIndex') ? 'exists' : 'not found');
+        console.log('======================================');
+        
         this.setupComponents();
         this.setupEventListeners();
         this.restoreSidebarState();
@@ -18,6 +38,26 @@ class FileToMarkdownViewer {
         this.isEditorMode = false;
         this.originalContent = '';
         this.setupFileInput(); // Set up persistent file input
+        
+        // Try to restore the previously opened files when the page loads
+        this.restoreFilesOnLoad();
+        
+        // Set up beforeunload event to save files to localStorage
+        window.addEventListener('beforeunload', () => {
+            // Save current files to localStorage
+            if (this.fileManager.files && this.fileManager.files.length > 0) {
+                this.fileManager.saveFilesToLocalStorage();
+                
+                // If we're in editor mode, save the current file content
+                if (this.isEditorMode && this.elements.editor.value) {
+                    const fileInfo = this.fileManager.getCurrentFile();
+                    if (fileInfo) {
+                        fileInfo.content = this.elements.editor.value;
+                        this.fileManager.saveFilesToLocalStorage();
+                    }
+                }
+            }
+        });
     }
 
     getElements() {
@@ -199,37 +239,108 @@ class FileToMarkdownViewer {
         dropZone.appendChild(uploadIcon);
         dropZone.appendChild(dropText);
         
-        // Remove ALL existing click event listeners by cloning the node
-        const newDropZone = dropZone.cloneNode(true);
-        dropZone.parentNode.replaceChild(newDropZone, dropZone);
+        // Check if we have recent files
+        const recentFiles = this.fileManager.getRecentFiles();
+        if (recentFiles.length > 0) {
+            // Add recent files section
+            const recentSection = document.createElement('div');
+            recentSection.className = 'recent-files-section';
+            
+            const recentTitle = document.createElement('h3');
+            recentTitle.className = 'recent-title';
+            recentTitle.textContent = 'Recent Files';
+            recentSection.appendChild(recentTitle);
+            
+            // Add recent files list (show up to 5 most recent)
+            const recentList = document.createElement('ul');
+            recentList.className = 'recent-list';
+            
+            recentFiles.slice(0, 5).forEach((recent) => {
+                const item = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = '#';
+                link.textContent = recent.name;
+                link.title = recent.path;
+                
+                // Add click handler to open recent file
+                link.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const success = await this.fileManager.openRecentFile(recent);
+                    if (success) {
+                        this.loadFile(0);
+                    }
+                });
+                
+                item.appendChild(link);
+                recentList.appendChild(item);
+            });
+            
+            recentSection.appendChild(recentList);
+            dropZone.appendChild(recentSection);
+        }
         
-        // Update our reference
-        this.elements.dropZone = newDropZone;
-        
-        // Add a single click event handler
-        newDropZone.addEventListener('click', (e) => {
+        // Add click handler
+        dropZone.onclick = async (e) => {
+            // Only trigger file selector if clicking on the dropzone itself or its icon/text
+            if (e.target.closest('.recent-files-section')) {
+                return; // Skip if clicking on recent files section
+            }
+            
             e.preventDefault();
             e.stopPropagation();
             
-            // Create and show a file dialog that allows directory selection
-            const input = this.elements.fileInput;
-            input.webkitdirectory = true; // Enable directory selection
-            input.directory = true;       // Non-webkit browsers
-            input.multiple = true;        // Allow multiple selection
-            input.accept = '.md';         // Still filter for markdown files
-            input.click();
-        });
+            // First try to use File System Access API if supported
+            if ('showOpenFilePicker' in window) {
+                try {
+                    // Use the FileManager to handle files from File System API
+                    const success = await this.fileManager.processFilesFromFileSystemAPI();
+                    
+                    if (success) {
+                        // Display the first file by default
+                        this.loadFile(0);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error opening files with File System API:', error);
+                }
+            }
+            
+            // Fall back to standard file input if File System API failed or is not supported
+            this.elements.fileInput.click();
+        };
     }
 
-    handleFiles(fileList) {
-        // Clear existing files to prevent duplication
-        this.fileManager.clearFiles();
+    async handleFiles(files) {
+        console.log('Handling files:', files.length);
         
-        if (this.fileManager.processFiles(fileList)) {
-            this.fileListComponent.render();
-            if (this.fileManager.files.length > 0) this.loadFile(0);
+        // Update the UI to show loading state
+        this.elements.dropZone.innerHTML = '<p>Processing files...</p>';
+        
+        // Process the files with the file manager
+        const processed = await this.fileManager.handleFileUpload(files);
+        
+        if (processed) {
+            console.log('Files processed successfully, loading first file');
+            
+            // Hide the drop zone
+            this.elements.dropZone.style.display = 'none';
+            
+            // Show the button container
+            this.elements.buttonContainer.style.display = 'flex';
+            
+            // Load the first file
+            this.loadFile(this.fileManager.currentFileIndex);
+            
+            // Make sure files are saved to localStorage
+            this.fileManager.saveFilesToLocalStorage();
+            
+            return true;
         } else {
-            this.showError('No markdown (.md) files found in the selected files/folders.');
+            console.log('No files processed');
+            
+            // Reset the dropzone UI
+            this.updateDropzoneUI();
+            return false;
         }
     }
 
@@ -263,26 +374,46 @@ class FileToMarkdownViewer {
         // Force an immediate update of button positions to ensure they're visible
         setTimeout(() => this.updateButtonPositions(), 100);
 
-        const reader = new FileReader();
-        reader.onload = e => {
-            const content = e.target.result;
-            this.originalContent = content;
-            
-            if (this.isEditorMode) {
-                this.elements.editor.value = content;
-            } else {
-                this.elements.content.innerHTML = this.renderer.render(content);
-                this.renderer.highlightAll();
-                this.setupLinkHandlers();
-            }
-            
-            // Ensure buttons are visible after content is loaded
-            this.updateButtonPositions();
-        };
-        reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
-        reader.readAsText(fileInfo.file);
+        // Use content directly if available or read from file object
+        if (fileInfo.content) {
+            this.displayFileContent(fileInfo.content);
+            return;
+        }
+        
+        // If we don't have content but have a file object, read it
+        if (fileInfo.file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const content = e.target.result;
+                this.originalContent = content;
+                
+                // Store content in fileInfo for future use
+                fileInfo.content = content;
+                
+                this.displayFileContent(content);
+            };
+            reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
+            reader.readAsText(fileInfo.file);
+        } else {
+            this.showError('File content not available');
+        }
     }
     
+    displayFileContent(content) {
+        this.originalContent = content;
+        
+        if (this.isEditorMode) {
+            this.elements.editor.value = content;
+        } else {
+            this.elements.content.innerHTML = this.renderer.render(content);
+            this.renderer.highlightAll();
+            this.setupLinkHandlers();
+        }
+        
+        // Ensure buttons are visible after content is loaded
+        this.updateButtonPositions();
+    }
+
     updateButtonPositions() {
         // Get references to our elements
         const buttonContainer = this.elements.buttonContainer;
@@ -468,56 +599,56 @@ class FileToMarkdownViewer {
     }
     
     async saveFile() {
-        if (!this.isEditorMode) return;
+        const fileInfo = this.fileManager.getCurrentFile();
+        if (!fileInfo) return;
         
         const content = this.elements.editor.value;
-        
-        // Check if there's a current file
-        if (this.fileManager.currentFileIndex === -1) {
-            this.showError('No file selected to save');
-            return;
-        }
+        this.originalContent = content; // Update the original content
         
         try {
-            // Force body to have edit-mode class
-            document.body.classList.add('edit-mode');
+            // Show save indicator
+            this.elements.saveButton.classList.add('saving');
+            this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
             
-            // Save to disk if it's a file from the file system
             const success = await this.fileManager.saveCurrentFile(content);
             
             if (success) {
-                // Update original content
-                this.originalContent = content;
-                
-                // Update the view if not in editor mode (shouldn't happen, but just in case)
+                // Update the displayed file when switching back to view mode
                 if (!this.isEditorMode) {
-                    this.elements.content.innerHTML = this.renderer.render(content);
-                    this.renderer.highlightAll();
-                    this.setupLinkHandlers();
+                    this.loadFile(this.fileManager.currentFileIndex);
                 }
                 
-                console.log('File saved successfully');
+                // Show success indicator
+                this.elements.saveButton.classList.remove('saving');
+                this.elements.saveButton.classList.add('saved');
+                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 
-                // Ensure correct UI state
-                document.body.classList.add('edit-mode');
-                document.getElementById('button-container').style.display = 'flex';
-                this.updateButtonPositions();
-                
-                // Single delayed check to ensure buttons remain visible
+                // Reset to save icon after a delay
                 setTimeout(() => {
-                    document.body.classList.add('edit-mode');
-                    this.updateButtonPositions();
-                }, 50);
+                    this.elements.saveButton.classList.remove('saved');
+                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+                }, 2000);
             } else {
-                this.showError('Error saving file');
+                // Show error indicator
+                this.elements.saveButton.classList.remove('saving');
+                this.elements.saveButton.classList.add('error');
+                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                
+                this.showError('Failed to save file');
+                
+                // Reset to save icon after a delay
+                setTimeout(() => {
+                    this.elements.saveButton.classList.remove('error');
+                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+                }, 2000);
             }
         } catch (error) {
-            console.error('Error in saveFile:', error);
-            this.showError(`Error saving file: ${error.message}`);
+            console.error('Error saving file:', error);
+            this.showError('Error saving file: ' + error.message);
             
-            // Even on error, ensure buttons remain visible
-            document.body.classList.add('edit-mode');
-            this.elements.buttonContainer.style.display = 'flex';
+            // Reset button state
+            this.elements.saveButton.classList.remove('saving');
+            this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
         }
     }
 
@@ -535,16 +666,81 @@ class FileToMarkdownViewer {
         const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
         if (sidebarCollapsed) this.toggleSidebar();
     }
+
+    /**
+     * Try to restore files from the previous session when the page loads
+     */
+    async restoreFilesOnLoad() {
+        console.log('Attempting to restore files on load');
+        
+        // First, try to see if the fileManager already restored a session
+        if (this.fileManager.sessionRestored || this.fileManager.files.length > 0) {
+            console.log('Files already restored by fileManager, loading current file');
+            if (this.fileManager.currentFileIndex >= 0) {
+                this.loadFile(this.fileManager.currentFileIndex);
+                
+                // Show the button container since we have a file loaded
+                if (this.elements.buttonContainer) {
+                    this.elements.buttonContainer.style.display = 'flex';
+                }
+                
+                // Hide the drop zone
+                if (this.elements.dropZone) {
+                    this.elements.dropZone.style.display = 'none';
+                }
+                
+                // Show the main content area
+                this.elements.main.style.display = 'block';
+                
+                return true;
+            }
+        }
+        
+        // Check if we have files in localStorage
+        try {
+            const filesLoaded = this.fileManager.loadFilesFromLocalStorage();
+            if (filesLoaded && this.fileManager.files.length > 0) {
+                console.log('Files loaded from localStorage, loading current file');
+                if (this.fileManager.currentFileIndex >= 0) {
+                    this.loadFile(this.fileManager.currentFileIndex);
+                    
+                    // Show the button container
+                    if (this.elements.buttonContainer) {
+                        this.elements.buttonContainer.style.display = 'flex';
+                    }
+                    
+                    // Hide the drop zone
+                    if (this.elements.dropZone) {
+                        this.elements.dropZone.style.display = 'none';
+                    }
+                    
+                    // Show the main content area
+                    this.elements.main.style.display = 'block';
+                    
+                    // Force re-render of the file tree
+                    this.fileListComponent.render();
+                    
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Error restoring files from localStorage:', error);
+        }
+        
+        // No files were restored, show the drop zone
+        if (this.elements.dropZone) {
+            this.elements.dropZone.style.display = 'block';
+        }
+        return false;
+    }
 }
 
-// Initialize the application
-window.addEventListener('DOMContentLoaded', () => {
-    window.app = new FileToMarkdownViewer();
+// Create and initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new FileToMarkdownViewer();
     
-    // Add window resize event listener to update button positions
-    window.addEventListener('resize', () => {
-        if (window.app.fileManager.currentFileIndex !== -1) {
-            window.app.updateButtonPositions();
-        }
-    });
+    // Expose app to window for debugging
+    window.app = app;
+    
+    console.log('FileToMarkdown Viewer initialized');
 }); 

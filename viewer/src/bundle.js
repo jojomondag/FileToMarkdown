@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-25T10:01:50.252Z
+// FileToMarkdown Viewer Bundle - 2025-03-26T06:18:42.793Z
 
 // File: utils/constants.js
 const FOLDER_STATES_KEY = 'folderStates';
@@ -127,62 +127,330 @@ class BaseComponent {
 // export BaseComponent; 
 // File: utils/fileSync.js
 /**
- * Utility class for syncing files between the browser and the local file system
+ * Utility class for syncing files between the browser and the local file system using File System Access API
  */
 class FileSync {
     constructor() {
-        // No-op constructor
-        console.log('FileSync disabled - running in static mode');
+        this.fileHandles = new Map(); // Store file handles
+        this.fileWatchers = new Map(); // Store watchers by file path
+        this.socketConnected = false;
+        this.ws = null;
+        this.supportsFileSystem = 'showOpenFilePicker' in window;
+        
+        if (!this.supportsFileSystem) {
+            console.warn('FileSync: File System Access API not supported in this browser');
+        } else {
+            console.log('FileSync: File System Access API available');
+        }
     }
 
     /**
-     * Initialize the WebSocket connection - disabled for simple HTTP server
+     * Initialize the WebSocket connection for file watching
      */
     connect() {
-        // No-op
-        return;
+        if (!this.socketConnected && location.protocol !== 'file:') {
+            try {
+                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${location.host}`;
+                
+                this.ws = new WebSocket(wsUrl);
+                
+                this.ws.onopen = () => {
+                    console.log('WebSocket connected for file watching');
+                    this.socketConnected = true;
+                    
+                    // Send watch messages for any files already being watched
+                    if (this.fileWatchers.size > 0) {
+                        const paths = Array.from(this.fileWatchers.keys());
+                        this.sendWatchMessage(paths);
+                    }
+                };
+                
+                this.ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        
+                        if (data.type === 'fileChange') {
+                            this.handleFileChange(data.path, data.content);
+                        }
+                    } catch (error) {
+                        console.error('Error handling WebSocket message:', error);
+                    }
+                };
+                
+                this.ws.onclose = () => {
+                    console.log('WebSocket connection closed');
+                    this.socketConnected = false;
+                    
+                    // Attempt to reconnect after a delay
+                    setTimeout(() => this.connect(), 5000);
+                };
+            } catch (error) {
+                console.error('Error connecting to WebSocket:', error);
+            }
+        }
     }
 
     /**
-     * Watch a file for changes - no-op in HTTP mode
+     * Watch a file for changes
+     * @param {string} filePath - The path to the file
+     * @param {function} callback - Function to call when file changes
      */
-    watchFile() {
-        // No-op
-        return;
+    watchFile(filePath, callback) {
+        this.fileWatchers.set(filePath, callback);
+        
+        if (this.socketConnected) {
+            this.sendWatchMessage([filePath]);
+        }
     }
 
     /**
-     * Stop watching a file - no-op in HTTP mode
+     * Stop watching a file
+     * @param {string} filePath - The path to the file
      */
-    unwatchFile() {
-        // No-op
-        return;
+    unwatchFile(filePath) {
+        this.fileWatchers.delete(filePath);
     }
 
     /**
-     * Send a message to watch file paths - no-op in HTTP mode
+     * Send a message to watch file paths
+     * @param {string[]} paths - Array of file paths to watch
      */
-    sendWatchMessage() {
-        // No-op
-        return;
+    sendWatchMessage(paths) {
+        if (this.socketConnected && this.ws) {
+            this.ws.send(JSON.stringify({
+                type: 'watch',
+                paths: paths
+            }));
+        }
     }
 
     /**
-     * Save content to a file
-     * @returns {Promise<boolean>} - Always returns false in HTTP mode
+     * Handle a file change notification
+     * @param {string} filePath - The path to the file
+     * @param {string} content - The new content
      */
-    async saveFile() {
-        console.log('File saving not supported in static mode');
-        return false;
+    handleFileChange(filePath, content) {
+        const callback = this.fileWatchers.get(filePath);
+        if (callback) {
+            callback(content);
+        }
     }
 
     /**
-     * Load content from a file
-     * @returns {Promise<string|null>} - Always returns null in HTTP mode
+     * Save content to a file using File System Access API
+     * @param {string} filePath - The path to the file or null if using a file handle
+     * @param {string} content - The content to save
+     * @param {FileSystemFileHandle} [fileHandle] - Optional file handle to use
+     * @returns {Promise<boolean>} - Whether the save was successful
      */
-    async loadFile() {
-        console.log('File loading not supported in static mode');
-        return null;
+    async saveFile(filePath, content, fileHandle = null) {
+        // If File System API is not supported, fall back to server method
+        if (!this.supportsFileSystem) {
+            return this.saveFileToServer(filePath, content);
+        }
+        
+        try {
+            // Use provided handle or get from cache
+            const handle = fileHandle || this.fileHandles.get(filePath);
+            
+            if (!handle) {
+                console.error('No file handle available for:', filePath);
+                return false;
+            }
+            
+            // Check if we have write permission
+            if ((await handle.queryPermission({ mode: 'readwrite' })) !== 'granted') {
+                // Request permission
+                if ((await handle.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+                    console.error('Write permission denied for file:', filePath);
+                    return false;
+                }
+            }
+            
+            // Create a writable stream
+            const writable = await handle.createWritable();
+            
+            // Write the content
+            await writable.write(content);
+            
+            // Close the stream
+            await writable.close();
+            
+            console.log('File saved successfully:', filePath);
+            return true;
+        } catch (error) {
+            console.error('Error saving file:', error);
+            
+            // Try server fallback
+            return this.saveFileToServer(filePath, content);
+        }
+    }
+
+    /**
+     * Fallback method to save to server
+     * @param {string} filePath - The path to the file
+     * @param {string} content - The content to save
+     * @returns {Promise<boolean>} - Whether the save was successful
+     */
+    async saveFileToServer(filePath, content) {
+        try {
+            const response = await fetch('/api/file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    path: filePath,
+                    content: content
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('File saved via server:', filePath);
+                return true;
+            } else {
+                console.error('Server error saving file:', result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error saving file to server:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Load content from a file using File System Access API
+     * @param {string} filePath - The path to the file or null if using file handle
+     * @param {FileSystemFileHandle} [fileHandle] - Optional file handle to use
+     * @returns {Promise<string|null>} - The file content or null if failed
+     */
+    async loadFile(filePath, fileHandle = null) {
+        // If File System API is not supported, fall back to server method
+        if (!this.supportsFileSystem) {
+            return this.loadFileFromServer(filePath);
+        }
+        
+        try {
+            // Use provided handle or get from cache
+            const handle = fileHandle || this.fileHandles.get(filePath);
+            
+            if (!handle) {
+                console.error('No file handle available for:', filePath);
+                return null;
+            }
+            
+            // Check if we have read permission
+            if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+                // Request permission
+                if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+                    console.error('Read permission denied for file:', filePath);
+                    return null;
+                }
+            }
+            
+            // Get the file
+            const file = await handle.getFile();
+            
+            // Read the text content
+            const content = await file.text();
+            
+            console.log('File loaded successfully:', filePath);
+            return content;
+        } catch (error) {
+            console.error('Error loading file:', error);
+            
+            // Try server fallback
+            return this.loadFileFromServer(filePath);
+        }
+    }
+
+    /**
+     * Fallback method to load from server
+     * @param {string} filePath - The path to the file
+     * @returns {Promise<string|null>} - The file content or null if failed
+     */
+    async loadFileFromServer(filePath) {
+        try {
+            const response = await fetch(`/api/file?path=${encodeURIComponent(filePath)}`);
+            const result = await response.json();
+            
+            if (result.content !== undefined) {
+                console.log('File loaded via server:', filePath);
+                return result.content;
+            } else {
+                console.error('Server error loading file:', result.error);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error loading file from server:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * Open files using the File System Access API
+     * @param {object} options - Options for file picker
+     * @returns {Promise<Array<object>>} - Array of objects with file handles and file info
+     */
+    async openFiles(options = {}) {
+        if (!this.supportsFileSystem) {
+            console.error('File System Access API not supported');
+            return [];
+        }
+        
+        try {
+            // Configure options for the file picker
+            const pickerOptions = {
+                types: [
+                    {
+                        description: 'Markdown Files',
+                        accept: {
+                            'text/markdown': ['.md', '.markdown']
+                        }
+                    }
+                ],
+                excludeAcceptAllOption: false,
+                multiple: true,
+                ...options
+            };
+            
+            // Show the file picker
+            const fileHandles = await window.showOpenFilePicker(pickerOptions);
+            
+            // Process each file handle
+            const files = await Promise.all(fileHandles.map(async (handle) => {
+                try {
+                    // Get the file from the handle
+                    const file = await handle.getFile();
+                    
+                    // Get the path (this will be user-visible name only)
+                    const filePath = file.name;
+                    
+                    // Store the handle for future use
+                    this.fileHandles.set(filePath, handle);
+                    
+                    return {
+                        file,
+                        handle,
+                        path: filePath,
+                        name: file.name
+                    };
+                } catch (error) {
+                    console.error('Error processing file handle:', error);
+                    return null;
+                }
+            }));
+            
+            // Filter out any nulls
+            return files.filter(f => f !== null);
+        } catch (error) {
+            // User canceled or other error
+            console.log('File picker canceled or error:', error);
+            return [];
+        }
     }
 }
 
@@ -235,7 +503,8 @@ class FileManager {
                     folder: pathParts.slice(0, -1).join('/'),
                     depth: pathParts.length - 1,
                     isRoot: pathParts.length === 1,
-                    realPath: file.path || null // Store the real file path if available
+                    realPath: file.path || null, // Store the real file path if available
+                    handle: file.handle || null // Store the file handle if available
                 };
                 
                 // Store real path mapping if available
@@ -281,7 +550,52 @@ class FileManager {
         return false;
     }
 
-    // New method to process files from the file system
+    // Process files from the File System Access API
+    async processFilesFromFileSystemAPI() {
+        try {
+            // Use the FileSync class to open files with the File System Access API
+            const files = await this.fileSync.openFiles();
+            
+            if (files.length === 0) {
+                return false;
+            }
+            
+            // Clear existing files
+            this.clearFiles();
+            
+            // Process the files
+            const markdownFiles = [];
+            
+            for (const fileInfo of files) {
+                if (fileInfo.name.toLowerCase().endsWith(FILE_EXTENSIONS.MARKDOWN)) {
+                    const fileData = {
+                        file: fileInfo.file,
+                        path: fileInfo.path,
+                        name: fileInfo.name,
+                        folder: '',  // Files opened directly are at root level
+                        depth: 0,
+                        isRoot: true,
+                        handle: fileInfo.handle  // Store the file handle
+                    };
+                    
+                    markdownFiles.push(fileData);
+                }
+            }
+            
+            if (markdownFiles.length) {
+                this.files = markdownFiles;
+                this.updateFileMap();
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('Error processing files from File System API:', error);
+            return false;
+        }
+    }
+
+    // Process files from the file system using server API (fallback)
     async processFileSystem(filePaths) {
         const markdownFiles = [];
         this.folderStructure.clear();
@@ -372,7 +686,12 @@ class FileManager {
         const fileInfo = this.getCurrentFile();
         if (!fileInfo) return false;
         
-        // Get the real path
+        // If we have a file handle, use it
+        if (fileInfo.handle) {
+            return await this.fileSync.saveFile(fileInfo.path, content, fileInfo.handle);
+        }
+        
+        // Otherwise try using the real path if available
         const realPath = this.syncedFiles.get(fileInfo.path);
         if (!realPath) return false;
         
@@ -385,6 +704,34 @@ class FileManager {
         }
         
         return success;
+    }
+
+    // Load content for the current file (refresh from disk)
+    async refreshCurrentFile() {
+        const fileInfo = this.getCurrentFile();
+        if (!fileInfo) return false;
+        
+        let content;
+        
+        // If we have a file handle, use it
+        if (fileInfo.handle) {
+            content = await this.fileSync.loadFile(null, fileInfo.handle);
+        } else {
+            // Otherwise try using the real path if available
+            const realPath = this.syncedFiles.get(fileInfo.path);
+            if (!realPath) return false;
+            
+            content = await this.fileSync.loadFile(realPath);
+        }
+        
+        if (content !== null) {
+            // Update our local file object
+            const newFile = new File([content], fileInfo.name, { type: 'text/markdown' });
+            fileInfo.file = newFile;
+            return true;
+        }
+        
+        return false;
     }
 
     getFolderInfo(path) {
@@ -438,21 +785,27 @@ class FileManager {
             return currentDir ? `${currentDir}/${href.slice(2)}` : href.slice(2);
         } else if (href.startsWith('../')) {
             const parts = currentDir.split('/');
-            return parts.length > 1
-                ? `${parts.slice(0, -1).join('/')}/${href.slice(3)}`
-                : href.slice(3);
-        } else if (!href.startsWith('/')) {
-            return currentDir ? `${currentDir}/${href}` : href;
+            if (parts.length === 0) return href.slice(3);
+            
+            const parentDir = parts.slice(0, -1).join('/');
+            return parentDir ? `${parentDir}/${href.slice(3)}` : href.slice(3);
         }
-        return href.slice(1);
+        
+        return currentDir ? `${currentDir}/${href}` : href;
     }
     
-    // Get the real file path for a file
     getRealPath(fileIndex) {
         const fileInfo = this.getFile(fileIndex);
         if (!fileInfo) return null;
         
         return this.syncedFiles.get(fileInfo.path) || null;
+    }
+    
+    getFileHandle(fileIndex) {
+        const fileInfo = this.getFile(fileIndex);
+        if (!fileInfo) return null;
+        
+        return fileInfo.handle || null;
     }
 }
 
@@ -828,37 +1181,37 @@ class FileToMarkdownViewer {
         dropZone.appendChild(uploadIcon);
         dropZone.appendChild(dropText);
         
-        // Remove ALL existing click event listeners by cloning the node
-        const newDropZone = dropZone.cloneNode(true);
-        dropZone.parentNode.replaceChild(newDropZone, dropZone);
-        
-        // Update our reference
-        this.elements.dropZone = newDropZone;
-        
-        // Add a single click event handler
-        newDropZone.addEventListener('click', (e) => {
+        // Add click handler
+        dropZone.onclick = async (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            // Create and show a file dialog that allows directory selection
-            const input = this.elements.fileInput;
-            input.webkitdirectory = true; // Enable directory selection
-            input.directory = true;       // Non-webkit browsers
-            input.multiple = true;        // Allow multiple selection
-            input.accept = '.md';         // Still filter for markdown files
-            input.click();
-        });
+            // First try to use File System Access API if supported
+            if ('showOpenFilePicker' in window) {
+                try {
+                    // Use the FileManager to handle files from File System API
+                    const success = await this.fileManager.processFilesFromFileSystemAPI();
+                    
+                    if (success) {
+                        // Display the first file by default
+                        this.loadFile(0);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error opening files with File System API:', error);
+                }
+            }
+            
+            // Fall back to standard file input if File System API failed or is not supported
+            this.elements.fileInput.click();
+        };
     }
 
     handleFiles(fileList) {
-        // Clear existing files to prevent duplication
-        this.fileManager.clearFiles();
-        
-        if (this.fileManager.processFiles(fileList)) {
-            this.fileListComponent.render();
-            if (this.fileManager.files.length > 0) this.loadFile(0);
+        if (fileList.length > 0 && this.fileManager.processFiles(fileList)) {
+            this.loadFile(0);
         } else {
-            this.showError('No markdown (.md) files found in the selected files/folders.');
+            this.showError('No valid markdown files found');
         }
     }
 
@@ -1097,56 +1450,56 @@ class FileToMarkdownViewer {
     }
     
     async saveFile() {
-        if (!this.isEditorMode) return;
+        const fileInfo = this.fileManager.getCurrentFile();
+        if (!fileInfo) return;
         
         const content = this.elements.editor.value;
-        
-        // Check if there's a current file
-        if (this.fileManager.currentFileIndex === -1) {
-            this.showError('No file selected to save');
-            return;
-        }
+        this.originalContent = content; // Update the original content
         
         try {
-            // Force body to have edit-mode class
-            document.body.classList.add('edit-mode');
+            // Show save indicator
+            this.elements.saveButton.classList.add('saving');
+            this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
             
-            // Save to disk if it's a file from the file system
             const success = await this.fileManager.saveCurrentFile(content);
             
             if (success) {
-                // Update original content
-                this.originalContent = content;
-                
-                // Update the view if not in editor mode (shouldn't happen, but just in case)
+                // Update the displayed file when switching back to view mode
                 if (!this.isEditorMode) {
-                    this.elements.content.innerHTML = this.renderer.render(content);
-                    this.renderer.highlightAll();
-                    this.setupLinkHandlers();
+                    this.loadFile(this.fileManager.currentFileIndex);
                 }
                 
-                console.log('File saved successfully');
+                // Show success indicator
+                this.elements.saveButton.classList.remove('saving');
+                this.elements.saveButton.classList.add('saved');
+                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 
-                // Ensure correct UI state
-                document.body.classList.add('edit-mode');
-                document.getElementById('button-container').style.display = 'flex';
-                this.updateButtonPositions();
-                
-                // Single delayed check to ensure buttons remain visible
+                // Reset to save icon after a delay
                 setTimeout(() => {
-                    document.body.classList.add('edit-mode');
-                    this.updateButtonPositions();
-                }, 50);
+                    this.elements.saveButton.classList.remove('saved');
+                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+                }, 2000);
             } else {
-                this.showError('Error saving file');
+                // Show error indicator
+                this.elements.saveButton.classList.remove('saving');
+                this.elements.saveButton.classList.add('error');
+                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                
+                this.showError('Failed to save file');
+                
+                // Reset to save icon after a delay
+                setTimeout(() => {
+                    this.elements.saveButton.classList.remove('error');
+                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+                }, 2000);
             }
         } catch (error) {
-            console.error('Error in saveFile:', error);
-            this.showError(`Error saving file: ${error.message}`);
+            console.error('Error saving file:', error);
+            this.showError('Error saving file: ' + error.message);
             
-            // Even on error, ensure buttons remain visible
-            document.body.classList.add('edit-mode');
-            this.elements.buttonContainer.style.display = 'flex';
+            // Reset button state
+            this.elements.saveButton.classList.remove('saving');
+            this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
         }
     }
 

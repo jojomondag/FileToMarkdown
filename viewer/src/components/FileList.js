@@ -4,10 +4,57 @@ class FileList extends BaseComponent {
     constructor(container, fileManager) {
         super(container);
         this.fileManager = fileManager;
+        
+        // Load expanded folders from localStorage
+        const expandedFolders = this.fileManager.loadExpandedFolders() || new Set();
+        console.log('Loaded expanded folders from localStorage:', Array.from(expandedFolders));
+        
+        // Set initial state
         this.state = {
-            selectedIndex: -1,
-            expandedFolders: new Set()
+            selectedIndex: this.fileManager.currentFileIndex || -1,
+            expandedFolders: expandedFolders,
+            showRecent: this.getInitialRecentState() // Start with recent files shown
         };
+        
+        // Ensure file list is rerendered when files are added
+        window.addEventListener('fileListChanged', () => {
+            console.log('FileList component received fileListChanged event');
+            // Update selected index to match file manager's current file
+            this.setState({ 
+                selectedIndex: this.fileManager.currentFileIndex || -1,
+                // Keep expanded folders state
+                expandedFolders: this.state.expandedFolders
+            });
+            
+            // Save expanded folders state to localStorage
+            this.fileManager.saveExpandedFolders(this.state.expandedFolders);
+        });
+        
+        // Also render whenever session is restored
+        if (this.fileManager.files.length > 0) {
+            // Files are already loaded (perhaps from a previous restoration)
+            console.log('Files already present in FileList construction, rendering...');
+            setTimeout(() => this.render(), 0);
+        }
+    }
+
+    // Called when the component is mounted to the DOM
+    mount() {
+        this.render();
+        
+        // Add a delayed re-render to ensure file tree is shown after page refresh
+        setTimeout(() => {
+            if (this.fileManager.files.length > 0) {
+                console.log('Delayed re-render of file list after mount');
+                this.render();
+            }
+        }, 200);
+    }
+
+    // Determine initial state of the recent files section
+    getInitialRecentState() {
+        // Show recent files by default when there are no current files
+        return this.fileManager.files.length === 0 && this.fileManager.getRecentFiles().length > 0;
     }
 
     createFileItem(fileInfo, index) {
@@ -29,6 +76,45 @@ class FileList extends BaseComponent {
             'data-depth': fileInfo.depth
         });
         li.appendChild(link);
+        return li;
+    }
+
+    createRecentFileItem(recentFile, index) {
+        const link = this.createElement('a', {
+            href: '#',
+            title: recentFile.path,
+            'data-recent': index
+        }, recentFile.name);
+
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const success = await this.fileManager.openRecentFile(recentFile);
+            if (success) {
+                this.setState({ 
+                    selectedIndex: 0,
+                    showRecent: false // Hide recent files after selection
+                });
+                this.emit('fileSelect', { index: 0, fileInfo: this.fileManager.getFile(0) });
+            }
+        });
+
+        const li = this.createElement('li', {
+            class: 'file-item recent-file',
+            'data-depth': 0
+        });
+        
+        // Add a timestamp subtitle
+        const date = new Date(recentFile.lastOpened);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        
+        // Create a container for file info
+        const fileInfo = this.createElement('div', { class: 'file-info' });
+        fileInfo.appendChild(link);
+        
+        const timestamp = this.createElement('span', { class: 'timestamp' }, dateStr);
+        fileInfo.appendChild(timestamp);
+        
+        li.appendChild(fileInfo);
         return li;
     }
 
@@ -79,7 +165,15 @@ class FileList extends BaseComponent {
             });
         }
         
+        // Save expanded folders to localStorage
+        this.fileManager.saveExpandedFolders(expandedFolders);
+        
         this.setState({ expandedFolders });
+    }
+
+    // Toggle view of recent files
+    toggleRecentFiles() {
+        this.setState({ showRecent: !this.state.showRecent });
     }
 
     renderFolderContents(folderPath, container) {
@@ -102,6 +196,43 @@ class FileList extends BaseComponent {
 
     render() {
         const rootList = this.createElement('ul', {class: 'file-tree'});
+        
+        // Add Recent Files section if we have recent files
+        const recentFiles = this.fileManager.getRecentFiles();
+        
+        if (recentFiles.length > 0) {
+            // Create a "Recent Files" header that toggles the view
+            const recentHeader = this.createElement('li', {class: 'recent-header'});
+            const recentToggle = this.createElement('a', {
+                href: '#',
+                'data-recent-toggle': true,
+                class: this.state.showRecent ? 'expanded' : ''
+            }, 'Recent Files');
+            
+            recentToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleRecentFiles();
+            });
+            
+            recentHeader.appendChild(recentToggle);
+            rootList.appendChild(recentHeader);
+            
+            // Add recent files if expanded
+            if (this.state.showRecent) {
+                const recentList = this.createElement('ul', {class: 'recent-files'});
+                
+                recentFiles.forEach((recentFile, index) => {
+                    recentList.appendChild(this.createRecentFileItem(recentFile, index));
+                });
+                
+                const recentContainer = this.createElement('li', {class: 'recent-container'});
+                recentContainer.appendChild(recentList);
+                rootList.appendChild(recentContainer);
+            }
+            
+            // Add a separator
+            rootList.appendChild(this.createElement('li', {class: 'file-separator'}));
+        }
 
         const rootFolders = Array.from(this.fileManager.folderStructure.values())
             .filter(f => f.isRoot)
@@ -110,14 +241,27 @@ class FileList extends BaseComponent {
         const rootFiles = this.fileManager.files
             .filter(f => f.isRoot)
             .sort((a, b) => a.name.localeCompare(b.name));
+            
+        if (rootFolders.length > 0 || rootFiles.length > 0) {
+            // Create a "Current Project" header
+            const projectHeader = this.createElement('li', {class: 'project-header'});
+            projectHeader.appendChild(this.createElement('span', {}, 'Current Project'));
+            rootList.appendChild(projectHeader);
+            
+            // Add folders and files
+            rootFolders.forEach(folder => {
+                rootList.appendChild(this.createFolderItem(folder));
+            });
 
-        rootFolders.forEach(folder => {
-            rootList.appendChild(this.createFolderItem(folder));
-        });
-
-        rootFiles.forEach((fileInfo, index) => {
-            rootList.appendChild(this.createFileItem(fileInfo, index));
-        });
+            rootFiles.forEach((fileInfo, index) => {
+                rootList.appendChild(this.createFileItem(fileInfo, index));
+            });
+        } else if (recentFiles.length === 0) {
+            // If there are no files or recent history, show a message
+            const emptyMessage = this.createElement('li', {class: 'empty-message'});
+            emptyMessage.appendChild(this.createElement('span', {}, 'No files opened'));
+            rootList.appendChild(emptyMessage);
+        }
 
         this.container.replaceChildren(rootList);
     }

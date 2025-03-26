@@ -10,8 +10,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-// Set port
-const PORT = 9876;
+// Get port from environment variable or use default
+const PORT = process.env.PORT || 9877;
 
 // File changes store to track modifications
 const fileChanges = new Map();
@@ -19,6 +19,20 @@ const fileChanges = new Map();
 // Serve static files
 app.use(express.static(__dirname));
 app.use(express.json());
+
+// Enable CORS for File System API support
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
 
 // Root route to serve the viewer.html file
 app.get('/', (req, res) => {
@@ -34,7 +48,10 @@ app.get('/src/bundle.js', (req, res) => {
     });
 });
 
-// API endpoint to get file content
+/**
+ * API endpoint to get file content
+ * This serves as a fallback when the File System API is not available or fails
+ */
 app.get('/api/file', (req, res) => {
     const filePath = req.query.path;
     
@@ -50,7 +67,10 @@ app.get('/api/file', (req, res) => {
     }
 });
 
-// API endpoint to save file content
+/**
+ * API endpoint to save file content
+ * This serves as a fallback when the File System API is not available or fails
+ */
 app.post('/api/file', (req, res) => {
     const { path: filePath, content } = req.body;
     
@@ -75,7 +95,10 @@ app.post('/api/file', (req, res) => {
     }
 });
 
-// Set up WebSocket for real-time updates
+/**
+ * WebSocket server for file watching
+ * This complements the File System API which doesn't have built-in file watching
+ */
 wss.on('connection', (ws) => {
     console.log('Client connected');
     
@@ -100,7 +123,11 @@ wss.on('connection', (ws) => {
     });
 });
 
-// Set up file watcher
+/**
+ * Set up file watcher for the specified file paths
+ * @param {Array<string>} filePaths - Paths to watch
+ * @param {WebSocket} ws - WebSocket connection
+ */
 function setupFileWatcher(filePaths, ws) {
     // Initialize watcher
     const watcher = chokidar.watch(filePaths, {
@@ -139,4 +166,5 @@ function setupFileWatcher(filePaths, ws) {
 // Start server
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`Supports dual mode: File System API (modern browsers) + Server API (fallback)`);
 }); 
