@@ -15,44 +15,11 @@ class FileManager {
 
     // Clear all loaded files and folder structure
     clearFiles() {
+        console.warn('CLEARING ALL FILES - called by:', new Error().stack);
         this.files = [];
         this.fileMap.clear();
         this.folderStructure.clear();
         this.currentFileIndex = -1;
-    }
-
-    // Process files from File System Access API
-    async processFilesFromFileSystemAPI() {
-        if (!this.supportsFileSystem) return false;
-        
-        try {
-            const handles = await window.showOpenFilePicker({
-                multiple: true,
-                types: this.fileTypes
-            });
-            
-            if (!handles || handles.length === 0) return false;
-            
-            const files = await Promise.all(handles.map(async handle => {
-                const file = await handle.getFile();
-                // Store the file handle for later saving
-                file.handle = handle;
-                return file;
-            }));
-            
-            // Process the files through the normal flow
-            const processed = await this.processFiles(files);
-            return processed > 0;
-        } catch (error) {
-            // Don't show errors for user canceling the dialog
-            if (error.name === 'AbortError') {
-                console.log('User canceled file selection dialog');
-                return false;
-            }
-            
-            console.error('Error opening files with File System API:', error);
-            return false;
-        }
     }
 
     // Process files from a file list
@@ -61,52 +28,106 @@ class FileManager {
         let baseIndex = this.files.length;
         const newFiles = [];
         
+        // Log how many files have File System API handles
+        const filesWithHandles = Array.from(fileList).filter(file => file.handle).length;
+        console.log(`Files with File System API handles: ${filesWithHandles}/${fileList.length}`);
+        
+        // Check permissions for files with handles upfront
+        if (filesWithHandles > 0) {
+            console.log('Verifying permissions for files with handles...');
+            const permissionPromises = [];
+            
+            for (const file of fileList) {
+                if (file.handle) {
+                    // Queue up permission checks (we won't wait for them all, just initiate)
+                    const permissionPromise = (async () => {
+                        try {
+                            const options = { mode: 'readwrite' };
+                            if ((await file.handle.queryPermission(options)) !== 'granted') {
+                                console.log(`Requesting write permission for ${file.name}...`);
+                                await file.handle.requestPermission(options);
+                            }
+                        } catch (error) {
+                            console.warn(`Could not verify permissions for ${file.name}:`, error);
+                        }
+                    })();
+                    permissionPromises.push(permissionPromise);
+                }
+            }
+            
+            // Start permission checks but don't wait for all to complete
+            // This primes the browser to show permission dialogs early
+            Promise.all(permissionPromises).catch(err => 
+                console.warn('Some permission checks failed:', err)
+            );
+        }
+        
+        // Create a mapping of existing files by path to avoid duplicates
+        const existingFiles = new Map();
+        this.files.forEach(file => {
+            existingFiles.set(file.path.toLowerCase(), file);
+        });
+        
         // Process each file
         for (const file of fileList) {
+            // Use relativePath if available, otherwise use name
+            const filePath = file.relativePath || file.name;
+            
+            // Skip duplicates - don't add the same file twice
+            const lowerPath = filePath.toLowerCase();
+            if (existingFiles.has(lowerPath)) {
+                console.log(`Skipping duplicate file: ${lowerPath}`);
+                continue;
+            }
+            
             const fileInfo = {
                 name: file.name,
-                path: file.name,
+                path: filePath,
                 size: file.size,
                 type: file.type || this.getFileTypeFromName(file.name),
                 lastModified: file.lastModified,
                 file: file,
-                content: null,
+                content: file.content || null, // Use pre-loaded content if available
                 isRoot: true,
                 depth: 0,
-                // If file has a handle (from FileSystem API), store it
-                handle: file.handle || null
+                // If file has a handle, store it
+                handle: file.handle || null,
+                // Track if this file uses File System API for direct disk access
+                usesFileSystemAPI: !!file.handle
             };
             
-            if (file.webkitRelativePath) {
-                // For directory uploads
-                fileInfo.path = file.webkitRelativePath;
+            // Process directory structure from file path
+            if (fileInfo.path.includes('/')) {
                 fileInfo.isRoot = false;
                 
-                // Extract folder path from the relative path
-                const parts = file.webkitRelativePath.split('/');
-                if (parts.length > 1) {
-                    parts.pop(); // Remove the filename
-                    fileInfo.folder = parts.join('/');
-                    fileInfo.depth = parts.length;
-                }
-            } else if (file.relativePath) {
-                // For files with a specified relative path (used in our system)
-                fileInfo.path = file.relativePath;
-                fileInfo.isRoot = !file.relativePath.includes('/');
-                
                 // Extract folder path
-                const lastSlash = file.relativePath.lastIndexOf('/');
+                const lastSlash = fileInfo.path.lastIndexOf('/');
                 if (lastSlash !== -1) {
-                    fileInfo.folder = file.relativePath.substring(0, lastSlash);
+                    fileInfo.folder = fileInfo.path.substring(0, lastSlash);
                     fileInfo.depth = fileInfo.folder.split('/').length;
+                    
+                    // Log for debugging
+                    console.log(`File ${fileInfo.name} has folder: ${fileInfo.folder}`);
                 }
+            } else if (file.parentFolder) {
+                // Use parentFolder if provided (from directory picker)
+                fileInfo.folder = file.parentFolder;
+                fileInfo.isRoot = false;
+                fileInfo.depth = fileInfo.folder.split('/').length;
+                
+                // Update the path to include parent folder
+                fileInfo.path = `${file.parentFolder}/${file.name}`;
+                
+                // Log for debugging
+                console.log(`Using parentFolder for ${fileInfo.name}: ${fileInfo.folder}`);
             }
             
             // Add to files array
             newFiles.push(fileInfo);
+            existingFiles.set(lowerPath, fileInfo); // Add to existing map to catch duplicates
         }
         
-        // Add all files at once
+        // Merge with existing files
         this.files = this.files.concat(newFiles);
         
         // Reconstruct folder structure
@@ -115,14 +136,22 @@ class FileManager {
         // Update the file map
         this.updateFileMap();
         
+        // Auto-expand parent folders
+        this.autoExpandParentFolders();
+        
         // If this is the first file(s) being loaded, set the first one as current
         if (this.currentFileIndex === -1 && this.files.length > 0) {
             this.currentFileIndex = 0;
         }
         
-        // Load initial content for all files
+        // Load initial content for all files that don't have content yet
         await Promise.all(newFiles.map(async (fileInfo, i) => {
             try {
+                // Skip if content is already loaded
+                if (fileInfo.content !== null) {
+                    return;
+                }
+                
                 // Read the file content
                 const content = await this.readFileContent(fileInfo.file);
                 this.files[baseIndex + i].content = content;
@@ -263,46 +292,93 @@ class FileManager {
         fileInfo.content = content;
         
         try {
-            // Method 1: Use the File System Access API if available
+            // METHOD 1: Use the File System Access API with file handles
             if (fileInfo.file && fileInfo.file.handle) {
-                const handle = fileInfo.file.handle;
-                
-                // Always check for permission first to avoid errors
-                const options = { mode: 'readwrite' };
-                if ((await handle.queryPermission(options)) !== 'granted') {
-                    const permission = await handle.requestPermission(options);
-                    if (permission !== 'granted') {
-                        console.error('Permission to write to file was denied');
-                        throw new Error('Permission to write to file was denied');
+                try {
+                    console.log('Attempting to save file using File System API');
+                    const handle = fileInfo.file.handle;
+                    
+                    // Always check for permission first to avoid errors
+                    const options = { mode: 'readwrite' };
+                    if ((await handle.queryPermission(options)) !== 'granted') {
+                        console.log('Requesting write permission...');
+                        const permission = await handle.requestPermission(options);
+                        if (permission !== 'granted') {
+                            console.error('Permission to write to file was denied');
+                            throw new Error('Permission to write to file was denied');
+                        }
+                    }
+                    
+                    // Get a writable stream
+                    console.log('Creating writable stream...');
+                    const writable = await handle.createWritable();
+                    
+                    // Write the content
+                    console.log('Writing content...');
+                    await writable.write(content);
+                    
+                    // Close the file
+                    console.log('Closing file...');
+                    await writable.close();
+                    
+                    console.log('File saved successfully using File System Access API');
+                    return true;
+                } catch (fsApiError) {
+                    console.error('Error saving with File System API:', fsApiError);
+                    // Only fall back to server API if this is a permission or API error
+                    if (fsApiError.name === 'NotAllowedError' || 
+                        fsApiError.name === 'SecurityError' ||
+                        fsApiError.message.includes('permission')) {
+                        console.log('Falling back to server API due to permission error');
+                    } else {
+                        // For other errors, rethrow since they're likely problems with the file itself
+                        throw fsApiError;
                     }
                 }
-                
-                // Get a writable stream
-                const writable = await handle.createWritable();
-                
-                // Write the content
-                await writable.write(content);
-                
-                // Close the file
-                await writable.close();
-                
-                console.log('File saved successfully using File System Access API');
-                return true;
+            } else if (fileInfo.handle) {
+                // Direct handle on the fileInfo (added for compatibility)
+                try {
+                    console.log('Attempting to save file using direct handle');
+                    const handle = fileInfo.handle;
+                    
+                    // Request permission
+                    const options = { mode: 'readwrite' };
+                    if ((await handle.queryPermission(options)) !== 'granted') {
+                        const permission = await handle.requestPermission(options);
+                        if (permission !== 'granted') {
+                            throw new Error('Permission to write to file was denied');
+                        }
+                    }
+                    
+                    // Create writable, write content, and close
+                    const writable = await handle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    
+                    console.log('File saved successfully using direct handle');
+                    return true;
+                } catch (directHandleError) {
+                    console.error('Error saving with direct handle:', directHandleError);
+                    // Fall through to server API
+                }
             }
             
-            // Method 2: Use the server API as a fallback
+            // METHOD 2: Use the server API as a fallback
             if (fileInfo.path) {
-                // For paths without a handle, create a workspace-relative path
+                console.log('Falling back to server API for saving');
+                
+                // For paths without a handle, create a properly formatted path
                 let savePath = fileInfo.path;
                 
-                // If we're using a path from a folder structure, get the full path
+                // If we're using a path from a folder structure, make a clean path
                 if (fileInfo.folder && fileInfo.name) {
-                    const workspace = window.location.pathname.endsWith('/') 
-                        ? window.location.pathname.slice(0, -1) 
-                        : window.location.pathname;
+                    // Create a clean relative path without leading slash
+                    savePath = fileInfo.folder ? `${fileInfo.folder}/${fileInfo.name}` : fileInfo.name;
                     
-                    savePath = `${workspace}/${fileInfo.folder}/${fileInfo.name}`;
-                    console.log(`Using workspace-relative path: ${savePath}`);
+                    // Make sure we don't have leading slashes
+                    savePath = savePath.replace(/^\/+/, '');
+                    
+                    console.log(`Using clean relative path: ${savePath}`);
                 }
                 
                 // Use the server API to save the file
@@ -321,6 +397,22 @@ class FileManager {
                 
                 if (!response.ok) {
                     throw new Error(responseData.error || `Server returned ${response.status} ${response.statusText}`);
+                }
+                
+                // Update our file info with the saved path if returned
+                if (responseData.savedPath) {
+                    console.log(`File saved to: ${responseData.savedPath}`);
+                    
+                    // Let user know this was not saved to the original file
+                    if (!fileInfo.usesFileSystemAPI) {
+                        const warningEvent = new CustomEvent('fileWarning', {
+                            detail: {
+                                message: 'File was saved to data directory instead of original location. To edit original files directly, use the File System API picker when opening files.',
+                                path: responseData.savedPath
+                            }
+                        });
+                        window.dispatchEvent(warningEvent);
+                    }
                 }
                 
                 console.log('File saved successfully using server API');
@@ -355,16 +447,62 @@ class FileManager {
         return this.folderStructure.get(path);
     }
 
-    // Get files in folder
+    // Get files in folder - with safety checks and debug logging
     getFilesInFolder(folderPath) {
+        console.log(`Getting files in folder: ${folderPath}`);
+        
         const folder = this.folderStructure.get(folderPath);
-        return folder ? Array.from(folder.files).map(path => this.fileMap.get(path.toLowerCase())) : [];
+        if (!folder || !folder.files) {
+            console.log(`No folder found or no files for path: ${folderPath}`);
+            return [];
+        }
+        
+        try {
+            // Debug log folder structure
+            console.log(`Folder ${folderPath} has ${folder.files.size} files:`, Array.from(folder.files));
+            
+            // Find indices of files in this folder for proper rendering
+            const fileIndices = [];
+            
+            for (const filePath of folder.files) {
+                if (!filePath) continue;
+                
+                const index = this.findFileByPath(filePath);
+                if (index !== undefined) {
+                    fileIndices.push(index);
+                    console.log(`Found file index ${index} for path: ${filePath}`);
+                } else {
+                    console.warn(`Could not find index for file path: ${filePath}`);
+                }
+            }
+            
+            console.log(`Returning ${fileIndices.length} file indices for folder: ${folderPath}`);
+            return fileIndices;
+        } catch (error) {
+            console.error(`Error getting files in folder ${folderPath}:`, error);
+            return [];
+        }
     }
 
-    // Get subfolders
+    // Get subfolders - with safety checks
     getSubfolders(folderPath) {
         const folder = this.folderStructure.get(folderPath);
-        return folder ? Array.from(folder.children).map(path => this.folderStructure.get(path)) : [];
+        if (!folder || !folder.children) return [];
+        
+        try {
+            // Safely map subfolders with null check
+            return Array.from(folder.children)
+                .filter(path => path) // Filter out undefined paths
+                .map(path => {
+                    if (!path) return null;
+                    const subfolder = this.folderStructure.get(path);
+                    return subfolder || null;
+                })
+                .filter(subfolder => subfolder !== null); // Filter out nulls
+        } catch (error) {
+            console.error(`Error getting subfolders of ${folderPath}:`, error);
+            return [];
+        }
     }
 
     // Update file map
@@ -390,23 +528,39 @@ class FileManager {
         this.currentFileIndex = index;
     }
 
-    // Find file by path
+    // Find file by path with improved safety
     findFileByPath(path) {
-        // First try direct match
-        let fileIndex = this.fileMap.get(path.toLowerCase());
-        
-        // If not found and it doesn't have a root directory, try with various folders
-        if (fileIndex === undefined && !path.includes('/')) {
-            // Just try to find a file with this name anywhere
-            for (let i = 0; i < this.files.length; i++) {
-                const file = this.files[i];
-                if (file.name.toLowerCase() === path.toLowerCase()) {
-                    return i;
-                }
-            }
+        if (!path) {
+            console.warn('findFileByPath called with undefined path');
+            return undefined;
         }
         
-        return fileIndex;
+        try {
+            // First try direct match
+            let fileIndex = this.fileMap.get(path.toLowerCase());
+            
+            // If found, return it
+            if (fileIndex !== undefined) {
+                return fileIndex;
+            }
+            
+            // If not found and it doesn't have a root directory, try with various folders
+            if (!path.includes('/')) {
+                // Just try to find a file with this name anywhere
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    if (file && file.name && file.name.toLowerCase() === path.toLowerCase()) {
+                        return i;
+                    }
+                }
+            }
+            
+            // Not found
+            return undefined;
+        } catch (error) {
+            console.error(`Error finding file by path '${path}':`, error);
+            return undefined;
+        }
     }
 
     // Resolve a relative path to an absolute path
@@ -455,62 +609,78 @@ class FileManager {
 
     // Reconstruct folder structure from file paths
     reconstructFolderStructure() {
-        // Keep a backup of the old structure for comparison
-        const previousStructure = new Map(this.folderStructure);
+        console.log('Reconstructing folder structure');
         
-        // Clear the current structure
-        this.folderStructure.clear();
-        
-        // First pass: create folders
-        for (const fileInfo of this.files) {
-            if (!fileInfo.folder) continue;
+        try {
+            // Keep a backup of the old structure for comparison
+            const previousStructure = new Map(this.folderStructure);
             
-            const pathParts = fileInfo.folder.split('/');
-            let currentPath = '';
+            // Clear the current structure
+            this.folderStructure.clear();
             
-            pathParts.forEach((part, index) => {
-                const parentPath = currentPath;
-                currentPath = currentPath ? `${currentPath}/${part}` : part;
+            // First pass: create folders
+            for (const fileInfo of this.files) {
+                if (!fileInfo || !fileInfo.folder) continue;
                 
-                if (!this.folderStructure.has(currentPath)) {
-                    // Create new folder entry
-                    this.folderStructure.set(currentPath, {
-                        name: part,
-                        path: currentPath,
-                        parent: parentPath,
-                        children: new Set(),
-                        files: new Set(),
-                        depth: index,
-                        isRoot: index === 0
-                    });
-                }
+                const pathParts = fileInfo.folder.split('/');
+                let currentPath = '';
                 
-                if (parentPath && this.folderStructure.has(parentPath)) {
-                    this.folderStructure.get(parentPath).children.add(currentPath);
+                for (let i = 0; i < pathParts.length; i++) {
+                    const part = pathParts[i];
+                    if (!part) continue; // Skip empty path segments
+                    
+                    const parentPath = currentPath;
+                    currentPath = currentPath ? `${currentPath}/${part}` : part;
+                    
+                    if (!this.folderStructure.has(currentPath)) {
+                        // Create new folder entry
+                        this.folderStructure.set(currentPath, {
+                            name: part,
+                            path: currentPath,
+                            parent: parentPath,
+                            children: new Set(),
+                            files: new Set(),
+                            depth: i,
+                            isRoot: i === 0
+                        });
+                    }
+                    
+                    if (parentPath && this.folderStructure.has(parentPath)) {
+                        this.folderStructure.get(parentPath).children.add(currentPath);
+                    }
                 }
-            });
-        }
-        
-        // Second pass: add files to folders
-        for (const fileInfo of this.files) {
-            if (fileInfo.folder && this.folderStructure.has(fileInfo.folder)) {
-                this.folderStructure.get(fileInfo.folder).files.add(fileInfo.path);
             }
+            
+            // Second pass: add files to folders
+            for (const fileInfo of this.files) {
+                if (!fileInfo || !fileInfo.folder || !fileInfo.path) continue;
+                
+                if (this.folderStructure.has(fileInfo.folder)) {
+                    this.folderStructure.get(fileInfo.folder).files.add(fileInfo.path);
+                }
+            }
+            
+            // Log structure changes for debugging
+            const oldFolders = Array.from(previousStructure.keys());
+            const newFolders = Array.from(this.folderStructure.keys());
+            
+            const added = newFolders.filter(f => !previousStructure.has(f));
+            const removed = oldFolders.filter(f => !this.folderStructure.has(f));
+            
+            if (added.length > 0 || removed.length > 0) {
+                console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
+            }
+            
+            // Check for lost files and add them to the root if needed
+            this.ensureAllFilesAreAccessible();
+            
+            // Log the total structure for debugging
+            console.log(`Folder structure has ${this.folderStructure.size} folders`);
+            return true;
+        } catch (error) {
+            console.error('Error reconstructing folder structure:', error);
+            return false;
         }
-        
-        // Log structure changes for debugging
-        const oldFolders = Array.from(previousStructure.keys());
-        const newFolders = Array.from(this.folderStructure.keys());
-        
-        const added = newFolders.filter(f => !previousStructure.has(f));
-        const removed = oldFolders.filter(f => !this.folderStructure.has(f));
-        
-        if (added.length > 0 || removed.length > 0) {
-            console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
-        }
-        
-        // Check for lost files and add them to the root if needed
-        this.ensureAllFilesAreAccessible();
     }
 
     // Ensure all files are accessible within the folder structure
@@ -547,40 +717,6 @@ class FileManager {
                     }
                 }
             }
-        }
-    }
-
-    // Process files from a directory picker
-    async processDirectoryFromFileSystemAPI() {
-        if (!this.supportsFileSystem) return false;
-        
-        try {
-            const dirHandle = await window.showDirectoryPicker();
-            if (!dirHandle) return false;
-            
-            // Store the directory handle for later watching
-            const dirPath = dirHandle.name;
-            this.directoryHandles.set(dirPath, dirHandle);
-            
-            // Get all markdown files from the directory
-            const files = await this.getFilesFromDirectoryHandle(dirHandle, dirPath);
-            
-            // Process the files
-            if (files.length > 0) {
-                const processed = await this.processFiles(files);
-                return processed > 0;
-            } else {
-                return false;
-            }
-        } catch (error) {
-            // Don't show errors for user canceling the dialog
-            if (error.name === 'AbortError') {
-                console.log('User canceled directory selection dialog');
-                return false;
-            }
-            
-            console.error('Error opening directory with File System API:', error);
-            return false;
         }
     }
 
@@ -734,6 +870,30 @@ class FileManager {
      */
     getMonitoredDirectories() {
         return Array.from(this.directoryHandles.keys());
+    }
+
+    // Auto-expand all parent folders after loading
+    autoExpandParentFolders() {
+        if (!this.fileListComponent) return;
+        
+        console.log('Auto-expanding parent folders');
+        
+        // Get the current expanded folders
+        const expandedFolders = new Set(this.fileListComponent.state.expandedFolders || []);
+        
+        // Automatically expand all root folders
+        for (const [path, folder] of this.folderStructure.entries()) {
+            if (folder.isRoot) {
+                console.log(`Auto-expanding root folder: ${path}`);
+                expandedFolders.add(path);
+            }
+        }
+        
+        // Update the file list component state with the expanded folders
+        if (this.fileListComponent.setState) {
+            this.fileListComponent.setState({ expandedFolders });
+            console.log(`Expanded ${expandedFolders.size} folders`);
+        }
     }
 }
 

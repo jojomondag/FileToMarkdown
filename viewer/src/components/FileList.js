@@ -1,144 +1,52 @@
-import BaseComponent from './BaseComponent';
+import { createElementWithAttributes } from '../utils/domUtils';
+import EventEmitter from '../utils/eventEmitter';
 
-class FileList extends BaseComponent {
+/**
+ * FileList component for rendering and interacting with the file tree
+ */
+class FileList extends EventEmitter {
     constructor(container, fileManager) {
-        super(container);
+        super();
+        this.container = container;
         this.fileManager = fileManager;
         
         // Register this component with the file manager
         this.fileManager.registerFileListComponent(this);
         
-        // Set initial state with persisted expanded folders if available
-        const savedExpandedFolders = this.getSavedExpandedFolders();
+        // Set initial state
         this.state = {
             selectedIndex: this.fileManager.currentFileIndex || -1,
-            expandedFolders: savedExpandedFolders || new Set(),
-            lastKnownFolders: new Set() // Track known folders for stability
+            expandedFolders: this.getSavedExpandedFolders() || new Set()
         };
         
-        // Initialize with a snapshot of current folders
-        this.updateKnownFoldersSnapshot();
-        
-        // Ensure file list is rerendered when files are added
+        // Listen for file list changes
         window.addEventListener('fileListChanged', () => {
-            console.log('FileList component received fileListChanged event');
-            
-            // Update folder knowledge before updating state
-            this.synchronizeFolderState();
+            console.log('FileList: Handling fileListChanged event');
             
             // Update selected index to match file manager's current file
             this.setState({ 
                 selectedIndex: this.fileManager.currentFileIndex || -1
-                // Don't override expandedFolders here - synchronizeFolderState handled it
             });
             
-            // Force render
             this.render();
         });
         
-        // Also render whenever session is restored
-        if (this.fileManager.files.length > 0) {
-            console.log('Files already present in FileList construction, rendering...');
-            setTimeout(() => this.render(), 0);
-        }
+        // Initial render
+        this.render();
     }
     
-    // Keep track of folder structure for stability
-    updateKnownFoldersSnapshot() {
-        const folderPaths = Array.from(this.fileManager.folderStructure.keys());
-        this.state.lastKnownFolders = new Set(folderPaths);
-        console.log(`Updated known folders snapshot: ${folderPaths.length} folders`);
+    /**
+     * Update component state
+     * @param {Object} newState - New state properties to merge
+     */
+    setState(newState) {
+        this.state = { ...this.state, ...newState };
+        this.render();
     }
     
-    // Add a safeguard mechanism to ensure folder structure remains stable
-    
-    // Right after the synchronizeFolderState method and before saveExpandedFolders
-    
-    // Ensure folder structure integrity with resilient caching
-    ensureFolderStructureIntegrity() {
-        if (!this.fileManager || !this.fileManager.folderStructure) return;
-        
-        // Create a snapshot of the current folder structure if needed
-        if (!this._folderStructureCache) {
-            this._folderStructureCache = new Map();
-        }
-        
-        // Update cache with new folders from current structure
-        for (const [path, folderInfo] of this.fileManager.folderStructure.entries()) {
-            this._folderStructureCache.set(path, {
-                ...folderInfo,
-                children: new Set(folderInfo.children),
-                files: new Set(folderInfo.files)
-            });
-        }
-        
-        // Check for missing folders in the current structure
-        let missingFolderCount = 0;
-        let restoredFileCount = 0;
-        
-        for (const [cachedPath, cachedFolder] of this._folderStructureCache.entries()) {
-            // If a folder is missing from current structure but exists in cache
-            if (!this.fileManager.folderStructure.has(cachedPath)) {
-                console.warn(`Folder missing from structure: ${cachedPath}, attempting recovery`);
-                
-                // Check if files in this cached folder still exist in the file manager
-                const stillExistingFiles = Array.from(cachedFolder.files).filter(filePath => {
-                    // Find if file still exists in fileManager.files
-                    return this.fileManager.files.some(file => 
-                        this.fileManager.comparePaths(file.path, filePath)
-                    );
-                });
-                
-                // If there are still files belonging to this folder, restore it
-                if (stillExistingFiles.length > 0) {
-                    console.log(`Restoring folder ${cachedPath} with ${stillExistingFiles.length} files`);
-                    
-                    // Create a new folder entry in the folder structure
-                    this.fileManager.folderStructure.set(cachedPath, {
-                        ...cachedFolder,
-                        children: new Set(),  // Start with empty children
-                        files: new Set(stillExistingFiles)  // Only include files that still exist
-                    });
-                    
-                    // Fix parent relationship
-                    if (cachedFolder.parent && this.fileManager.folderStructure.has(cachedFolder.parent)) {
-                        this.fileManager.folderStructure.get(cachedFolder.parent).children.add(cachedPath);
-                    }
-                    
-                    // Update file paths to ensure they have the correct folder
-                    stillExistingFiles.forEach(filePath => {
-                        const fileIndex = this.fileManager.findFileByPath(filePath);
-                        if (fileIndex !== undefined) {
-                            this.fileManager.files[fileIndex].folder = cachedPath;
-                            restoredFileCount++;
-                        }
-                    });
-                    
-                    missingFolderCount++;
-                }
-            }
-        }
-        
-        // Log restoration results if any
-        if (missingFolderCount > 0) {
-            console.log(`Restored ${missingFolderCount} folders and ${restoredFileCount} file associations`);
-            
-            // Trigger an update of the file map after restoration
-            this.fileManager.updateFileMap();
-        }
-    }
-
-    // Helper to save expanded folders to localStorage
-    saveExpandedFolders() {
-        try {
-            const expandedArray = Array.from(this.state.expandedFolders);
-            localStorage.setItem('expandedFolders', JSON.stringify(expandedArray));
-        } catch (e) {
-            console.error('Error saving expanded folders state:', e);
-        }
-    }
-
-    // Helper to get saved expanded folders from localStorage
+    /**
+     * Get saved expanded folders from localStorage
+     */
     getSavedExpandedFolders() {
         try {
             const savedFolders = localStorage.getItem('expandedFolders');
@@ -147,257 +55,343 @@ class FileList extends BaseComponent {
                 return new Set(folderArray);
             }
         } catch (e) {
-            console.error('Error getting saved expanded folders:', e);
+            console.error('Error loading expanded folders state:', e);
         }
         return new Set();
     }
-
-    // Update the setState method
-    setState(newState) {
-        super.setState(newState);
-        
-        // Save expanded folders state whenever it changes
-        if (newState.expandedFolders) {
-            this.saveExpandedFolders();
+    
+    /**
+     * Save expanded folders to localStorage
+     */
+    saveExpandedFolders() {
+        try {
+            const folderArray = Array.from(this.state.expandedFolders);
+            localStorage.setItem('expandedFolders', JSON.stringify(folderArray));
+        } catch (e) {
+            console.error('Error saving expanded folders state:', e);
         }
     }
-
-    // Called when the component is mounted to the DOM
-    mount() {
-        this.render();
+    
+    /**
+     * Render component
+     */
+    render() {
+        console.log('Rendering FileList component');
         
-        // Add a delayed re-render to ensure file tree is shown after page refresh
-        setTimeout(() => {
-            if (this.fileManager.files.length > 0) {
-                console.log('Delayed re-render of file list after mount');
+        // Clear container
+        this.container.innerHTML = '';
+        
+        // Check if we have any files
+        if (!this.fileManager.files || this.fileManager.files.length === 0) {
+            this.renderEmptyState();
+            return;
+        }
+        
+        // Create file tree
+        const fileTree = createElementWithAttributes('ul', {
+            className: 'file-tree'
+        });
+        
+        try {
+            // Render root folders
+            if (this.fileManager.folderStructure && this.fileManager.folderStructure.size > 0) {
+                const rootFolders = Array.from(this.fileManager.folderStructure.values())
+                    .filter(folder => folder && folder.isRoot) // Filter out undefined values
+                    .sort((a, b) => {
+                        if (!a || !a.name) return 1;
+                        if (!b || !b.name) return -1;
+                        return a.name.localeCompare(b.name);
+                    });
                 
-                // Make sure we load saved expanded folders state
-                const savedExpandedFolders = this.getSavedExpandedFolders();
-                if (savedExpandedFolders && savedExpandedFolders.size > 0) {
-                    // Synchronize with current folder structure for stability
-                    this.synchronizeFolderState();
+                console.log(`FileList: Rendering ${rootFolders.length} root folders`);
+                
+                for (const folder of rootFolders) {
+                    if (folder && folder.path) {
+                        try {
+                            const folderElement = this.renderFolder(folder);
+                            fileTree.appendChild(folderElement);
+                        } catch (err) {
+                            console.error(`Error rendering folder ${folder.path}:`, err);
+                        }
+                    }
                 }
-                
-                this.render();
             }
-        }, 200);
-    }
-
-    createFileItem(fileInfo, index) {
-        const link = this.createElement('a', {
-            href: '#',
-            title: fileInfo.path
-        }, fileInfo.name);
-
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.setState({ selectedIndex: index });
-            this.emit('fileSelect', { index, fileInfo });
-        });
-
-        const li = this.createElement('li', {
-            class: `file-item ${index === this.state.selectedIndex ? 'selected' : ''}`,
-            'data-depth': fileInfo.depth
-        });
-        li.appendChild(link);
-        return li;
-    }
-
-    createFolderItem(folderInfo) {
-        const isExpanded = this.state.expandedFolders.has(folderInfo.path);
+            
+            // Render root files (files without folders)
+            const rootFiles = this.fileManager.files
+                .filter(file => file && file.isRoot) // Filter out undefined values and ensure isRoot
+                .sort((a, b) => {
+                    if (!a || !a.name) return 1;
+                    if (!b || !b.name) return -1;
+                    return a.name.localeCompare(b.name);
+                });
+            
+            console.log(`FileList: Rendering ${rootFiles.length} root files`);
+            
+            for (const file of rootFiles) {
+                if (file && file.path) {
+                    try {
+                        const fileIndex = this.fileManager.findFileByPath(file.path);
+                        if (fileIndex !== undefined) {
+                            const fileElement = this.renderFileItem(file, fileIndex);
+                            fileTree.appendChild(fileElement);
+                        }
+                    } catch (err) {
+                        console.error(`Error rendering file ${file.path}:`, err);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error rendering file list:', error);
+            this.renderEmptyState();
+            return;
+        }
         
-        const folderLink = this.createElement('a', {
-            href: '#',
-            'data-folder': folderInfo.path
-        }, folderInfo.name);
-
-        folderLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.toggleFolder(folderInfo.path);
-        });
-
-        const li = this.createElement('li', {
-            class: `folder-item ${isExpanded ? 'expanded' : ''}`,
-            'data-depth': folderInfo.depth
-        });
-        li.appendChild(folderLink);
-
-        const contentsContainer = this.createElement('ul', {
-            class: `folder-contents ${isExpanded ? '' : 'collapsed'}`
-        });
-        li.appendChild(contentsContainer);
-
-        if (isExpanded) this.renderFolderContents(folderInfo.path, contentsContainer);
-
-        return li;
+        // Add file tree to container
+        this.container.appendChild(fileTree);
     }
+    
+    /**
+     * Render empty state
+     */
+    renderEmptyState() {
+        const emptyMessage = createElementWithAttributes('div', {
+            className: 'empty-state',
+            style: {
+                padding: '20px',
+                textAlign: 'center',
+                color: '#666'
+            },
+            innerHTML: '<p>No files loaded</p>'
+        });
+        
+        this.container.appendChild(emptyMessage);
+    }
+    
+    /**
+     * Render a folder and its contents
+     * @param {Object} folder - Folder info object
+     * @returns {HTMLElement} Folder list item
+     */
+    renderFolder(folder) {
+        if (!folder || !folder.path) {
+            console.error('Invalid folder object:', folder);
+            return document.createElement('li'); // Return empty element
+        }
 
+        const isExpanded = this.state.expandedFolders.has(folder.path);
+        
+        // Create folder item
+        const folderItem = createElementWithAttributes('li', {
+            className: `folder-item ${isExpanded ? 'expanded' : ''}`,
+            'data-path': folder.path,
+            'data-depth': folder.depth || 0
+        });
+        
+        // Create folder header
+        const folderHeader = createElementWithAttributes('div', {
+            className: 'folder-header',
+            onclick: (e) => {
+                e.preventDefault();
+                this.toggleFolder(folder.path);
+            }
+        });
+        
+        // Create folder icon
+        const folderIcon = createElementWithAttributes('span', {
+            className: 'folder-icon',
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'
+        });
+        
+        // Create expand/collapse indicator
+        const expandIcon = createElementWithAttributes('span', {
+            className: 'expand-icon',
+            innerHTML: isExpanded 
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>' 
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>'
+        });
+        
+        // Create folder name
+        const folderName = createElementWithAttributes('span', {
+            className: 'folder-name',
+            textContent: folder.name || 'Unknown folder'
+        });
+        
+        // Assemble folder header
+        folderHeader.appendChild(expandIcon);
+        folderHeader.appendChild(folderIcon);
+        folderHeader.appendChild(folderName);
+        folderItem.appendChild(folderHeader);
+        
+        // Create folder contents container
+        const folderContents = createElementWithAttributes('ul', {
+            className: `folder-contents ${isExpanded ? '' : 'collapsed'}`,
+            style: {
+                display: isExpanded ? 'block' : 'none'
+            }
+        });
+        
+        // Only render contents if expanded
+        if (isExpanded) {
+            try {
+                // Render subfolders
+                if (folder.path) {
+                    const subfolders = this.fileManager.getSubfolders(folder.path)
+                        .filter(subfolder => subfolder && subfolder.path) // Filter undefined
+                        .sort((a, b) => {
+                            if (!a || !a.name) return 1;
+                            if (!b || !b.name) return -1;
+                            return a.name.localeCompare(b.name);
+                        });
+                    
+                    for (const subfolder of subfolders) {
+                        if (subfolder && subfolder.path) {
+                            try {
+                                const folderElement = this.renderFolder(subfolder);
+                                folderContents.appendChild(folderElement);
+                            } catch (err) {
+                                console.error(`Error rendering subfolder ${subfolder.path}:`, err);
+                            }
+                        }
+                    }
+                    
+                    // Render files in folder - FIXED to use indices directly
+                    console.log(`Rendering files in folder: ${folder.path}`);
+                    const fileIndices = this.fileManager.getFilesInFolder(folder.path);
+                    console.log(`Got ${fileIndices.length} file indices for folder: ${folder.path}`);
+                    
+                    for (const fileIndex of fileIndices) {
+                        try {
+                            const fileInfo = this.fileManager.getFile(fileIndex);
+                            if (fileInfo && fileInfo.path) {
+                                console.log(`Rendering file: ${fileInfo.name} (${fileInfo.path})`);
+                                const fileElement = this.renderFileItem(fileInfo, fileIndex);
+                                folderContents.appendChild(fileElement);
+                            } else {
+                                console.warn(`Missing file info for index: ${fileIndex}`);
+                            }
+                        } catch (err) {
+                            console.error(`Error rendering file at index ${fileIndex}:`, err);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`Error rendering contents of folder ${folder.path}:`, error);
+                // Add error message to folder contents
+                const errorElement = createElementWithAttributes('li', {
+                    className: 'folder-error',
+                    textContent: 'Error loading folder contents'
+                });
+                folderContents.appendChild(errorElement);
+            }
+        }
+        
+        folderItem.appendChild(folderContents);
+        return folderItem;
+    }
+    
+    /**
+     * Render a file item
+     * @param {Object} fileInfo - File info object
+     * @param {number} index - Index in file manager
+     * @returns {HTMLElement} File list item
+     */
+    renderFileItem(fileInfo, index) {
+        const isSelected = index === this.state.selectedIndex;
+        
+        // Create file item
+        const fileItem = createElementWithAttributes('li', {
+            className: `file-item ${isSelected ? 'selected' : ''}`,
+            'data-index': index,
+            'data-path': fileInfo.path,
+            'data-depth': fileInfo.depth || 0
+        });
+        
+        // Create file link
+        const fileLink = createElementWithAttributes('a', {
+            href: '#',
+            title: fileInfo.path,
+            onclick: (e) => {
+                e.preventDefault();
+                this.setState({ selectedIndex: index });
+                this.emit('fileSelect', { index, fileInfo });
+            }
+        });
+        
+        // Create file icon based on type
+        const fileIcon = createElementWithAttributes('span', {
+            className: 'file-icon',
+            innerHTML: this.getFileIconSVG(fileInfo.name)
+        });
+        
+        // Create file name
+        const fileName = createElementWithAttributes('span', {
+            className: 'file-name',
+            textContent: fileInfo.name
+        });
+        
+        // Assemble file item
+        fileLink.appendChild(fileIcon);
+        fileLink.appendChild(fileName);
+        fileItem.appendChild(fileLink);
+        
+        return fileItem;
+    }
+    
+    /**
+     * Toggle folder expansion state
+     * @param {string} folderPath - Path of folder to toggle
+     */
     toggleFolder(folderPath) {
+        console.log(`Toggling folder: ${folderPath}`);
+        
         const expandedFolders = new Set(this.state.expandedFolders);
         const isExpanding = !expandedFolders.has(folderPath);
         
         if (isExpanding) {
+            // Add this folder to expanded set
             expandedFolders.add(folderPath);
-            // Expand all parent folders to ensure proper hierarchy
-            let currentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
-            while (currentPath) {
-                expandedFolders.add(currentPath);
-                currentPath = this.fileManager.getFolderInfo(currentPath)?.parent;
-            }
-        } else {
-            expandedFolders.delete(folderPath);
-            // Collapse all child folders
-            Array.from(expandedFolders).forEach(path => {
-                if (path.startsWith(folderPath + '/')) expandedFolders.delete(path);
-            });
-        }
-        
-        this.setState({ expandedFolders });
-        
-        // Save expanded folders state explicitly after toggling
-        this.saveExpandedFolders();
-    }
-
-    renderFolderContents(folderPath, container) {
-        const folder = this.fileManager.getFolderInfo(folderPath);
-        if (!folder) return;
-
-        this.fileManager.getSubfolders(folderPath)
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .forEach(subfolder => container.appendChild(this.createFolderItem(subfolder)));
-
-        this.fileManager.getFilesInFolder(folderPath)
-            .forEach(fileIndex => {
-                const fileInfo = this.fileManager.getFile(fileIndex);
-                container.appendChild(this.createFileItem(fileInfo, fileIndex));
-            });
-    }
-
-    render() {
-        console.log('FileList: Rendering with state:', this.state);
-        
-        const rootList = this.createElement('ul', {class: 'file-tree'});
-        
-        // Create "Add Directory" button at the top
-        const addDirItem = this.createElement('li', {class: 'add-directory-item'});
-        const addDirButton = this.createElement('button', {
-            class: 'add-directory-button',
-            title: 'Add directory to watch'
-        }, '+ Add Directory');
-        
-        addDirButton.addEventListener('click', async (e) => {
-            e.preventDefault();
-            try {
-                // Attempt to add a directory using the File System API
-                const result = await this.fileManager.processDirectoryFromFileSystemAPI();
-                if (!result) {
-                    console.warn('No directory was selected or it contained no markdown files');
-                }
-            } catch (error) {
-                console.error('Error adding directory:', error);
-            }
-        });
-        
-        addDirItem.appendChild(addDirButton);
-        rootList.appendChild(addDirItem);
-        
-        // Get files and folders to display
-        const rootFolders = Array.from(this.fileManager.folderStructure.values())
-            .filter(f => f.isRoot)
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-        const rootFiles = this.fileManager.files
-            .filter(f => f.isRoot)
-            .sort((a, b) => a.name.localeCompare(b.name));
-        
-        // If we have files or folders to show, display them
-        if (rootFolders.length > 0 || rootFiles.length > 0) {
-            // Create a "Current Project" header
-            const projectHeader = this.createElement('li', {class: 'project-header'});
-            projectHeader.appendChild(this.createElement('span', {}, 'Current Project'));
-            rootList.appendChild(projectHeader);
             
-            // Add folders and files
-            rootFolders.forEach(folder => {
-                rootList.appendChild(this.createFolderItem(folder));
-            });
-
-            rootFiles.forEach((fileInfo, index) => {
-                const fileIndex = this.fileManager.fileMap.get(fileInfo.path.toLowerCase());
-                rootList.appendChild(this.createFileItem(fileInfo, fileIndex));
-            });
+            // Make sure all parent folders are expanded too
+            let parentPath = this.fileManager.getFolderInfo(folderPath)?.parent;
+            while (parentPath) {
+                expandedFolders.add(parentPath);
+                parentPath = this.fileManager.getFolderInfo(parentPath)?.parent;
+            }
         } else {
-            // If there are no files, show a message
-            const emptyMessage = this.createElement('li', {class: 'empty-message'});
-            emptyMessage.appendChild(this.createElement('span', {}, 'No files opened'));
-            rootList.appendChild(emptyMessage);
-        }
-
-        this.container.replaceChildren(rootList);
-    }
-
-    // Now modify the synchronizeFolderState method to call the safeguard
-    synchronizeFolderState() {
-        // Check for folder structure integrity first
-        this.ensureFolderStructureIntegrity();
-        
-        // Rest of the original method...
-        // Get current folders from file manager
-        const currentFolders = new Set(this.fileManager.folderStructure.keys());
-        
-        // Get previous snapshot of folders
-        const previousFolders = this.state.lastKnownFolders;
-        
-        // Get current expanded folders (with localStorage backup)
-        const expandedFolders = new Set(this.state.expandedFolders);
-        const savedExpandedFolders = this.getSavedExpandedFolders() || new Set();
-        
-        // Merge current expanded with saved expanded for resilience
-        for (const folder of savedExpandedFolders) {
-            expandedFolders.add(folder);
-        }
-        
-        // Remove any expanded state for folders that no longer exist
-        for (const folder of expandedFolders) {
-            if (!currentFolders.has(folder)) {
-                expandedFolders.delete(folder);
-            }
-        }
-        
-        // If a parent folder was previously expanded, ensure it stays expanded
-        for (const folder of currentFolders) {
-            const pathParts = folder.split('/');
-            if (pathParts.length > 1) {
-                // Check if any parent folder was expanded
-                let pathSoFar = '';
-                for (let i = 0; i < pathParts.length - 1; i++) {
-                    pathSoFar = pathSoFar ? `${pathSoFar}/${pathParts[i]}` : pathParts[i];
-                    if (expandedFolders.has(pathSoFar)) {
-                        // Parent folder is expanded, so this one should be visible
-                        expandedFolders.add(folder);
-                        break;
-                    }
+            // Remove this folder from expanded set
+            expandedFolders.delete(folderPath);
+            
+            // Also collapse all child folders
+            Array.from(expandedFolders).forEach(path => {
+                if (path.startsWith(folderPath + '/')) {
+                    expandedFolders.delete(path);
                 }
-            }
+            });
         }
         
-        // Auto-expand any root folders for better UX
-        for (const folder of currentFolders) {
-            if (!folder.includes('/')) {
-                expandedFolders.add(folder);
-            }
-        }
-        
-        // Update state
+        // Update state and save
         this.setState({ expandedFolders });
-        
-        // Update the known folders snapshot
-        this.state.lastKnownFolders = currentFolders;
-        
-        // Save to localStorage
         this.saveExpandedFolders();
+    }
+    
+    /**
+     * Get SVG icon for file based on extension
+     * @param {string} fileName - Name of file
+     * @returns {string} SVG markup
+     */
+    getFileIconSVG(fileName) {
+        const extension = fileName.split('.').pop().toLowerCase();
         
-        console.log(`Folder state synchronized: ${expandedFolders.size} expanded folders`);
+        // Map of extensions to SVG icons
+        const iconMap = {
+            md: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            markdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            mdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            txt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
+        };
+        
+        return iconMap[extension] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
     }
 }
 

@@ -1,0 +1,163 @@
+/* File List Component Styles */
+
+.file-tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.file-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.folder-item, .file-item {
+    padding: 2px 0;
+    position: relative;
+}
+
+/* Folder styles */
+.folder-header {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.folder-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.folder-icon, .file-icon {
+    margin-right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+}
+
+.folder-icon svg {
+    color: #e6b400;
+}
+
+.expand-icon {
+    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    transition: transform 0.2s;
+}
+
+.expanded > .folder-header .expand-icon {
+    transform: rotate(90deg);
+}
+
+.folder-contents {
+    padding-left: 20px;
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.folder-contents.collapsed {
+    max-height: 0;
+}
+
+/* File styles */
+.file-item a {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.file-item a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.file-item.selected a {
+    background-color: rgba(0, 120, 215, 0.1);
+    color: #0078d7;
+}
+
+.file-icon svg {
+    color: #666;
+}
+
+/* Markdown file icon color */
+.file-icon svg path[d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"] {
+    color: #0078d7;
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+/* Indentation for nested items */
+[data-depth="1"] > .folder-header,
+[data-depth="1"] > a {
+    padding-left: 20px;
+}
+
+[data-depth="2"] > .folder-header,
+[data-depth="2"] > a {
+    padding-left: 36px;
+}
+
+[data-depth="3"] > .folder-header,
+[data-depth="3"] > a {
+    padding-left: 52px;
+}
+
+[data-depth="4"] > .folder-header, 
+[data-depth="4"] > a {
+    padding-left: 68px;
+}
+
+/* Hover styles */
+.folder-header:hover,
+.file-item a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Active styles */
+.folder-header:active,
+.file-item a:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Folder animation */
+@keyframes folderOpen {
+    from { max-height: 0; }
+    to { max-height: 2000px; }
+}
+
+@keyframes folderClose {
+    from { max-height: 2000px; }
+    to { max-height: 0; }
+}
+
+.folder-contents:not(.collapsed) {
+    animation: folderOpen 0.3s ease-out;
+}
+
+.folder-contents.collapsed {
+    animation: folderClose 0.3s ease-in;
+} 

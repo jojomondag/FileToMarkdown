@@ -51,29 +51,9 @@
         </ul>
     </div>
 </div>
-<script>
-// Initialize app after all scripts are loaded
-window.addEventListener('load', () => {
-    console.log('Window loaded, initializing app...');
-    
-    // Clear stale data if it exists
-    const appData = localStorage.getItem('appInitialized');
-    if (appData) {
-        const timestamp = parseInt(appData, 10);
-        const oneDay = 24 * 60 * 60 * 1000;
-        // If data is older than a day, clear it
-        if (Date.now() - timestamp > oneDay) {
-            console.log('Clearing stale localStorage data');
-            localStorage.removeItem('appInitialized');
-        }
-    }
-    
-    // Create the app instance
-    window.app = new FileToMarkdownViewer();
-    
-    // Mark initialization timestamp
-    localStorage.setItem('appInitialized', Date.now().toString());
-});
-</script>
+<!-- 
+    Note: The app initialization is now handled in bundle.js
+    The DOMContentLoaded event in bundle.js will create the app instance
+-->
 </body>
 </html>

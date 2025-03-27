@@ -1,0 +1,52 @@
+/* Import file list styles */
+@import 'fileList.css';
+
+/* Additional styles to ensure content display */
+.content-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+}
+
+.markdown-content {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+}
+
+/* Ensure content visibility and positioning */
+.main-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+#content {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+/* Make sure file list takes full sidebar height */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+#l {
+    flex: 1;
+    overflow: auto;
+}
+
+/* Ensure buttons are visible */
+.content-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    display: flex;
+    gap: 10px;
+} 

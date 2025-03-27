@@ -21,6 +21,7 @@ const fileChanges = new Map();
  */
 const CONFIG = {
     staticDir: __dirname,
+    dataDir: path.join(__dirname, 'data'),
     apiEndpoints: {
         file: '/api/file'
     },
@@ -35,6 +36,16 @@ const CONFIG = {
         }
     }
 };
+
+// Create data directory if it doesn't exist
+if (!fs.existsSync(CONFIG.dataDir)) {
+    try {
+        fs.mkdirSync(CONFIG.dataDir, { recursive: true });
+        console.log(`Created data directory at ${CONFIG.dataDir}`);
+    } catch (err) {
+        console.error(`Error creating data directory: ${err.message}`);
+    }
+}
 
 // Serve static files
 app.use(express.static(CONFIG.staticDir));
@@ -78,11 +89,18 @@ app.get(CONFIG.apiEndpoints.file, (req, res) => {
     }
     
     try {
-        // Resolve the path - handle both absolute and relative paths
-        let resolvedPath = filePath;
-        if (!path.isAbsolute(filePath)) {
-            // For relative paths, resolve against current working directory
-            resolvedPath = path.resolve(process.cwd(), filePath);
+        // Use the same path resolution logic as the save endpoint
+        let resolvedPath;
+        if (filePath.startsWith('/') && !filePath.startsWith(CONFIG.dataDir)) {
+            // Strip leading slash and place in data directory
+            const relativePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+            resolvedPath = path.join(CONFIG.dataDir, relativePath);
+        } else if (path.isAbsolute(filePath)) {
+            // Already absolute, use as is if within our project
+            resolvedPath = filePath;
+        } else {
+            // Relative path, resolve against data dir
+            resolvedPath = path.join(CONFIG.dataDir, filePath);
         }
         
         console.log(`Reading file: ${resolvedPath}`);
@@ -114,11 +132,18 @@ app.post(CONFIG.apiEndpoints.file, (req, res) => {
     console.log(`Attempting to save file: ${filePath}`);
     
     try {
-        // Resolve the path - handle both absolute and relative paths
-        let resolvedPath = filePath;
-        if (!path.isAbsolute(filePath)) {
-            // For relative paths, resolve against current working directory
-            resolvedPath = path.resolve(process.cwd(), filePath);
+        // Determine if this path is already relative to our data directory
+        let resolvedPath;
+        if (filePath.startsWith('/') && !filePath.startsWith(CONFIG.dataDir)) {
+            // Strip leading slash and place in data directory
+            const relativePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+            resolvedPath = path.join(CONFIG.dataDir, relativePath);
+        } else if (path.isAbsolute(filePath)) {
+            // Already absolute, use as is if within our project
+            resolvedPath = filePath;
+        } else {
+            // Relative path, resolve against data dir
+            resolvedPath = path.join(CONFIG.dataDir, filePath);
         }
         
         console.log(`Resolved path: ${resolvedPath}`);
@@ -160,7 +185,7 @@ app.post(CONFIG.apiEndpoints.file, (req, res) => {
         }, 500);
         
         console.log(`File saved successfully: ${resolvedPath}`);
-        res.json({ success: true });
+        res.json({ success: true, savedPath: resolvedPath });
     } catch (error) {
         console.error(`Error saving file ${filePath}:`, error);
         res.status(500).json({ 

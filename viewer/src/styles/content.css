@@ -290,4 +290,153 @@ body.edit-mode .button-container {
   opacity: 1 !important;
   z-index: 10000 !important;
   pointer-events: auto !important;
+}
+
+/* Notification system */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: slide-in 0.3s ease-out forwards;
+    transform: translateX(400px);
+    opacity: 0;
+}
+
+.notification.closing {
+    animation: slide-out 0.3s ease-in forwards;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 10px;
+}
+
+.notification.error {
+    border-left: 4px solid #e53935;
+}
+
+.notification.warning {
+    border-left: 4px solid #f9a825;
+}
+
+.notification.info {
+    border-left: 4px solid #3182ce;
+}
+
+.notification.success {
+    border-left: 4px solid #38a169;
+}
+
+.notification span {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.notification svg {
+    flex-shrink: 0;
+}
+
+.notification.error svg {
+    color: #e53935;
+}
+
+.notification.warning svg {
+    color: #f9a825;
+}
+
+.notification.info svg {
+    color: #3182ce;
+}
+
+.notification.success svg {
+    color: #38a169;
+}
+
+.notification .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification .close-btn:hover {
+    color: #333;
+}
+
+@keyframes slide-in {
+    0% {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slide-out {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* Progress indicator in dropzone */
+.dropzone p {
+    margin: 8px 0;
+    text-align: center;
+}
+
+/* Make dropzone more inviting */
+.sidebar .dropzone {
+    border: 2px dashed var(--color-border);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--color-bg-light);
+}
+
+.sidebar .dropzone:hover {
+    border-color: var(--color-primary);
+    background-color: rgba(49, 130, 206, 0.05);
+}
+
+.sidebar .dropzone-icon {
+    color: var(--color-primary);
+}
+
+.sidebar .dropzone-text {
+    color: var(--color-text);
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
 } 

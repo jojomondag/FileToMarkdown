@@ -17,6 +17,7 @@ class FileToMarkdownViewer {
         
         this.isEditorMode = false;
         this.originalContent = '';
+        this.isPickerActive = false;
         
         // Setup UI components and event listeners
         this.setupComponents();
@@ -38,6 +39,12 @@ class FileToMarkdownViewer {
         window.addEventListener('fileError', (event) => {
             const { message } = event.detail;
             this.showError(message);
+        });
+        
+        // Handle file warnings (non-critical issues)
+        window.addEventListener('fileWarning', (event) => {
+            const { message } = event.detail;
+            this.showWarning(message);
         });
     }
 
@@ -212,13 +219,9 @@ class FileToMarkdownViewer {
                 } else if (event === 'drop') {
                     dropZone.classList.remove('active');
                     
-                    // Check if dragged items include directories
-                    // Note: Most browsers don't support directory drop directly
-                    // So we'll just process all dropped files and filter for markdown
+                    // Process dropped items using our consolidated handler
                     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-                        this.handleDragAndDrop(e.dataTransfer.items);
-                    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                        this.handleFiles(Array.from(e.dataTransfer.files));
+                        this.handleDroppedItems(e.dataTransfer.items);
                     }
                 }
             });
@@ -237,6 +240,9 @@ class FileToMarkdownViewer {
                 }
             }
         };
+
+        // Setup initial events
+        this.setupInitialEvents();
     }
     
     /**
@@ -270,7 +276,7 @@ class FileToMarkdownViewer {
         // Setup directory watchers to track added/deleted files
         this.directoryWatchers = new Map();
         
-        // Poll for file changes using the File System Access API
+        // Poll for file changes using the File System Access API - ONLY for the current file
         setInterval(async () => {
             // Only check if we have files loaded
             if (!this.fileManager.files || this.fileManager.files.length === 0) return;
@@ -317,188 +323,6 @@ class FileToMarkdownViewer {
                 console.error('Error checking file changes:', error);
             }
         }, 2000); // Check every 2 seconds
-        
-        // Check for directory changes (added/deleted files)
-        setInterval(async () => {
-            // Only continue if we have directory handles to watch
-            if (!this.fileManager.directoryHandles || this.fileManager.directoryHandles.size === 0) return;
-            
-            try {
-                for (const [dirPath, dirHandle] of this.fileManager.directoryHandles) {
-                    // Create a map of current files to compare against
-                    const currentFiles = new Map();
-                    const markdownFiles = [];
-                    
-                    // Get all markdown files in the directory
-                    for await (const entry of dirHandle.values()) {
-                        if (entry.kind === 'file' && /\.(md|markdown|mdown)$/i.test(entry.name)) {
-                            const entryPath = `${dirPath}/${entry.name}`;
-                            currentFiles.set(entryPath.toLowerCase(), true);
-                            markdownFiles.push({ name: entry.name, path: entryPath, entry, dirHandle });
-                        } else if (entry.kind === 'directory') {
-                            // In the future, we could add recursive directory watching here
-                        }
-                    }
-                    
-                    // Check for removed files - CONSERVATIVE APPROACH FOR SIDEBAR STABILITY
-                    const removedFiles = [];
-                    for (const file of this.fileManager.files) {
-                        // Only consider files in this directory for removal
-                        if (this.fileManager.comparePaths(file.path, dirPath)) {
-                            let found = false;
-                            // Check all entries in the directory to see if the file still exists
-                            for (const [entryPath] of currentFiles) {
-                                if (this.fileManager.comparePaths(file.path, entryPath)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                console.log(`File may be removed: ${file.path}, checking...`);
-                                // Double-check by trying to get the file directly
-                                try {
-                                    // Extract relative path more carefully
-                                    const relativePath = file.path.replace(dirPath, '').replace(/^\/+/, '');
-                                    
-                                    // Try multiple methods to verify if the file is really gone
-                                    let fileExists = false;
-                                    
-                                    try {
-                                        // Method 1: Try to get file handle directly
-                                        await dirHandle.getFileHandle(relativePath)
-                                            .then(() => { fileExists = true; })
-                                            .catch(() => {});
-                                            
-                                        if (!fileExists) {
-                                            // Method 2: If path contains subdirectories, traverse them
-                                            if (relativePath.includes('/')) {
-                                                const pathParts = relativePath.split('/');
-                                                let currentHandle = dirHandle;
-                                                let pathTraversed = true;
-                                                
-                                                // Navigate to parent directory
-                                                for (let i = 0; i < pathParts.length - 1; i++) {
-                                                    try {
-                                                        currentHandle = await currentHandle.getDirectoryHandle(pathParts[i]);
-                                                    } catch (err) {
-                                                        pathTraversed = false;
-                                                        break;
-                                                    }
-                                                }
-                                                
-                                                // If we reached the parent directory, check for the file
-                                                if (pathTraversed) {
-                                                    const fileName = pathParts[pathParts.length - 1];
-                                                    try {
-                                                        await currentHandle.getFileHandle(fileName);
-                                                        fileExists = true;
-                                                    } catch (err) {
-                                                        // File truly doesn't exist
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        
-                                        // If file doesn't exist after thorough checking, mark for removal
-                                        if (!fileExists) {
-                                            console.log(`Confirmed file is missing: ${file.path}`);
-                                            // Only remove after multiple checks in different refresh cycles
-                                            if (file._markedForRemoval) {
-                                                removedFiles.push(file.path);
-                                            } else {
-                                                // Mark for removal but don't remove yet - needs confirmation in next cycle
-                                                file._markedForRemoval = true;
-                                                console.log(`Marking file for potential removal: ${file.path}`);
-                                            }
-                                        } else {
-                                            // File exists, reset any removal markers
-                                            file._markedForRemoval = false;
-                                        }
-                                    } catch (err) {
-                                        console.log(`Error checking file existence for ${file.path}: ${err}`);
-                                        // Be conservative - don't remove if we can't confirm
-                                        file._markedForRemoval = false;
-                                    }
-                                } catch (error) {
-                                    // If we can't check, don't remove the file
-                                    console.log(`Couldn't verify if file ${file.path} exists, keeping it`);
-                                    file._markedForRemoval = false;
-                                }
-                            } else {
-                                // File was found, reset any removal markers
-                                file._markedForRemoval = false;
-                            }
-                        }
-                    }
-                    
-                    // Check for new files
-                    const newFiles = [];
-                    for (const { name, path, entry, dirHandle } of markdownFiles) {
-                        if (!this.fileManager.fileMap.has(path.toLowerCase())) {
-                            try {
-                                const fileHandle = await dirHandle.getFileHandle(name);
-                                const file = await fileHandle.getFile();
-                                
-                                // Add custom properties to the File object
-                                file.relativePath = path;
-                                file.handle = fileHandle;
-                                
-                                // Pre-load the file content
-                                file.content = await file.text();
-                                
-                                newFiles.push(file);
-                            } catch (error) {
-                                console.error(`Error processing new file ${path}:`, error);
-                            }
-                        }
-                    }
-                    
-                    // Process changes
-                    let hasChanges = false;
-                    
-                    // Handle removed files
-                    if (removedFiles.length > 0) {
-                        console.log(`Detected ${removedFiles.length} removed files`, removedFiles);
-                        
-                        // Remove files from the file manager
-                        for (const filePath of removedFiles) {
-                            const fileIndex = this.fileManager.findFileByPath(filePath);
-                            if (fileIndex !== -1) {
-                                // Adjust current file index if deleted file is active
-                                if (fileIndex === this.fileManager.currentFileIndex) {
-                                    this.fileManager.setCurrentFile(Math.max(0, fileIndex - 1));
-                                }
-                                
-                                // Remove the file from files array
-                                this.fileManager.files.splice(fileIndex, 1);
-                                hasChanges = true;
-                            }
-                        }
-                    }
-                    
-                    // Handle new files
-                    if (newFiles.length > 0) {
-                        console.log(`Detected ${newFiles.length} new files`);
-                        await this.fileManager.processFiles(newFiles);
-                        hasChanges = true;
-                    }
-                    
-                    // Update file manager state if changes were detected
-                    if (hasChanges) {
-                        // Update file map
-                        this.fileManager.updateFileMap();
-                        
-                        // Rebuild folder structure
-                        this.fileManager.reconstructFolderStructure();
-                        
-                        // Notify about file list changes
-                        this.fileManager.notifyFileListChanged();
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking directory changes:', error);
-            }
-        }, 5000); // Check directory changes every 5 seconds
     }
     
     /**
@@ -735,69 +559,26 @@ class FileToMarkdownViewer {
         // Clear existing content
         dropZone.innerHTML = '';
 
+        // Always ensure pointer events are enabled
+        dropZone.style.pointerEvents = 'auto';
+
         // Create icon
         const uploadIcon = createElementWithAttributes('div', {
             className: 'dropzone-icon',
-            innerHTML: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>' // Upload icon still okay
+            innerHTML: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>'
         });
 
         // Update instruction text for clarity
         const dropText = createElementWithAttributes('p', {
             className: 'dropzone-text',
-            innerHTML: 'Click to select a folder<br>containing markdown files' // Updated text
+            innerHTML: 'Click to select a folder<br>containing markdown files'
         });
 
         // Add elements to dropzone
         dropZone.appendChild(uploadIcon);
         dropZone.appendChild(dropText);
-
-        // Ensure the click handler is set
-        dropZone.onclick = this.handleDropzoneClick.bind(this);
     }
     
-    /**
-     * Handle click on the dropzone
-     * This either triggers the file picker or directory picker based on user preference
-     */
-    async handleDropzoneClick(e) {
-        e.preventDefault();
-        
-        // Don't do anything if a click happens on a button inside the dropzone
-        if (e.target.tagName === 'BUTTON') {
-            return;
-        }
-        
-        try {
-            let processed = false;
-            
-            // First, try to use the File System Access API which supports both files and directories
-            if (this.fileManager.supportsFileSystem) {
-                // Ask user if they want to select files or a directory
-                const selectType = confirm('Do you want to select a directory? Click OK for directory or Cancel for files.');
-                
-                if (selectType) {
-                    // User wants to select a directory
-                    processed = await this.fileManager.processDirectoryFromFileSystemAPI();
-                } else {
-                    // User wants to select files
-                    processed = await this.fileManager.processFilesFromFileSystemAPI();
-                }
-            }
-            
-            // Fall back to standard file input if File System API is not supported or failed
-            if (!processed) {
-                this.elements.directoryInput.click();
-            }
-            
-            // Update the dropzone UI immediately (will be updated again when files are processed)
-            this.updateDropzoneUI();
-            
-        } catch (error) {
-            console.error('Error handling dropzone click:', error);
-            this.showError(error.message || 'Error selecting files');
-        }
-    }
-
     /**
      * Handle files from drop or file input
      */
@@ -828,18 +609,107 @@ class FileToMarkdownViewer {
     }
     
     /**
-     * Show error message in dropzone
+     * Show a warning notification
+     * @param {string} message 
+     */
+    showWarning(message) {
+        console.warn(message);
+        
+        // Create a warning notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification warning';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 22h20L12 2z"/>
+                    <path d="M12 9v6"/>
+                    <path d="M12 18h.01"/>
+                </svg>
+                <span>${message}</span>
+                <button class="close-btn">×</button>
+            </div>
+        `;
+        
+        // Add to UI
+        document.body.appendChild(notification);
+        
+        // Add close button functionality
+        const closeBtn = notification.querySelector('.close-btn');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.add('closing');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.classList.add('closing');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 10000);
+    }
+
+    /**
+     * Show an error notification
+     * @param {string} message 
      */
     showError(message) {
-        this.elements.dropZone.innerHTML = `<p class="error">${message}</p>`;
+        console.error(message);
         
-        // Reset the dropzone after a delay
-        setTimeout(() => this.updateDropzoneUI(), 3000);
+        // Create an error notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification error';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <span>${message}</span>
+                <button class="close-btn">×</button>
+            </div>
+        `;
+        
+        // Add to UI
+        document.body.appendChild(notification);
+        
+        // Add close button functionality
+        const closeBtn = notification.querySelector('.close-btn');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.add('closing');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+        
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.classList.add('closing');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 8000);
     }
 
     loadFile(index) {
         const fileInfo = this.fileManager.getFile(index);
-        if (!fileInfo) return;
+        if (!fileInfo) {
+            console.error('Failed to load file: Invalid index or file not found', index);
+            return;
+        }
+
+        console.log('Loading file:', fileInfo.path, fileInfo);
 
         // Reset edit mode to false when loading a file
         this.isEditorMode = false;
@@ -860,12 +730,14 @@ class FileToMarkdownViewer {
 
         // Use content directly if available or read from file object
         if (fileInfo.content) {
+            console.log('File has cached content, displaying directly');
             this.displayFileContent(fileInfo.content);
             return;
         }
         
         // If we don't have content but have a file object, read it
         if (fileInfo.file) {
+            console.log('Reading file content from file object');
             const reader = new FileReader();
             reader.onload = e => {
                 const content = e.target.result;
@@ -876,22 +748,50 @@ class FileToMarkdownViewer {
                 
                 this.displayFileContent(content);
             };
-            reader.onerror = e => this.showError(`Error reading file: ${e.target.error}`);
+            reader.onerror = e => {
+                this.showError(`Error reading file: ${e.target.error}`);
+                console.error('FileReader error:', e.target.error);
+            };
             reader.readAsText(fileInfo.file);
         } else {
             this.showError('File content not available');
+            console.error('No file content or file object available', fileInfo);
         }
     }
     
     displayFileContent(content) {
+        if (!content) {
+            console.error('Cannot display empty content');
+            return;
+        }
+        
+        console.log('Displaying content length:', content.length);
         this.originalContent = content;
         
         if (this.isEditorMode) {
+            // In editor mode, set the textarea value
             this.elements.editor.value = content;
         } else {
-            this.elements.contentWrapper.innerHTML = this.renderer.render(content);
+            // In view mode, render markdown to HTML
+            const renderedHTML = this.renderer.render(content);
+            
+            // Make sure contentWrapper exists
+            if (!this.elements.contentWrapper) {
+                console.error('Content wrapper element not found');
+                return;
+            }
+            
+            // Set the HTML content
+            this.elements.contentWrapper.innerHTML = renderedHTML;
+            
+            // Apply syntax highlighting
             this.renderer.highlightAll();
+            
+            // Setup link handlers
             this.setupLinkHandlers();
+            
+            // Make sure the content is visible
+            this.elements.contentWrapper.style.display = 'block';
         }
         
         // Ensure buttons are visible after content is loaded
@@ -1077,67 +977,474 @@ class FileToMarkdownViewer {
     }
 
     /**
-     * Get all markdown files from a directory handle recursively
+     * Handle drag and drop of files and directories
      */
-    async getFilesFromDirectoryHandle(directoryHandle, path = '') {
-        const files = [];
-
+    async handleDroppedItems(items) {
         try {
-            // Store the directory handle for change monitoring
-            if (path) {
-                console.log(`Registering directory for monitoring: ${path}`);
-                this.fileManager.addDirectoryHandle(path, directoryHandle);
-            }
-
-            for await (const entry of directoryHandle.values()) {
-                const entryPath = path ? `${path}/${entry.name}` : entry.name;
-
-                if (entry.kind === 'file') {
-                    // Check if it's potentially a markdown file BEFORE getting the handle/file
-                    if (/\.(md|markdown|mdown)$/i.test(entry.name)) {
-                        try {
-                            const fileHandle = await directoryHandle.getFileHandle(entry.name);
-                            const file = await fileHandle.getFile();
-
-                            // IMPORTANT: Add custom properties directly to the File object
-                            // These are used by FileManager and for saving
-                            file.relativePath = entryPath; // Use a consistent property name
-                            file.handle = fileHandle; // Store the handle for saving and file watching!
-                            
-                            // Pre-load the file content for change detection
-                            try {
-                                file.content = await file.text();
-                            } catch (err) {
-                                console.warn(`Could not pre-load content for ${entryPath}`, err);
-                            }
-
-                            files.push(file);
-                        } catch (error) {
-                            console.error(`Error processing file ${entryPath}:`, error);
-                        }
-                    }
-                } else if (entry.kind === 'directory') {
+            // Update UI to show processing state
+            this.elements.dropZone.innerHTML = '<p>Processing dropped files...</p>';
+            
+            // Extract directory handles from the dropped items
+            for (const item of items) {
+                if (item.kind === 'file') {
+                    // If we get a handle for a directory, process it
                     try {
-                        // Get subdirectory handle
-                        const subDirHandle = await directoryHandle.getDirectoryHandle(entry.name);
-                        
-                        // Register the directory handle for monitoring
-                        this.fileManager.addDirectoryHandle(entryPath, subDirHandle);
-                        console.log(`Registered subdirectory for monitoring: ${entryPath}`);
-                        
-                        // Process the subdirectory recursively
-                        const subDirFiles = await this.getFilesFromDirectoryHandle(subDirHandle, entryPath);
-                        files.push(...subDirFiles);
+                        const handle = await item.getAsFileSystemHandle();
+                        if (handle && handle.kind === 'directory') {
+                            await this.processDirectory(handle);
+                            return; // We found a directory, process it and stop
+                        }
                     } catch (error) {
-                        console.error(`Error processing subdirectory ${entryPath}:`, error);
+                        console.warn('Could not get file system handle:', error);
+                        // Continue to try other items
                     }
                 }
             }
             
-            return files;
+            // If we reach here, no directory was found
+            this.showWarning('Please drop a folder containing markdown files.');
+            this.updateDropzoneUI();
         } catch (error) {
-            console.error(`Error reading directory ${path}:`, error);
-            return files;
+            console.error('Error processing dropped items:', error);
+            this.showError('Error processing dropped items: ' + error.message);
+            this.updateDropzoneUI();
+        }
+    }
+
+    // Single consolidated method to process a directory
+    async processDirectory(dirHandle) {
+        if (!dirHandle) return;
+        
+        try {
+            const files = [];
+            const processedCount = { value: 0 };
+            const markdownExtensions = ['.md', '.markdown', '.mdown', '.txt'];
+            
+            // Store parent directory handle for watching
+            const dirPath = dirHandle.name;
+            this.fileManager.addDirectoryHandle(dirPath, dirHandle);
+            
+            // Add a log to debug directory selection
+            console.log(`Processing directory: ${dirPath}`, dirHandle);
+            
+            // Update progress function
+            const updateProgress = (count) => {
+                this.elements.dropZone.innerHTML = `<p>Processing files... (${count} found)</p>`;
+            };
+            
+            // Process the directory recursively
+            await this.processDirectoryRecursively(dirHandle, dirPath, files, processedCount, updateProgress, markdownExtensions);
+            
+            // Process all collected files
+            if (files.length > 0) {
+                console.log(`Processing ${files.length} markdown files`);
+                await this.fileManager.processFiles(files);
+                
+                // Load the first file - this is key to show file content
+                if (this.fileManager.currentFileIndex >= 0) {
+                    this.loadFile(this.fileManager.currentFileIndex);
+                    
+                    // Make sure the file list selection is updated
+                    this.updateFileListSelection(this.fileManager.currentFileIndex);
+                    
+                    // Expand parent folders in the file tree
+                    const currentFile = this.fileManager.getCurrentFile();
+                    if (currentFile && currentFile.folder) {
+                        this.expandParentFolders(currentFile.folder);
+                    }
+                }
+                
+                // Set up monitoring for file system changes
+                this.setupFileSystemMonitoring();
+                
+                // Show success message
+                this.showSuccess(`Loaded ${files.length} markdown files from "${dirHandle.name}"`);
+            } else {
+                this.showWarning(`No markdown files found in "${dirHandle.name}"`);
+            }
+            
+            // Restore the dropzone UI
+            this.updateDropzoneUI();
+        } catch (error) {
+            console.error('Error processing directory:', error);
+            this.showError('Error processing directory: ' + error.message);
+            this.updateDropzoneUI();
+        }
+    }
+
+    // Helper method to recursively process a directory
+    async processDirectoryRecursively(handle, parentPath, files, processedCount, updateProgress, markdownExtensions, depth = 0) {
+        // Don't process too deeply nested directories
+        if (depth > 10) return;
+        
+        console.log(`Processing directory: ${parentPath || handle.name} (depth ${depth})`);
+        
+        try {
+            // Process all entries in the directory
+            for await (const entry of handle.values()) {
+                // Build the entry path
+                const entryPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+                
+                if (entry.kind === 'file') {
+                    // Check if it's a markdown file
+                    const extension = '.' + entry.name.split('.').pop().toLowerCase();
+                    if (markdownExtensions.includes(extension)) {
+                        try {
+                            // Get the file and its metadata
+                            const file = await entry.getFile();
+                            file.handle = entry;  // Store handle for direct saving
+                            file.relativePath = entryPath;
+                            
+                            // Add parent folder reference for better structure
+                            file.parentFolder = parentPath;
+                            console.log(`Added file: ${entry.name} with parent: ${parentPath}`);
+                            
+                            // Add to our collection
+                            files.push(file);
+                            
+                            // Update progress
+                            processedCount.value++;
+                            if (processedCount.value % 5 === 0) {
+                                updateProgress(processedCount.value);
+                            }
+                        } catch (fileError) {
+                            console.warn(`Could not access file ${entryPath}:`, fileError);
+                        }
+                    }
+                } else if (entry.kind === 'directory') {
+                    try {
+                        // Register the directory for watching including parent path
+                        console.log(`Registering directory: ${entryPath}`);
+                        this.fileManager.addDirectoryHandle(entryPath, entry);
+                        
+                        // Recursively process subdirectory
+                        await this.processDirectoryRecursively(
+                            entry, entryPath, files, processedCount, 
+                            updateProgress, markdownExtensions, depth + 1
+                        );
+                    } catch (dirError) {
+                        console.warn(`Could not access directory ${entryPath}:`, dirError);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error(`Error reading directory contents:`, error);
+        }
+    }
+
+    /**
+     * Set up monitoring for file system changes
+     */
+    async setupFileSystemMonitoring() {
+        if (!this.fileManager || !this.fileManager.directoryHandles || this.fileManager.directoryHandles.size === 0) {
+            console.log('No directory handles to monitor');
+            return;
+        }
+
+        // Stop any existing monitoring
+        this.stopFileSystemMonitoring();
+
+        // Create a flag to track if monitoring is active
+        this._monitoringActive = true;
+        
+        console.log(`Setting up file system monitoring for ${this.fileManager.directoryHandles.size} directories`);
+        
+        // Store the watcher IDs to allow stopping later
+        this._fileSystemWatchers = [];
+        
+        // For each directory handle, set up monitoring
+        for (const [path, handle] of this.fileManager.directoryHandles.entries()) {
+            try {
+                // Make sure handle has proper methods
+                if (handle && typeof handle.values === 'function') {
+                    this.monitorDirectory(path, handle);
+                }
+            } catch (error) {
+                console.error(`Error setting up monitoring for ${path}:`, error);
+            }
+        }
+    }
+
+    /**
+     * Monitor a specific directory for changes
+     */
+    async monitorDirectory(path, handle) {
+        if (!this._monitoringActive) return;
+        
+        console.log(`Monitoring directory: ${path}`);
+        
+        try {
+            // Use FileSystemDirectoryHandle.values() to get directory entries
+            const currentEntries = new Map();
+            
+            // Read current entries
+            for await (const entry of handle.values()) {
+                currentEntries.set(entry.name, {
+                    kind: entry.kind,
+                    name: entry.name
+                });
+            }
+            
+            // Store snapshot of entries for comparison
+            const previousSnapshot = this._directorySnapshots?.get(path) || new Map();
+            this._directorySnapshots = this._directorySnapshots || new Map();
+            this._directorySnapshots.set(path, currentEntries);
+            
+            // Compare with previous snapshot if it exists
+            if (previousSnapshot.size > 0) {
+                let hasChanges = false;
+                
+                // Check for new or modified entries
+                for (const [name, entry] of currentEntries.entries()) {
+                    if (!previousSnapshot.has(name)) {
+                        console.log(`New entry detected: ${name} (${entry.kind})`);
+                        hasChanges = true;
+                    }
+                }
+                
+                // Check for deleted entries
+                for (const [name, entry] of previousSnapshot.entries()) {
+                    if (!currentEntries.has(name)) {
+                        console.log(`Entry deleted: ${name} (${entry.kind})`);
+                        hasChanges = true;
+                    }
+                }
+                
+                // If changes detected, refresh the file structure
+                if (hasChanges) {
+                    console.log(`Changes detected in ${path}, refreshing file structure`);
+                    this.refreshFilesFromWatchedDirectories();
+                }
+            }
+            
+            // Schedule next check
+            if (this._monitoringActive) {
+                const watcherId = setTimeout(() => this.monitorDirectory(path, handle), 2000);
+                this._fileSystemWatchers.push(watcherId);
+            }
+        } catch (error) {
+            console.error(`Error monitoring directory ${path}:`, error);
+            
+            // Try again after a delay
+            if (this._monitoringActive) {
+                const watcherId = setTimeout(() => this.monitorDirectory(path, handle), 5000);
+                this._fileSystemWatchers.push(watcherId);
+            }
+        }
+    }
+
+    /**
+     * Stop file system monitoring
+     */
+    stopFileSystemMonitoring() {
+        this._monitoringActive = false;
+        
+        // Clear any existing watchers
+        if (this._fileSystemWatchers) {
+            this._fileSystemWatchers.forEach(id => clearTimeout(id));
+            this._fileSystemWatchers = [];
+        }
+        
+        console.log('File system monitoring stopped');
+    }
+
+    /**
+     * Refresh files from watched directories when changes are detected
+     */
+    async refreshFilesFromWatchedDirectories() {
+        console.log('Refreshing files from watched directories');
+        
+        try {
+            // First, remember which file was active
+            const currentFilePath = this.fileManager.getCurrentFile()?.path;
+            
+            // Get all directory handles
+            const handles = this.fileManager.getDirectoryHandles();
+            if (handles.size === 0) {
+                console.log('No directory handles to refresh');
+                return;
+            }
+            
+            // Process the root directory handle (first one added)
+            const rootDirEntry = handles.entries().next().value;
+            if (!rootDirEntry) {
+                console.log('No root directory handle found');
+                return;
+            }
+            
+            const [rootPath, rootHandle] = rootDirEntry;
+            
+            // Re-process the directory
+            await this.processDirectory(rootHandle);
+            
+            // If we had a current file, try to restore it
+            if (currentFilePath) {
+                const fileIndex = this.fileManager.findFileByPath(currentFilePath);
+                if (fileIndex !== undefined) {
+                    this.loadFile(fileIndex);
+                }
+            }
+            
+            // Show a notification about the refresh
+            this.showSuccess('File list refreshed due to file system changes');
+        } catch (error) {
+            console.error('Error refreshing file list:', error);
+        }
+    }
+
+    /**
+     * Setup initial events
+     * This gets called when the app is first initialized 
+     * and should not clear existing files or state
+     */
+    setupInitialEvents() {
+        // Only set up if not already done to prevent duplicate handlers
+        if (this._initialEventsSetup) return;
+        this._initialEventsSetup = true;
+        
+        console.log('Setting up initial events including dropzone click handler');
+        
+        // Setup file drop zone with a single, clear approach
+        // First remove any existing click handlers just to be safe
+        const dropZone = this.elements.dropZone;
+        const newDropZone = dropZone.cloneNode(true);
+        dropZone.parentNode.replaceChild(newDropZone, dropZone);
+        this.elements.dropZone = newDropZone;
+        
+        // Now add the click handler
+        this.elements.dropZone.addEventListener('click', (e) => {
+            console.log('Dropzone clicked, opening directory picker');
+            e.preventDefault();
+            e.stopPropagation();
+            this.openDirectoryPicker();
+        });
+        
+        // Force the drop zone to be clickable
+        this.elements.dropZone.style.pointerEvents = 'auto';
+        this.elements.dropZone.style.cursor = 'pointer';
+        
+        // Setup drag and drop handler with the same consolidated approach
+        const dropArea = document.body;
+        
+        // Prevent default behavior to enable drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        
+        // Highlight drop area when dragging over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('highlight');
+            }, false);
+        });
+        
+        // Remove highlight when leaving or after drop
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('highlight');
+            }, false);
+        });
+        
+        // Handle actual drop - always use directory API if available
+        dropArea.addEventListener('drop', (e) => {
+            if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+                this.handleDroppedItems(e.dataTransfer.items);
+            }
+        }, false);
+    }
+
+    /**
+     * Single, consolidated method to open the directory picker
+     */
+    async openDirectoryPicker() {
+        // Global static flag to prevent multiple pickers across the entire application
+        if (window._directoryPickerActive === true) {
+            console.log('Directory picker already active (global flag), ignoring request');
+            return;
+        }
+        
+        // Instance flag check
+        if (this.isPickerActive) {
+            console.log('Directory picker already active (instance flag), ignoring request');
+            return;
+        }
+        
+        // Check browser support
+        if (!window.showDirectoryPicker) {
+            this.showError('Your browser doesn\'t support the File System API. Please use a modern browser like Chrome or Edge.');
+            this.elements.dropZone.style.pointerEvents = 'auto'; // Ensure dropzone is clickable
+            return;
+        }
+        
+        try {
+            // Set both flags to prevent multiple pickers
+            this.isPickerActive = true;
+            window._directoryPickerActive = true;
+            
+            // Ensure UI reflects the active picker state
+            this.elements.dropZone.innerHTML = '<p>Select a directory with markdown files...</p>';
+            this.elements.dropZone.style.pointerEvents = 'none'; // Disable clicking
+            
+            // Allow time for the UI to update before showing picker
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Use the directory picker - this is the ONLY method we'll use
+            const dirHandle = await window.showDirectoryPicker().catch(error => {
+                // Immediately reset flags on picker error
+                this.isPickerActive = false;
+                window._directoryPickerActive = false;
+                this.elements.dropZone.style.pointerEvents = 'auto';
+                throw error; // Re-throw for the outer catch
+            });
+            
+            // Reset flags after picker completes
+            this.isPickerActive = false;
+            window._directoryPickerActive = false;
+            this.elements.dropZone.style.pointerEvents = 'auto';
+            
+            if (!dirHandle) {
+                this.updateDropzoneUI();
+                return;
+            }
+            
+            // Update UI to show processing state
+            this.elements.dropZone.innerHTML = '<p>Processing files...</p>';
+            
+            // Process the directory
+            await this.processDirectory(dirHandle);
+        } catch (error) {
+            // Extra safeguard: Reset flags in all error cases
+            this.isPickerActive = false;
+            window._directoryPickerActive = false;
+            this.elements.dropZone.style.pointerEvents = 'auto';
+            
+            // Don't show errors for user canceling
+            if (error.name !== 'AbortError') {
+                console.error('Error opening directory:', error);
+                this.showError('Error selecting directory: ' + error.message);
+            }
+            
+            // Always restore the UI
+            this.updateDropzoneUI();
+        } finally {
+            // Triple safety measure: ensure flags are reset even if there's an error in processDirectory
+            setTimeout(() => {
+                this.isPickerActive = false;
+                window._directoryPickerActive = false;
+                this.elements.dropZone.style.pointerEvents = 'auto';
+                
+                // One more failsafe - after a delay, check if we need to repair the UI
+                setTimeout(() => {
+                    if (!this.elements.dropZone.innerHTML || 
+                        this.elements.dropZone.style.pointerEvents === 'none') {
+                        console.log('Repairing dropzone UI after delay...');
+                        this.updateDropzoneUI();
+                    }
+                }, 1000);
+            }, 500);
         }
     }
 
@@ -1145,160 +1452,90 @@ class FileToMarkdownViewer {
      * Handle drag and drop of files and directories
      */
     async handleDragAndDrop(items) {
-        try {
-            const files = [];
-            const promises = [];
-            const directoryHandles = [];
-            
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                
-                // Handle file system entry
-                if (item.kind === 'file' && item.webkitGetAsEntry) {
-                    const entry = item.webkitGetAsEntry();
-                    
-                    if (entry) {
-                        // Handle directory
-                        if (entry.isDirectory) {
-                            const dirPromise = this.readDirectoryEntry(entry);
-                            promises.push(dirPromise);
-                        }
-                        // Handle file
-                        else if (entry.isFile) {
-                            const filePromise = new Promise(resolve => {
-                                entry.file(file => {
-                                    // Only include if it's potentially a markdown file
-                                    if (/\.(md|markdown|mdown)$/i.test(file.name)) {
-                                        // Add path info to the file object for relative path handling
-                                        file.relativePath = file.name;
-                                        files.push(file);
-                                    }
-                                    resolve();
-                                }, resolve); // Resolve even if file access fails
-                            });
-                            
-                            promises.push(filePromise);
-                        }
-                    }
-                }
-                // Handle file
-                else if (item.kind === 'file' && item.getAsFile) {
-                    const file = item.getAsFile();
-                    
-                    if (file && /\.(md|markdown|mdown)$/i.test(file.name)) {
-                        file.relativePath = file.name;
-                        files.push(file);
-                    }
-                }
-                // Handle if it's a directory using File System Access API
-                else if (this.fileManager.supportsFileSystem && typeof item.getAsFileSystemHandle === 'function') {
-                    try {
-                        const handle = await item.getAsFileSystemHandle();
-                        
-                        if (handle.kind === 'directory') {
-                            directoryHandles.push(handle);
-                        } else if (handle.kind === 'file' && /\.(md|markdown|mdown)$/i.test(handle.name)) {
-                            const file = await handle.getFile();
-                            file.relativePath = handle.name;
-                            file.handle = handle; // Store handle for saving
-                            files.push(file);
-                        }
-                    } catch (error) {
-                        console.error('Error getting file system handle:', error);
-                    }
-                }
-            }
-            
-            // Wait for all directory reading operations to complete
-            await Promise.all(promises);
-            
-            // Process all directory handles collected using File System Access API
-            for (const dirHandle of directoryHandles) {
-                const dirPath = dirHandle.name;
-                
-                // Store the directory handle for watching
-                this.fileManager.addDirectoryHandle(dirPath, dirHandle);
-                
-                // Get all markdown files from this directory
-                const dirFiles = await this.getFilesFromDirectoryHandle(dirHandle, dirPath);
-                files.push(...dirFiles);
-            }
-            
-            // Process all collected files
-            if (files.length > 0) {
-                console.log(`Processing ${files.length} files from drag and drop`);
-                await this.fileManager.processFiles(files);
-                
-                // Update dropzone UI
-                this.updateDropzoneUI();
-            } else {
-                console.log('No supported files found in the dropped items');
-                // Optionally show a message to the user
-            }
-        } catch (error) {
-            console.error('Error handling drag and drop:', error);
-            this.showError(error.message || 'Error processing dropped files');
+        // Redirect to our consolidated method
+        if (items && items.length > 0) {
+            await this.handleDroppedItems(items);
         }
     }
-    
+
     /**
-     * Read directory entry recursively to get all files
+     * Initialize the application after DOM is loaded
      */
-    async readDirectoryEntry(directoryEntry, path = '') {
-        const files = [];
-        const dirReader = directoryEntry.createReader();
+    init() {
+        // Prevent double initialization
+        if (this._initialized) {
+            console.warn('App already initialized, skipping initialization');
+            return;
+        }
+        this._initialized = true;
         
-        // Read directory entries in batches
-        const readEntries = () => {
-            return new Promise((resolve, reject) => {
-                dirReader.readEntries(entries => {
-                    resolve(entries);
-                }, error => {
-                    reject(error);
-                });
-            });
-        };
-        
-        let entries = [];
-        let batch;
-        
-        // Directory readers return results in batches
-        do {
-            batch = await readEntries();
-            entries = entries.concat(Array.from(batch));
-        } while (batch.length > 0);
-        
-        // Process all entries
-        for (const entry of entries) {
-            const entryPath = path ? `${path}/${entry.name}` : entry.name;
-            
-            if (entry.isFile) {
-                try {
-                    const file = await new Promise(resolve => {
-                        entry.file(file => resolve(file));
-                    });
-                    
-                    // Only add markdown files
-                    if (file.name.toLowerCase().endsWith('.md') || 
-                        file.name.toLowerCase().endsWith('.markdown') ||
-                        file.name.toLowerCase().endsWith('.mdown') ||
-                        file.type === 'text/markdown') {
-                        
-                        // Add path info for file manager
-                        file.path = entryPath;
-                        files.push(file);
-                    }
-                } catch (error) {
-                    console.error(`Error reading file ${entryPath}:`, error);
-                }
-            } else if (entry.isDirectory) {
-                // Recursively read subdirectories
-                const subFiles = await this.readDirectoryEntry(entry, entryPath);
-                files.push(...subFiles);
-            }
+        // Only get elements and set up components if not already done
+        if (!this.elements.content) {
+            this.getElements();
         }
         
-        return files;
+        // These should only be done once
+        if (!this._componentsSetup) {
+            this._componentsSetup = true;
+            this.setupComponents();
+            this.setupButtonContainer();
+            this.setupEditorElement();
+        }
+        
+        // Set up event listeners
+        this.setupEventListeners();
+        this.setupFileChangeListener();
+        this.setupLinkHandlers();
+        this.setupInitialEvents();
+        
+        // Show welcome message
+        console.log('FileToMarkdown Viewer initialized');
+    }
+
+    /**
+     * Show a success notification
+     * @param {string} message 
+     */
+    showSuccess(message) {
+        console.log(message);
+        
+        // Create a success notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification success';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>${message}</span>
+                <button class="close-btn">×</button>
+            </div>
+        `;
+        
+        // Add to UI
+        document.body.appendChild(notification);
+        
+        // Add close button functionality
+        const closeBtn = notification.querySelector('.close-btn');
+        closeBtn.addEventListener('click', () => {
+            notification.classList.add('closing');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        });
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.classList.add('closing');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
 }
 

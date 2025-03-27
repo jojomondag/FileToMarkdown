@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-03-27T09:26:51.579Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-03-27T14:43:40.299Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -562,6 +562,171 @@ a {
   transition: all 0.15s ease-out;
 } 
 
+/* File: styles/fileList.css */
+/* File List Component Styles */
+
+.file-tree {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.file-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.folder-item, .file-item {
+    padding: 2px 0;
+    position: relative;
+}
+
+/* Folder styles */
+.folder-header {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.folder-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.folder-icon, .file-icon {
+    margin-right: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+}
+
+.folder-icon svg {
+    color: #e6b400;
+}
+
+.expand-icon {
+    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    transition: transform 0.2s;
+}
+
+.expanded > .folder-header .expand-icon {
+    transform: rotate(90deg);
+}
+
+.folder-contents {
+    padding-left: 20px;
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.3s ease-in-out;
+}
+
+.folder-contents.collapsed {
+    max-height: 0;
+}
+
+/* File styles */
+.file-item a {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.file-item a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.file-item.selected a {
+    background-color: rgba(0, 120, 215, 0.1);
+    color: #0078d7;
+}
+
+.file-icon svg {
+    color: #666;
+}
+
+/* Markdown file icon color */
+.file-icon svg path[d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"] {
+    color: #0078d7;
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    padding: 20px;
+    text-align: center;
+    color: #666;
+}
+
+/* Indentation for nested items */
+[data-depth="1"] > .folder-header,
+[data-depth="1"] > a {
+    padding-left: 20px;
+}
+
+[data-depth="2"] > .folder-header,
+[data-depth="2"] > a {
+    padding-left: 36px;
+}
+
+[data-depth="3"] > .folder-header,
+[data-depth="3"] > a {
+    padding-left: 52px;
+}
+
+[data-depth="4"] > .folder-header, 
+[data-depth="4"] > a {
+    padding-left: 68px;
+}
+
+/* Hover styles */
+.folder-header:hover,
+.file-item a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Active styles */
+.folder-header:active,
+.file-item a:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Folder animation */
+@keyframes folderOpen {
+    from { max-height: 0; }
+    to { max-height: 2000px; }
+}
+
+@keyframes folderClose {
+    from { max-height: 2000px; }
+    to { max-height: 0; }
+}
+
+.folder-contents:not(.collapsed) {
+    animation: folderOpen 0.3s ease-out;
+}
+
+.folder-contents.collapsed {
+    animation: folderClose 0.3s ease-in;
+} 
+
 /* File: styles/content.css */
 /* ===== MAIN CONTENT ===== */
 .main-content {
@@ -855,5 +1020,208 @@ body.edit-mode .button-container {
   opacity: 1 !important;
   z-index: 10000 !important;
   pointer-events: auto !important;
+}
+
+/* Notification system */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    overflow: hidden;
+    animation: slide-in 0.3s ease-out forwards;
+    transform: translateX(400px);
+    opacity: 0;
+}
+
+.notification.closing {
+    animation: slide-out 0.3s ease-in forwards;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 10px;
+}
+
+.notification.error {
+    border-left: 4px solid #e53935;
+}
+
+.notification.warning {
+    border-left: 4px solid #f9a825;
+}
+
+.notification.info {
+    border-left: 4px solid #3182ce;
+}
+
+.notification.success {
+    border-left: 4px solid #38a169;
+}
+
+.notification span {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.notification svg {
+    flex-shrink: 0;
+}
+
+.notification.error svg {
+    color: #e53935;
+}
+
+.notification.warning svg {
+    color: #f9a825;
+}
+
+.notification.info svg {
+    color: #3182ce;
+}
+
+.notification.success svg {
+    color: #38a169;
+}
+
+.notification .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification .close-btn:hover {
+    color: #333;
+}
+
+@keyframes slide-in {
+    0% {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slide-out {
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* Progress indicator in dropzone */
+.dropzone p {
+    margin: 8px 0;
+    text-align: center;
+}
+
+/* Make dropzone more inviting */
+.sidebar .dropzone {
+    border: 2px dashed var(--color-border);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--color-bg-light);
+}
+
+.sidebar .dropzone:hover {
+    border-color: var(--color-primary);
+    background-color: rgba(49, 130, 206, 0.05);
+}
+
+.sidebar .dropzone-icon {
+    color: var(--color-primary);
+}
+
+.sidebar .dropzone-text {
+    color: var(--color-text);
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
+} 
+
+/* File: styles/styles.css */
+/* Import file list styles */
+@import 'fileList.css';
+
+/* Additional styles to ensure content display */
+.content-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+}
+
+.markdown-content {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+}
+
+/* Ensure content visibility and positioning */
+.main-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+#content {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+/* Make sure file list takes full sidebar height */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+#l {
+    flex: 1;
+    overflow: auto;
+}
+
+/* Ensure buttons are visible */
+.content-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1001;
+    display: flex;
+    gap: 10px;
 } 
 
