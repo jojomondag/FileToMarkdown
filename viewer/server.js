@@ -78,9 +78,24 @@ app.get(CONFIG.apiEndpoints.file, (req, res) => {
     }
     
     try {
-        const content = fs.readFileSync(filePath, 'utf8');
+        // Resolve the path - handle both absolute and relative paths
+        let resolvedPath = filePath;
+        if (!path.isAbsolute(filePath)) {
+            // For relative paths, resolve against current working directory
+            resolvedPath = path.resolve(process.cwd(), filePath);
+        }
+        
+        console.log(`Reading file: ${resolvedPath}`);
+        
+        // Check if file exists
+        if (!fs.existsSync(resolvedPath)) {
+            return res.status(404).json({ error: `File not found: ${filePath}` });
+        }
+        
+        const content = fs.readFileSync(resolvedPath, 'utf8');
         res.json({ content });
     } catch (error) {
+        console.error(`Error reading file ${filePath}:`, error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -96,20 +111,66 @@ app.post(CONFIG.apiEndpoints.file, (req, res) => {
         return res.status(400).json({ error: 'File path and content are required' });
     }
     
+    console.log(`Attempting to save file: ${filePath}`);
+    
     try {
-        // Mark this file as being edited by the web app to prevent watcher loops
-        fileChanges.set(filePath, true);
+        // Resolve the path - handle both absolute and relative paths
+        let resolvedPath = filePath;
+        if (!path.isAbsolute(filePath)) {
+            // For relative paths, resolve against current working directory
+            resolvedPath = path.resolve(process.cwd(), filePath);
+        }
         
-        fs.writeFileSync(filePath, content, 'utf8');
+        console.log(`Resolved path: ${resolvedPath}`);
+        
+        // Make sure the directory exists
+        const directory = path.dirname(resolvedPath);
+        if (!fs.existsSync(directory)) {
+            console.log(`Creating directory: ${directory}`);
+            fs.mkdirSync(directory, { recursive: true });
+        }
+        
+        // Verify the file exists and we have write permissions
+        try {
+            // First check if the file exists
+            if (fs.existsSync(resolvedPath)) {
+                // If it exists, check write permissions
+                fs.accessSync(resolvedPath, fs.constants.W_OK);
+            }
+            // If file doesn't exist, we'll create it so we need to check directory write permissions
+            else {
+                fs.accessSync(directory, fs.constants.W_OK);
+            }
+        } catch (accessError) {
+            console.error(`Permission error: ${accessError.message}`);
+            return res.status(403).json({ 
+                error: `Permission denied: Cannot write to ${filePath}. ${accessError.message}` 
+            });
+        }
+        
+        // Mark this file as being edited by the web app to prevent watcher loops
+        fileChanges.set(resolvedPath, true);
+        
+        // Try to write the file
+        fs.writeFileSync(resolvedPath, content, 'utf8');
         
         // Release the mark after a short delay
         setTimeout(() => {
-            fileChanges.delete(filePath);
+            fileChanges.delete(resolvedPath);
         }, 500);
         
+        console.log(`File saved successfully: ${resolvedPath}`);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(`Error saving file ${filePath}:`, error);
+        res.status(500).json({ 
+            error: error.message,
+            details: {
+                code: error.code,
+                syscall: error.syscall,
+                path: error.path
+            }
+        });
     }
 });
 

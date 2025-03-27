@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-26T20:52:18.050Z
+// FileToMarkdown Viewer Bundle - 2025-03-27T09:26:51.565Z
 
 // File: utils/constants.js
 /**
@@ -327,6 +327,12 @@ class FileManager {
             const processed = await this.processFiles(files);
             return processed > 0;
         } catch (error) {
+            // Don't show errors for user canceling the dialog
+            if (error.name === 'AbortError') {
+                console.log('User canceled file selection dialog');
+                return false;
+            }
+            
             console.error('Error opening files with File System API:', error);
             return false;
         }
@@ -550,7 +556,7 @@ class FileManager {
                     const permission = await handle.requestPermission(options);
                     if (permission !== 'granted') {
                         console.error('Permission to write to file was denied');
-                        return false;
+                        throw new Error('Permission to write to file was denied');
                     }
                 }
                 
@@ -569,6 +575,19 @@ class FileManager {
             
             // Method 2: Use the server API as a fallback
             if (fileInfo.path) {
+                // For paths without a handle, create a workspace-relative path
+                let savePath = fileInfo.path;
+                
+                // If we're using a path from a folder structure, get the full path
+                if (fileInfo.folder && fileInfo.name) {
+                    const workspace = window.location.pathname.endsWith('/') 
+                        ? window.location.pathname.slice(0, -1) 
+                        : window.location.pathname;
+                    
+                    savePath = `${workspace}/${fileInfo.folder}/${fileInfo.name}`;
+                    console.log(`Using workspace-relative path: ${savePath}`);
+                }
+                
                 // Use the server API to save the file
                 const response = await fetch('/api/file', {
                     method: 'POST',
@@ -576,13 +595,15 @@ class FileManager {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        path: fileInfo.path,
+                        path: savePath,
                         content
                     })
                 });
                 
+                const responseData = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                    throw new Error(responseData.error || `Server returned ${response.status} ${response.statusText}`);
                 }
                 
                 console.log('File saved successfully using server API');
@@ -590,6 +611,16 @@ class FileManager {
             }
         } catch (error) {
             console.error('Error saving file:', error);
+            
+            // Display an error notification
+            const errorEvent = new CustomEvent('fileError', {
+                detail: {
+                    message: `Failed to save file: ${error.message}`,
+                    path: fileInfo.path
+                }
+            });
+            window.dispatchEvent(errorEvent);
+            
             throw error;
         }
         
@@ -825,6 +856,12 @@ class FileManager {
                 return false;
             }
         } catch (error) {
+            // Don't show errors for user canceling the dialog
+            if (error.name === 'AbortError') {
+                console.log('User canceled directory selection dialog');
+                return false;
+            }
+            
             console.error('Error opening directory with File System API:', error);
             return false;
         }
@@ -1466,6 +1503,12 @@ class FileToMarkdownViewer {
         
         // Add beforeunload event listener to prevent accidental closing with unsaved changes
         window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        
+        // Handle file errors
+        window.addEventListener('fileError', (event) => {
+            const { message } = event.detail;
+            this.showError(message);
+        });
     }
 
     /**
@@ -2480,27 +2523,15 @@ class FileToMarkdownViewer {
                     this.elements.saveButton.classList.remove('saved');
                     this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
                 }, 2000);
-            } else {
-                // Show error indicator
-                this.elements.saveButton.classList.remove('saving');
-                this.elements.saveButton.classList.add('error');
-                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-                
-                this.showError('Failed to save file');
-                
-                // Reset to save icon after a delay
-                setTimeout(() => {
-                    this.elements.saveButton.classList.remove('error');
-                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-                }, 2000);
             }
         } catch (error) {
-            console.error('Error saving file:', error);
-            this.showError('Error saving file: ' + error.message);
-            
-            // Reset button state
+            // Reset save button state
             this.elements.saveButton.classList.remove('saving');
+            this.elements.saveButton.classList.remove('saved');
             this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+            
+            // Error is already handled by the file manager
+            console.error('Error in saveFile:', error);
         }
     }
 

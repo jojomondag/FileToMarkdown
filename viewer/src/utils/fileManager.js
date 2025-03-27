@@ -44,6 +44,12 @@ class FileManager {
             const processed = await this.processFiles(files);
             return processed > 0;
         } catch (error) {
+            // Don't show errors for user canceling the dialog
+            if (error.name === 'AbortError') {
+                console.log('User canceled file selection dialog');
+                return false;
+            }
+            
             console.error('Error opening files with File System API:', error);
             return false;
         }
@@ -267,7 +273,7 @@ class FileManager {
                     const permission = await handle.requestPermission(options);
                     if (permission !== 'granted') {
                         console.error('Permission to write to file was denied');
-                        return false;
+                        throw new Error('Permission to write to file was denied');
                     }
                 }
                 
@@ -286,6 +292,19 @@ class FileManager {
             
             // Method 2: Use the server API as a fallback
             if (fileInfo.path) {
+                // For paths without a handle, create a workspace-relative path
+                let savePath = fileInfo.path;
+                
+                // If we're using a path from a folder structure, get the full path
+                if (fileInfo.folder && fileInfo.name) {
+                    const workspace = window.location.pathname.endsWith('/') 
+                        ? window.location.pathname.slice(0, -1) 
+                        : window.location.pathname;
+                    
+                    savePath = `${workspace}/${fileInfo.folder}/${fileInfo.name}`;
+                    console.log(`Using workspace-relative path: ${savePath}`);
+                }
+                
                 // Use the server API to save the file
                 const response = await fetch('/api/file', {
                     method: 'POST',
@@ -293,13 +312,15 @@ class FileManager {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        path: fileInfo.path,
+                        path: savePath,
                         content
                     })
                 });
                 
+                const responseData = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+                    throw new Error(responseData.error || `Server returned ${response.status} ${response.statusText}`);
                 }
                 
                 console.log('File saved successfully using server API');
@@ -307,6 +328,16 @@ class FileManager {
             }
         } catch (error) {
             console.error('Error saving file:', error);
+            
+            // Display an error notification
+            const errorEvent = new CustomEvent('fileError', {
+                detail: {
+                    message: `Failed to save file: ${error.message}`,
+                    path: fileInfo.path
+                }
+            });
+            window.dispatchEvent(errorEvent);
+            
             throw error;
         }
         
@@ -542,6 +573,12 @@ class FileManager {
                 return false;
             }
         } catch (error) {
+            // Don't show errors for user canceling the dialog
+            if (error.name === 'AbortError') {
+                console.log('User canceled directory selection dialog');
+                return false;
+            }
+            
             console.error('Error opening directory with File System API:', error);
             return false;
         }

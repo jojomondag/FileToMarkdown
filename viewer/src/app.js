@@ -33,6 +33,12 @@ class FileToMarkdownViewer {
         
         // Add beforeunload event listener to prevent accidental closing with unsaved changes
         window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+        
+        // Handle file errors
+        window.addEventListener('fileError', (event) => {
+            const { message } = event.detail;
+            this.showError(message);
+        });
     }
 
     /**
@@ -1047,27 +1053,15 @@ class FileToMarkdownViewer {
                     this.elements.saveButton.classList.remove('saved');
                     this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
                 }, 2000);
-            } else {
-                // Show error indicator
-                this.elements.saveButton.classList.remove('saving');
-                this.elements.saveButton.classList.add('error');
-                this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-                
-                this.showError('Failed to save file');
-                
-                // Reset to save icon after a delay
-                setTimeout(() => {
-                    this.elements.saveButton.classList.remove('error');
-                    this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
-                }, 2000);
             }
         } catch (error) {
-            console.error('Error saving file:', error);
-            this.showError('Error saving file: ' + error.message);
-            
-            // Reset button state
+            // Reset save button state
             this.elements.saveButton.classList.remove('saving');
+            this.elements.saveButton.classList.remove('saved');
             this.elements.saveButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+            
+            // Error is already handled by the file manager
+            console.error('Error in saveFile:', error);
         }
     }
 
