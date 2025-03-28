@@ -59,7 +59,7 @@ class FileList extends EventEmitter {
         }
         return new Set();
     }
-    
+
     /**
      * Save expanded folders to localStorage
      */
@@ -192,7 +192,7 @@ class FileList extends EventEmitter {
         const folderHeader = createElementWithAttributes('div', {
             className: 'folder-header',
             onclick: (e) => {
-                e.preventDefault();
+            e.preventDefault();
                 this.toggleFolder(folder.path);
             }
         });
@@ -312,7 +312,7 @@ class FileList extends EventEmitter {
             href: '#',
             title: fileInfo.path,
             onclick: (e) => {
-                e.preventDefault();
+            e.preventDefault();
                 this.setState({ selectedIndex: index });
                 this.emit('fileSelect', { index, fileInfo });
             }
@@ -374,7 +374,7 @@ class FileList extends EventEmitter {
         this.setState({ expandedFolders });
         this.saveExpandedFolders();
     }
-    
+
     /**
      * Get SVG icon for file based on extension
      * @param {string} fileName - Name of file

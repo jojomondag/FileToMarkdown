@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-27T16:09:40.180Z
+// FileToMarkdown Viewer Bundle - 2025-03-28T06:20:03.553Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1361,7 +1361,7 @@ class FileList extends EventEmitter {
         }
         return new Set();
     }
-    
+
     /**
      * Save expanded folders to localStorage
      */
@@ -1494,7 +1494,7 @@ class FileList extends EventEmitter {
         const folderHeader = createElementWithAttributes('div', {
             className: 'folder-header',
             onclick: (e) => {
-                e.preventDefault();
+            e.preventDefault();
                 this.toggleFolder(folder.path);
             }
         });
@@ -1614,7 +1614,7 @@ class FileList extends EventEmitter {
             href: '#',
             title: fileInfo.path,
             onclick: (e) => {
-                e.preventDefault();
+            e.preventDefault();
                 this.setState({ selectedIndex: index });
                 this.emit('fileSelect', { index, fileInfo });
             }
@@ -1676,7 +1676,7 @@ class FileList extends EventEmitter {
         this.setState({ expandedFolders });
         this.saveExpandedFolders();
     }
-    
+
     /**
      * Get SVG icon for file based on extension
      * @param {string} fileName - Name of file
@@ -1855,6 +1855,7 @@ class FileToMarkdownViewer {
         
         // Ensure buttons are properly hidden/shown based on file selection state
         this.updateButtonPositions();
+        this.updateWelcomeScreen();
         
         // Add beforeunload event listener to prevent accidental closing with unsaved changes
         window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
@@ -1895,6 +1896,7 @@ class FileToMarkdownViewer {
     getElements() {
         return {
             content: document.getElementById('content'),
+            welcomeScreen: document.getElementById('welcome-screen'),
             sidebar: document.querySelector('.sidebar'),
             main: document.querySelector('.main-content'),
             fileList: document.getElementById('l'), // Container for FileList component
@@ -2147,6 +2149,11 @@ class FileToMarkdownViewer {
                 console.error('Error checking file changes:', error);
             }
         }, 2000); // Check every 2 seconds
+
+        // Add a listener for fileListChanged event to update welcome screen
+        window.addEventListener('fileListChanged', () => {
+            this.updateWelcomeScreen();
+        });
     }
     
     /**
@@ -2552,6 +2559,9 @@ class FileToMarkdownViewer {
         // Force an immediate update of button positions to ensure they're visible
         setTimeout(() => this.updateButtonPositions(), 100);
 
+        // Show the content container and hide welcome screen
+        this.updateWelcomeScreen();
+
         // Use content directly if available or read from file object
         if (fileInfo.content) {
             console.log('File has cached content, displaying directly');
@@ -2723,89 +2733,77 @@ class FileToMarkdownViewer {
             // Add edit-mode class to body for styling
             document.body.classList.add('edit-mode');
             
-            // Switch to editor mode
-            this.elements.editor.style.display = 'block';
-            this.elements.contentWrapper.style.display = 'none'; // Hide only the content wrapper
-            
-            // Load current content into editor
-            this.elements.editor.value = this.originalContent;
-            
-            // Create a wrapper div for the editor to establish positioning context
+            // Create a wrapper div for the editor that matches content-container positioning
             const editorWrapper = document.createElement('div');
             editorWrapper.className = 'editor-wrapper';
-            editorWrapper.style.position = 'relative';
-            editorWrapper.style.width = '100%';
-            editorWrapper.style.height = '100%';
             
-            // Remove editor from its current parent
+            // Get the dimensions and position of the content container
+            const contentContainer = this.elements.content;
+            const containerRect = contentContainer.getBoundingClientRect();
+            const containerStyle = window.getComputedStyle(contentContainer);
+            
+            // Apply the exact dimensions and position
+            editorWrapper.style.width = containerRect.width + 'px';
+            editorWrapper.style.height = containerRect.height + 'px';
+            editorWrapper.style.left = (containerRect.left - this.elements.main.getBoundingClientRect().left) + 'px';
+            editorWrapper.style.top = (containerRect.top - this.elements.main.getBoundingClientRect().top) + 'px';
+            
+            // Move the editor out of its current parent
             if (this.elements.editor.parentNode) {
                 this.elements.editor.parentNode.removeChild(this.elements.editor);
             }
             
+            // Set the editor to be visible
+            this.elements.editor.style.display = 'block';
+            
+            // Set editor content
+            this.elements.editor.value = this.originalContent;
+            
             // Add editor to the wrapper
             editorWrapper.appendChild(this.elements.editor);
             
-            // Add the wrapper to the main content
+            // Add the wrapper to the main content at the same position as content container
             this.elements.main.appendChild(editorWrapper);
             
-            // Move buttons to the editor wrapper
-            editorWrapper.appendChild(this.elements.buttonContainer);
+            // Hide the content container but keep its space in the layout
+            this.elements.content.style.visibility = 'hidden';
             
-            // Position buttons inside the editor
-            this.elements.buttonContainer.style.zIndex = '1050';
-            this.elements.buttonContainer.style.visibility = 'visible';
-            this.elements.buttonContainer.style.position = 'absolute';
-            this.elements.buttonContainer.style.top = '10px';
-            this.elements.buttonContainer.style.left = '10px';
+            // Make sure buttons are visible
+            this.elements.buttonContainer.style.display = 'flex';
             
         } else {
-            // Remove edit-mode class from body
+            // Remove edit-mode class
             document.body.classList.remove('edit-mode');
             
             // Remove editor wrapper if it exists
             const editorWrapper = document.querySelector('.editor-wrapper');
             if (editorWrapper) {
-                // Move editor back to the main content
+                // Move editor back to main content
                 if (this.elements.editor.parentNode === editorWrapper) {
                     editorWrapper.removeChild(this.elements.editor);
                     this.elements.main.appendChild(this.elements.editor);
-                }
-                
-                // Move buttons back to content container
-                if (this.elements.buttonContainer.parentNode === editorWrapper) {
-                    editorWrapper.removeChild(this.elements.buttonContainer);
-                    this.elements.content.appendChild(this.elements.buttonContainer);
                 }
                 
                 // Remove the wrapper
                 if (editorWrapper.parentNode) {
                     editorWrapper.parentNode.removeChild(editorWrapper);
                 }
-            } else {
-                // Just move buttons back to content container
-                if (this.elements.buttonContainer.parentNode !== this.elements.content) {
-                    this.elements.main.removeChild(this.elements.buttonContainer);
-                    this.elements.content.appendChild(this.elements.buttonContainer);
-                }
             }
             
-            // Switch to preview mode
+            // Hide editor
             this.elements.editor.style.display = 'none';
-            this.elements.contentWrapper.style.display = 'block'; // Show only the content wrapper
             
-            // Render the editor content for preview (without saving)
+            // Show content container
+            this.elements.content.style.visibility = 'visible';
+            this.elements.contentWrapper.style.display = 'block';
+            
+            // Update content
             this.elements.contentWrapper.innerHTML = this.renderer.render(this.elements.editor.value);
             this.renderer.highlightAll();
             this.setupLinkHandlers();
-            
-            // Reset button positioning
-            this.elements.buttonContainer.style.position = 'absolute';
-            this.elements.buttonContainer.style.top = '10px';
-            this.elements.buttonContainer.style.left = '10px';
-            this.elements.buttonContainer.style.zIndex = '1001';
         }
         
-        // Always update button positions/state after mode change
+        // Update button positions/state
         this.updateButtonPositions();
     }
     
@@ -3423,6 +3421,23 @@ class FileToMarkdownViewer {
                 }, 300);
             }
         }, 5000);
+    }
+
+    /**
+     * Update welcome screen visibility based on file state
+     */
+    updateWelcomeScreen() {
+        const hasFiles = this.fileManager.files && this.fileManager.files.length > 0;
+        
+        if (hasFiles) {
+            // Hide welcome screen, show content
+            if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'none';
+            if (this.elements.content) this.elements.content.style.display = 'block';
+        } else {
+            // Show welcome screen, hide content
+            if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
+            if (this.elements.content) this.elements.content.style.display = 'none';
+        }
     }
 }
 

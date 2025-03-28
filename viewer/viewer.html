@@ -24,36 +24,59 @@
     <script src="src/bundle.js"></script>
 </head>
 <body>
-<button class="btn btn-menu" id="b">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 12h18M3 6h18M3 18h18"/>
-    </svg>
-</button>
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h1 class="sidebar-title">FileToMarkdown</h1>
-    </div>
-    <div class="file-tree" id="l"></div>
-    <div class="dropzone" id="z">
+    <button class="btn btn-menu" id="b">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
-        <p>Click to select folders<br>with markdown files</p>
+    </button>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">FileToMarkdown</h1>
+        </div>
+        <div class="file-tree" id="l"></div>
+        <div class="dropzone" id="z">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            <p>Click to select folders<br>with markdown files</p>
+        </div>
     </div>
-</div>
-<div class="main-content">
-    <div id="content" class="content-container">
-        <h2>Welcome to FileToMarkdown Viewer</h2>
-        <p>To view a markdown file:</p>
-        <ul>
-            <li>Drop a markdown file onto the drop zone, or</li>
-            <li>Click the drop zone to browse for markdown files</li>
-        </ul>
+    <div class="main-content">
+        <!-- Welcome screen - shown when no files are loaded -->
+        <div id="welcome-screen" class="welcome-screen">
+            <div class="welcome-container">
+                <div class="welcome-header">
+                    <h1>Welcome to FileToMarkdown Viewer</h1>
+                </div>
+                <div class="welcome-content">
+                    <p class="welcome-intro">A simple way to view and edit your markdown files</p>
+                    
+                    <div class="getting-started">
+                        <h2>Getting Started</h2>
+                        <ol>
+                            <li>Drop markdown files onto the sidebar dropzone</li>
+                            <li>Click the sidebar dropzone to browse for files</li>
+                            <li>Select a file from the sidebar to view its content</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="welcome-features">
+                        <h2>Features</h2>
+                        <ul>
+                            <li>View markdown files with syntax highlighting</li>
+                            <li>Edit markdown content directly</li>
+                            <li>Organize files in a folder structure</li>
+                            <li>Quick file navigation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content container - shown when files are loaded -->
+        <div id="content" class="content-container" style="display: none;">
+            <div class="markdown-content"></div>
+        </div>
     </div>
-</div>
-<!-- 
-    Note: The app initialization is now handled in bundle.js
-    The DOMContentLoaded event in bundle.js will create the app instance
--->
 </body>
 </html>
