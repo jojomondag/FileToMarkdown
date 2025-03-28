@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-03-27T14:43:40.299Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-03-27T16:09:40.195Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -816,9 +816,10 @@ body:not(.sidebar-hidden) .btn-menu {
   position: absolute;
   top: 10px;
   left: 10px;
-  display: flex;
+  display: flex !important; /* Force display */
   gap: 10px;
   z-index: 1001;
+  visibility: visible !important; /* Ensure visibility */
 }
 
 /* Button styling */
@@ -991,11 +992,11 @@ body.edit-mode .content-buttons .btn-save {
 
 /* ===== EDITOR ===== */
 .editor {
-  position: relative !important;
-  width: 100%;
-  height: 100%;
-  padding: 50px 20px 20px;
-  box-sizing: border-box;
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 50px 20px 20px !important; /* Keep top padding for buttons */
+  box-sizing: border-box !important;
   font-family: var(--font-mono);
   font-size: 16px;
   border: none;
@@ -1005,6 +1006,7 @@ body.edit-mode .content-buttons .btn-save {
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   overflow: visible !important;
+  margin: 0 !important;
 }
 
 .controls {
@@ -1169,6 +1171,20 @@ body.edit-mode .button-container {
     font-size: 14px;
     text-align: center;
     margin: 5px 0;
+}
+
+/* Hide content container in edit mode */
+body.edit-mode .content-container {
+  visibility: hidden;
+}
+
+/* Position buttons properly in edit mode */
+body.edit-mode .content-buttons {
+  visibility: visible;
+  z-index: 1050;
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
 } 
 
 /* File: styles/styles.css */

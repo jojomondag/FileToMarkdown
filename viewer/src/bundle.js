@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-03-27T14:43:40.268Z
+// FileToMarkdown Viewer Bundle - 2025-03-27T16:09:40.180Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1958,10 +1958,10 @@ class FileToMarkdownViewer {
                 position: 'absolute',
                 top: '10px',
                 left: '10px',
-                display: 'flex',
+                display: 'none', // Initially hidden but will be shown when a file is loaded
                 gap: '10px',
                 zIndex: '1001',
-                display: 'none' // Initially hidden
+                visibility: 'visible' // Ensure it's visible when display is set
             }
         });
         
@@ -2641,6 +2641,7 @@ class FileToMarkdownViewer {
         if (hasSelectedFile) {
             // Show container
             buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.visibility = 'visible';
             
             // Update button appearance based on mode
             if (this.isEditorMode) {
@@ -2728,9 +2729,65 @@ class FileToMarkdownViewer {
             
             // Load current content into editor
             this.elements.editor.value = this.originalContent;
+            
+            // Create a wrapper div for the editor to establish positioning context
+            const editorWrapper = document.createElement('div');
+            editorWrapper.className = 'editor-wrapper';
+            editorWrapper.style.position = 'relative';
+            editorWrapper.style.width = '100%';
+            editorWrapper.style.height = '100%';
+            
+            // Remove editor from its current parent
+            if (this.elements.editor.parentNode) {
+                this.elements.editor.parentNode.removeChild(this.elements.editor);
+            }
+            
+            // Add editor to the wrapper
+            editorWrapper.appendChild(this.elements.editor);
+            
+            // Add the wrapper to the main content
+            this.elements.main.appendChild(editorWrapper);
+            
+            // Move buttons to the editor wrapper
+            editorWrapper.appendChild(this.elements.buttonContainer);
+            
+            // Position buttons inside the editor
+            this.elements.buttonContainer.style.zIndex = '1050';
+            this.elements.buttonContainer.style.visibility = 'visible';
+            this.elements.buttonContainer.style.position = 'absolute';
+            this.elements.buttonContainer.style.top = '10px';
+            this.elements.buttonContainer.style.left = '10px';
+            
         } else {
             // Remove edit-mode class from body
             document.body.classList.remove('edit-mode');
+            
+            // Remove editor wrapper if it exists
+            const editorWrapper = document.querySelector('.editor-wrapper');
+            if (editorWrapper) {
+                // Move editor back to the main content
+                if (this.elements.editor.parentNode === editorWrapper) {
+                    editorWrapper.removeChild(this.elements.editor);
+                    this.elements.main.appendChild(this.elements.editor);
+                }
+                
+                // Move buttons back to content container
+                if (this.elements.buttonContainer.parentNode === editorWrapper) {
+                    editorWrapper.removeChild(this.elements.buttonContainer);
+                    this.elements.content.appendChild(this.elements.buttonContainer);
+                }
+                
+                // Remove the wrapper
+                if (editorWrapper.parentNode) {
+                    editorWrapper.parentNode.removeChild(editorWrapper);
+                }
+            } else {
+                // Just move buttons back to content container
+                if (this.elements.buttonContainer.parentNode !== this.elements.content) {
+                    this.elements.main.removeChild(this.elements.buttonContainer);
+                    this.elements.content.appendChild(this.elements.buttonContainer);
+                }
+            }
             
             // Switch to preview mode
             this.elements.editor.style.display = 'none';
@@ -2740,6 +2797,12 @@ class FileToMarkdownViewer {
             this.elements.contentWrapper.innerHTML = this.renderer.render(this.elements.editor.value);
             this.renderer.highlightAll();
             this.setupLinkHandlers();
+            
+            // Reset button positioning
+            this.elements.buttonContainer.style.position = 'absolute';
+            this.elements.buttonContainer.style.top = '10px';
+            this.elements.buttonContainer.style.left = '10px';
+            this.elements.buttonContainer.style.zIndex = '1001';
         }
         
         // Always update button positions/state after mode change
