@@ -63,5 +63,5 @@ public class BinarySearchTree {
         System.out.println("Inorder traversal of the BST:");
         bst.inorder();
     }
-} 
+}
 ```

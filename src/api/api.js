@@ -51,7 +51,7 @@ function createServer(options = {}) {
     const app = express();
     const PORT = options.port || process.env.PORT || 3000;
     const staticPath = options.staticPath || path.join(__dirname, '..', 'dist');
-    const viewerPath = options.viewerPath || path.join(staticPath, 'Viewer', 'viewer.html');
+    const viewerPath = options.viewerPath || path.join(__dirname, '..', 'Viewer', 'viewer.html');
 
     // Default CORS configuration for cross-origin API access
     const corsOptions = options.cors || {

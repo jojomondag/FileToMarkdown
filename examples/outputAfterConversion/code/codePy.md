@@ -19,5 +19,5 @@ def main():
         print(f"Fibonacci({i}) = {fibonacci(i)}")
 
 if __name__ == "__main__":
-    main() 
+    main()
 ```

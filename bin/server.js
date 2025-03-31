@@ -1,6 +1,25 @@
 #!/usr/bin/env node
 
-const { createServer } = require('../dist/server');
+// Use the src/server.js directly instead of the dist version
+// The src version has the correct paths for the new viewer structure
+const path = require('path');
+const fs = require('fs');
+
+// Check if we should use the development version (src) or the built version (dist)
+const srcServerPath = path.join(__dirname, '../src/server.js');
+const distServerPath = path.join(__dirname, '../dist/server.js');
+
+let serverModule;
+if (fs.existsSync(srcServerPath)) {
+    console.log('Using development server from src/server.js');
+    serverModule = require('../src/server');
+} else if (fs.existsSync(distServerPath)) {
+    console.log('Using built server from dist/server.js');
+    serverModule = require('../dist/server');
+} else {
+    console.error('Error: Could not find server.js in either src or dist directory');
+    process.exit(1);
+}
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -21,7 +40,7 @@ for (let i = 0; i < args.length; i++) {
 }
 
 // Create and start server
-const server = createServer(options);
+const server = serverModule.createServer(options);
 server.start()
     .then(() => {
         // Server started successfully

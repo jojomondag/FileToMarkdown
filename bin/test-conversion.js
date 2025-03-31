@@ -13,7 +13,7 @@ const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
         'examples/outputAfterConversion/code',
-        'viewer'
+        'examples/viewer'
     ];
     
     dirs.forEach(dir => {
@@ -26,10 +26,23 @@ const createDirectories = () => {
 // Setup viewer with GitHub theme
 const setupViewer = async () => {
     try {
-        const viewerDest = path.join('viewer', 'viewer.html');
+        const viewerDest = path.join('examples', 'viewer', 'viewer.html');
+        const viewerSrcDir = path.join('examples', 'viewer', 'src');
+        
+        // Create src directory
+        if (!fsSync.existsSync(viewerSrcDir)) {
+            fsSync.mkdirSync(viewerSrcDir, { recursive: true });
+        }
         
         // Copy viewer template
         await fs.copyFile(VIEWER_SOURCE, viewerDest);
+        
+        // Copy bundle files
+        const BUNDLE_JS_SOURCE = path.join(__dirname, '../src/Viewer/src/bundle.js');
+        const BUNDLE_CSS_SOURCE = path.join(__dirname, '../src/Viewer/src/bundle.css');
+        
+        await fs.copyFile(BUNDLE_JS_SOURCE, path.join(viewerSrcDir, 'bundle.js'));
+        await fs.copyFile(BUNDLE_CSS_SOURCE, path.join(viewerSrcDir, 'bundle.css'));
         
         const githubCSS = `
         <style>
@@ -51,6 +64,7 @@ const setupViewer = async () => {
         
         await fs.appendFile(viewerDest, githubCSS);
         console.log(`✅ Viewer created: ${path.resolve(viewerDest)}`);
+        console.log(`✅ Bundle files copied to: ${path.resolve(viewerSrcDir)}`);
 
     } catch (error) {
         console.error('❌ Viewer setup failed:', error.message);
@@ -155,11 +169,11 @@ const runTests = async () => {
         await setupViewer();
 
         console.log('\n📂 Project Structure:');
-        console.log('├── viewer/');
-        console.log('│   └── viewer.html');
         console.log('├── examples/');
         console.log('│   ├── exampleFiles/');
-        console.log('│   └── outputAfterConversion/');
+        console.log('│   ├── outputAfterConversion/');
+        console.log('│   └── viewer/');
+        console.log('│       └── viewer.html');
         console.log('└── package.json\n');
 
         for (const test of testFiles) {
@@ -186,7 +200,9 @@ const runTests = async () => {
 
         console.log('\n🎉 All conversions completed!');
         console.log('\n🔗 Viewer Access Instructions:');
-        console.log('   - Open viewer/viewer.html in your browser');
+        console.log('   - Run: npm run start:viewer');
+        console.log('   - Then visit: http://localhost:3001/examples/viewer/viewer.html');
+        console.log('   - Or open examples/viewer/viewer.html directly in your browser');
         console.log('   - Drag generated .md files from:');
         console.log('     examples/outputAfterConversion/');
 

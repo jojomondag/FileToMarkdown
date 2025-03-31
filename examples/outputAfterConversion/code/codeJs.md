@@ -45,5 +45,5 @@ todoList.addTodo("Write documentation");
 console.log("All todos:", todoList.todos);
 todoList.toggleTodo(todoList.todos[0].id);
 console.log("Completed todos:", todoList.getCompletedTodos());
-console.log("Pending todos:", todoList.getPendingTodos()); 
+console.log("Pending todos:", todoList.getPendingTodos());
 ```
