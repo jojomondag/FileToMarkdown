@@ -8,6 +8,7 @@ examples/
 .npmrc
 *.log
 node_modules/
+dist/Viewer/README.md
 
 # IDE files
 .vscode/

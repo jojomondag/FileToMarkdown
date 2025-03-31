@@ -1,5 +1,7 @@
 # FileToMarkdown API Usage
 
+[← Back to Main Documentation](../Readme.md)
+
 ## Installation
 
 ### NPM
@@ -16,18 +18,42 @@ Include the browser bundle in your HTML:
 
 Then initialize the client:
 ```javascript
-const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3002');
+const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
 ```
 
-## Starting the Server
+## Standalone Viewer
 
-Start the server using the CLI command:
+FileToMarkdown includes a standalone viewer that works directly in your browser without requiring a server:
+
+### Creating the Viewer
+```bash
+# Install globally
+npm install -g filetomarkdown
+
+# Create viewer in a directory
+filetomarkdown-viewer my-directory
+
+# Open in your browser (no server needed)
+# my-directory/examples/viewer/viewer.html
+```
+
+The viewer provides:
+- Full markdown rendering with syntax highlighting
+- File and folder navigation
+- Direct file editing with File System Access API (Chrome, Edge, Opera)
+- Drag and drop file loading
+- No server required
+
+## API Server (Optional)
+
+If you need programmatic access to conversion functionality, you can use the API server:
+
 ```bash
 npx filetomarkdown-server
 ```
 
 This will start a server with the following configuration:
-- Port: 3002 (default)
+- Port: 3000 (default)
 - CORS: Enabled for all origins
 - Endpoints:
   - GET  /api/filetypes - List supported file types
@@ -84,7 +110,7 @@ Here's a simple example showing how to use the package:
     
     <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
     <script>
-        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3002');
+        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
         const output = document.getElementById('output');
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
@@ -104,3 +130,7 @@ Here's a simple example showing how to use the package:
 ```
 
 For supported file types and features, see [Converters Documentation](CONVERTERS.md). 
+
+---
+
+[← Back to Main Documentation](../Readme.md) 

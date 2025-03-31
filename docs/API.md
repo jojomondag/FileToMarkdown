@@ -1,19 +1,15 @@
 # FileToMarkdown API
 
+[← Back to Main Documentation](../Readme.md)
+
 ## Quick Start
 
 Start the API server:
 ```bash
-npx filetomarkdown-server  # Runs on http://localhost:3002
+npx filetomarkdown-server  # Runs on http://localhost:3000
 ```
 
 ## Endpoints
-
-### `GET /`
-- Serves the viewer application
-- Returns: HTML viewer interface
-- Error Responses:
-  - `500`: Server configuration error if viewer.html is missing
 
 ### `GET /api/filetypes`
 - Gets list of all supported file types and their descriptions
@@ -78,7 +74,7 @@ The `/api/render` endpoint automatically highlights code blocks in your markdown
 ```javascript
 const markdown = '```javascript\nfunction hello() { return "world"; }\n```';
 
-fetch('http://localhost:3002/api/render', {
+fetch('http://localhost:3000/api/render', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -93,8 +89,7 @@ fetch('http://localhost:3002/api/render', {
 The default theme provides syntax highlighting for all common programming languages. Custom themes are optional.
 
 ## Static Files
-- The server also serves static files from the `dist` directory
-- This includes the viewer application and its assets
+- The server serves static files from the `dist` directory
 
 ## Error Handling
 - All endpoints include proper error handling
@@ -136,7 +131,7 @@ POST /api/convert
 const formData = new FormData();
 formData.append('file', fileInput.files[0]);
 
-fetch('http://localhost:3002/api/convert', {
+fetch('http://localhost:3000/api/convert', {
     method: 'POST',
     body: formData
 })
@@ -154,7 +149,7 @@ POST /api/render
 ```javascript
 const markdown = '# Hello World\nThis is **markdown**';
 
-fetch('http://localhost:3002/api/render', {
+fetch('http://localhost:3000/api/render', {
     method: 'POST',
     headers: {
         'Content-Type': 'text/plain'
@@ -176,14 +171,14 @@ Here's a complete example that converts a file to markdown and then renders it:
 const formData = new FormData();
 formData.append('file', fileInput.files[0]);
 
-fetch('http://localhost:3002/api/convert', {
+fetch('http://localhost:3000/api/convert', {
     method: 'POST',
     body: formData
 })
     .then(response => response.json())
     .then(data => {
         // Then render the markdown to HTML
-        return fetch('http://localhost:3002/api/render', {
+        return fetch('http://localhost:3000/api/render', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/plain'
@@ -198,3 +193,5 @@ fetch('http://localhost:3002/api/convert', {
     })
     .catch(error => console.error('Operation failed:', error));
 ```
+
+[← Back to Main Documentation](../Readme.md)

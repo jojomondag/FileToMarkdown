@@ -4,9 +4,9 @@ const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
 const { convertToMarkdown } = require('../src/index');
+const { createViewer } = require('../src/Viewer/createViewer');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
-const VIEWER_SOURCE = path.join(__dirname, '../src/Viewer/viewer.html');
 
 // Create directory structure
 const createDirectories = () => {
@@ -21,55 +21,6 @@ const createDirectories = () => {
             fsSync.mkdirSync(dir, { recursive: true });
         }
     });
-};
-
-// Setup viewer with GitHub theme
-const setupViewer = async () => {
-    try {
-        const viewerDest = path.join('examples', 'viewer', 'viewer.html');
-        const viewerSrcDir = path.join('examples', 'viewer', 'src');
-        
-        // Create src directory
-        if (!fsSync.existsSync(viewerSrcDir)) {
-            fsSync.mkdirSync(viewerSrcDir, { recursive: true });
-        }
-        
-        // Copy viewer template
-        await fs.copyFile(VIEWER_SOURCE, viewerDest);
-        
-        // Copy bundle files
-        const BUNDLE_JS_SOURCE = path.join(__dirname, '../src/Viewer/src/bundle.js');
-        const BUNDLE_CSS_SOURCE = path.join(__dirname, '../src/Viewer/src/bundle.css');
-        
-        await fs.copyFile(BUNDLE_JS_SOURCE, path.join(viewerSrcDir, 'bundle.js'));
-        await fs.copyFile(BUNDLE_CSS_SOURCE, path.join(viewerSrcDir, 'bundle.css'));
-        
-        const githubCSS = `
-        <style>
-            /* GitHub-themed additions */
-            body { background: #f6f8fa !important; }
-            #c { 
-                background: #ffffff;
-                border: 1px solid #e1e4e8 !important;
-                box-shadow: 0 1px 3px rgba(27,31,35,0.04) !important;
-            }
-            pre { 
-                background: #f6f8fa !important;
-                border-radius: 6px !important;
-                padding: 16px !important;
-            }
-            .token.keyword { color: #d73a49 !important; }
-            .token.string { color: #032f62 !important; }
-        </style>`;
-        
-        await fs.appendFile(viewerDest, githubCSS);
-        console.log(`✅ Viewer created: ${path.resolve(viewerDest)}`);
-        console.log(`✅ Bundle files copied to: ${path.resolve(viewerSrcDir)}`);
-
-    } catch (error) {
-        console.error('❌ Viewer setup failed:', error.message);
-        process.exit(1);
-    }
 };
 
 // Download helper
@@ -166,7 +117,21 @@ const runTests = async () => {
         console.log('🌐 Using GitHub examples and styling\n');
         
         createDirectories();
-        await setupViewer();
+        
+        // Use the shared createViewer module instead of setupViewer
+        const viewerResult = await createViewer({
+            targetDir: process.cwd(),
+            useExamplesStructure: true,
+            addGithubTheme: true,
+            useFsPromises: true
+        });
+        
+        if (viewerResult.completed) {
+            console.log(`✅ Viewer created: ${path.resolve(viewerResult.viewerHtmlPath)}`);
+            console.log(`✅ Bundle files copied to: ${path.resolve(viewerResult.srcDir)}`);
+        } else {
+            throw new Error('Failed to create viewer');
+        }
 
         console.log('\n📂 Project Structure:');
         console.log('├── examples/');
@@ -200,11 +165,10 @@ const runTests = async () => {
 
         console.log('\n🎉 All conversions completed!');
         console.log('\n🔗 Viewer Access Instructions:');
-        console.log('   - Run: npm run start:viewer');
-        console.log('   - Then visit: http://localhost:3001/examples/viewer/viewer.html');
-        console.log('   - Or open examples/viewer/viewer.html directly in your browser');
+        console.log('   - Open examples/viewer/viewer.html directly in your browser');
         console.log('   - Drag generated .md files from:');
         console.log('     examples/outputAfterConversion/');
+        console.log('   - No server needed! The viewer works directly in your browser');
 
     } catch (error) {
         console.error('💥 Critical error:', error.message);

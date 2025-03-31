@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 // Use the src/server.js directly instead of the dist version
-// The src version has the correct paths for the new viewer structure
 const path = require('path');
 const fs = require('fs');
+
+console.log('\n🔔 IMPORTANT: This command only starts the API server.\n');
 
 // Check if we should use the development version (src) or the built version (dist)
 const srcServerPath = path.join(__dirname, '../src/server.js');
@@ -34,7 +35,6 @@ for (let i = 0; i < args.length; i++) {
         options.staticPath = args[i + 1];
         i++;
     } else if (arg === '--viewer-path' && i + 1 < args.length) {
-        options.viewerPath = args[i + 1];
         i++;
     }
 }

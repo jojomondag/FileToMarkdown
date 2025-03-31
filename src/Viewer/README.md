@@ -1,88 +1,59 @@
-# FileToMarkdown with Two-Way File Sync
+# FileToMarkdown Viewer
 
-This project is a Markdown viewer with two-way file synchronization between the browser and the file system. It allows you to:
-
-1. Open Markdown files from your file system
-2. Edit them in the browser
-3. Save changes back to the original files
-4. Automatically see updates when files are changed outside the browser
+A lightweight markdown viewer that works directly in the browser using the File System Access API.
 
 ## Features
 
-- 🔄 Two-way file synchronization
-- 📝 Built-in Markdown editor
-- 🔍 Markdown preview
-- 📂 File browser
-- 🔗 Internal link navigation between files
-- 🔒 Secure local file access with File System Access API
-- 🔄 Server fallback for older browsers
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v14+)
-- Modern browser with [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API) support (Chrome, Edge, Opera) for the best experience
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-### Usage
-
-1. Start the server:
-
-```bash
-npm start
-```
-
-2. Open your browser at http://localhost:9876
-
-3. Click on the drop zone to open files:
-   - In supported browsers, the File System Access API will be used, allowing direct access to local files
-   - In other browsers, a traditional file input will be used as a fallback
-
-4. Edit files using the "Edit" button and save changes with the "Save" button or Ctrl+S
-
-## How it Works
-
-The application uses a dual approach for file handling:
-
-### Modern Browsers (Chrome, Edge, Opera)
-- Uses the File System Access API to directly read and write files on your system
-- Requests permission to access files when you select them
-- Maintains file handles for continued access
-- Provides a more native experience with direct file access
-
-### Fallback for Other Browsers
-- Uses the traditional approach of uploading files to the server
-- Server handles file operations and sends changes back to the browser
-- WebSockets keep files in sync when they change on disk
-
-## Technical Details
-
-The application uses:
-
-- Express.js for the server
-- WebSockets for real-time file updates
-- Chokidar for file system monitoring
-- Browser File System Access API for file handling
-- Progressive enhancement for broad browser support
-
-## Keyboard Shortcuts
-
-- `Ctrl+B` or `Cmd+B`: Toggle sidebar
-- `Ctrl+S` or `Cmd+S`: Save current file (when in edit mode)
+- Open and edit markdown files directly from your computer
+- Modern file access using the File System Access API
+- Directory navigation with folder structure
+- Syntax highlighting for code blocks
+- Responsive design for all screen sizes
+- Dark/light theme support
 
 ## Browser Compatibility
 
-- Full functionality (with File System Access API): Chrome 86+, Edge 86+, Opera 72+
-- Basic functionality (server-based): Firefox, Safari, and older browsers
+The viewer requires browsers that support the File System Access API:
+For other browsers, files can be loaded using drag and drop or file input, but direct saving to disk is not supported.
+
+## Usage
+
+Simply open the `viewer.html` file in a compatible browser. You can:
+
+1. Click on the dropzone to select folders with markdown files
+2. Drag and drop markdown files or folders onto the viewer
+3. Edit files directly in the editor
+4. Save changes back to disk (in supported browsers)
+
+## File System Access
+
+The viewer uses the File System Access API to enable direct file editing:
+
+- For browsers that support it, you can directly open and save files back to disk
+- For browsers that don't support it, files will be loaded in memory only
+- No server or installation required
+- Everything happens locally in your browser
+
+## Customization
+
+The viewer is built with a modular design that can be customized:
+
+- Edit the CSS in the `src/styles` directory
+- Modify the rendering in `src/utils/renderer.js`
+- Add new components in `src/components`
+
+## Building
+
+To build the viewer:
+
+1. Navigate to the Viewer directory
+2. Run the build script:
+
+```
+node src/build.js
+```
+
+This will create `bundle.js` and `bundle.css` in the src directory.
 
 ## License
 

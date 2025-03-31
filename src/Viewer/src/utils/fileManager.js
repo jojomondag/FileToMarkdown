@@ -250,26 +250,26 @@ class FileManager {
                     return { success: true };
                 } catch (error) {
                     console.error('Error saving with File System API:', error);
-                    // Fall back to server API
+                    return { success: false, message: 'Could not save file. File System API error: ' + error.message };
                 }
             }
             
-            // Fall back to server API if File System API failed or isn't supported
-            const response = await fetch('/api/file', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ path: fileInfo.path, content })
+            // No handle available - update in memory only
+            fileInfo.content = content;
+            
+            // Display a warning that the file is only saved in memory
+            const warningEvent = new CustomEvent('fileWarning', {
+                detail: {
+                    message: 'This file is only saved in memory. Use the File System API picker when opening files to enable direct file saving.',
+                    path: fileInfo.path
+                }
             });
+            window.dispatchEvent(warningEvent);
             
-            const result = await response.json();
-            
-            if (result.success) {
-                // Update the content in our data structure
-                fileInfo.content = content;
-                return { success: true };
-            } else {
-                return { success: false, message: result.error || 'Unknown error' };
-            }
+            return { 
+                success: true, 
+                message: 'File saved in memory only. Use File System API to save to disk.'
+            };
         } catch (error) {
             return { success: false, message: error.message || 'Error saving file' };
         }
@@ -325,15 +325,17 @@ class FileManager {
                     return true;
                 } catch (fsApiError) {
                     console.error('Error saving with File System API:', fsApiError);
-                    // Only fall back to server API if this is a permission or API error
-                    if (fsApiError.name === 'NotAllowedError' || 
-                        fsApiError.name === 'SecurityError' ||
-                        fsApiError.message.includes('permission')) {
-                        console.log('Falling back to server API due to permission error');
-                    } else {
-                        // For other errors, rethrow since they're likely problems with the file itself
-                        throw fsApiError;
-                    }
+                    
+                    // Display an error notification
+                    const errorEvent = new CustomEvent('fileError', {
+                        detail: {
+                            message: `Failed to save file: ${fsApiError.message}`,
+                            path: fileInfo.path
+                        }
+                    });
+                    window.dispatchEvent(errorEvent);
+                    
+                    throw fsApiError;
                 }
             } else if (fileInfo.handle) {
                 // Direct handle on the fileInfo (added for compatibility)
@@ -359,77 +361,35 @@ class FileManager {
                     return true;
                 } catch (directHandleError) {
                     console.error('Error saving with direct handle:', directHandleError);
-                    // Fall through to server API
-                }
-            }
-            
-            // METHOD 2: Use the server API as a fallback
-            if (fileInfo.path) {
-                console.log('Falling back to server API for saving');
-                
-                // For paths without a handle, create a properly formatted path
-                let savePath = fileInfo.path;
-                
-                // If we're using a path from a folder structure, make a clean path
-                if (fileInfo.folder && fileInfo.name) {
-                    // Create a clean relative path without leading slash
-                    savePath = fileInfo.folder ? `${fileInfo.folder}/${fileInfo.name}` : fileInfo.name;
                     
-                    // Make sure we don't have leading slashes
-                    savePath = savePath.replace(/^\/+/, '');
+                    // Display an error notification
+                    const errorEvent = new CustomEvent('fileError', {
+                        detail: {
+                            message: `Failed to save file: ${directHandleError.message}`,
+                            path: fileInfo.path
+                        }
+                    });
+                    window.dispatchEvent(errorEvent);
                     
-                    console.log(`Using clean relative path: ${savePath}`);
+                    throw directHandleError;
                 }
+            } else {
+                // No File System API handle - simply keep file in memory
+                console.log('No file handle available - saving in memory only');
                 
-                // Use the server API to save the file
-                const response = await fetch('/api/file', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        path: savePath,
-                        content
-                    })
-                });
-                
-                const responseData = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(responseData.error || `Server returned ${response.status} ${response.statusText}`);
-                }
-                
-                // Update our file info with the saved path if returned
-                if (responseData.savedPath) {
-                    console.log(`File saved to: ${responseData.savedPath}`);
-                    
-                    // Let user know this was not saved to the original file
-                    if (!fileInfo.usesFileSystemAPI) {
-                        const warningEvent = new CustomEvent('fileWarning', {
-                            detail: {
-                                message: 'File was saved to data directory instead of original location. To edit original files directly, use the File System API picker when opening files.',
-                                path: responseData.savedPath
-                            }
-                        });
-                        window.dispatchEvent(warningEvent);
+                // Let user know this was not saved to disk
+                const warningEvent = new CustomEvent('fileWarning', {
+                    detail: {
+                        message: 'File was saved in memory only. To edit original files directly, use the File System API picker when opening files.',
+                        path: fileInfo.path
                     }
-                }
+                });
+                window.dispatchEvent(warningEvent);
                 
-                console.log('File saved successfully using server API');
                 return true;
             }
         } catch (error) {
             console.error('Error saving file:', error);
-            
-            // Display an error notification
-            const errorEvent = new CustomEvent('fileError', {
-                detail: {
-                    message: `Failed to save file: ${error.message}`,
-                    path: fileInfo.path
-                }
-            });
-            window.dispatchEvent(errorEvent);
-            
             throw error;
         }
         

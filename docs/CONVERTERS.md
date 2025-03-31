@@ -1,5 +1,7 @@
 # Supported Converters
 
+[← Back to Main Documentation](../Readme.md)
+
 ## Document Converters
 - **PDF** (.pdf)
   - Converts PDF documents to markdown
@@ -70,3 +72,7 @@ Features:
   - Creates a directory structure in markdown
   - Handles nested archives
   - Preserves file hierarchy 
+
+---
+
+[← Back to Main Documentation](../Readme.md) 

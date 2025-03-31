@@ -515,7 +515,7 @@ class FileToMarkdownViewer {
         directoryInput.multiple = true;
 
         // Accept attribute is often ignored for directory pickers, but doesn't hurt
-        directoryInput.accept = '.md,.markdown,.mdown,text/markdown';
+        directoryInput.accept = '.md,.markdown,.mdown';
 
         directoryInput.style.display = 'none';
         directoryInput.addEventListener('change', (e) => {
@@ -1079,7 +1079,7 @@ class FileToMarkdownViewer {
         try {
             const files = [];
             const processedCount = { value: 0 };
-            const markdownExtensions = ['.md', '.markdown', '.mdown', '.txt'];
+            const markdownExtensions = ['.md', '.markdown', '.mdown'];
             
             // Store parent directory handle for watching
             const dirPath = dirHandle.name;

@@ -51,7 +51,6 @@ function createServer(options = {}) {
     const app = express();
     const PORT = options.port || process.env.PORT || 3000;
     const staticPath = options.staticPath || path.join(__dirname, '..', 'dist');
-    const viewerPath = options.viewerPath || path.join(__dirname, '..', 'Viewer', 'viewer.html');
 
     // Default CORS configuration for cross-origin API access
     const corsOptions = options.cors || {
@@ -75,19 +74,7 @@ function createServer(options = {}) {
     // Configuration
     console.log('⚙️  Configuration:');
     console.log('Static Path:', staticPath);
-    console.log('Viewer Path:', viewerPath);
     console.log('CORS Settings:', corsOptions);
-
-    // Verify paths exist
-    try {
-        if (!fsSync.existsSync(viewerPath)) {
-            throw new Error(`Missing viewer.html at: ${viewerPath}`);
-        }
-        console.log('✅ Verified viewer.html exists');
-    } catch (err) {
-        console.error('❌ Path verification failed:', err.message);
-        process.exit(1);
-    }
 
     // Apply CORS middleware
     app.use(cors(corsOptions));
@@ -104,17 +91,46 @@ function createServer(options = {}) {
 
     // Root route
     app.get('/', (_req, res) => {
-        console.log('📨 GET / request received');
-        try {
-            if (!fsSync.existsSync(viewerPath)) {
-                throw new Error('viewer.html not found');
-            }
-            res.sendFile(viewerPath);
-            console.log('✅ Sent viewer.html');
-        } catch (err) {
-            console.error('❌ Failed to send viewer.html:', err);
-            res.status(500).send('Server configuration error');
-        }
+        res.send(`
+            <html>
+                <head>
+                    <title>FileToMarkdown API</title>
+                    <style>
+                        body {
+                            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 2rem;
+                            line-height: 1.6;
+                        }
+                        h1 { color: #333; }
+                        .info {
+                            background-color: #e3f2fd;
+                            border-radius: 4px;
+                            padding: 1rem;
+                            margin-top: 1rem;
+                        }
+                        code {
+                            background: #f1f1f1;
+                            padding: 2px 4px;
+                            border-radius: 3px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>FileToMarkdown API</h1>
+                    <div class="info">
+                        <p>Available endpoints:</p>
+                        <ul>
+                            <li><code>GET /api/filetypes</code> - List supported file types</li>
+                            <li><code>POST /api/render</code> - Render markdown to HTML</li>
+                            <li><code>POST /api/convert</code> - Convert file to markdown</li>
+                            <li><code>GET /health</code> - Health check</li>
+                        </ul>
+                    </div>
+                </body>
+            </html>
+        `);
     });
 
     // File upload configuration

@@ -1,5 +1,7 @@
 # FileToMarkdown CLI Commands
 
+[← Back to Main Documentation](../Readme.md)
+
 ## Installation
 ```bash
 npm install -g filetomarkdown
@@ -42,23 +44,15 @@ Options:
 - `--no-examples-structure`: Places viewer files directly in target directory
 
 #### Viewer Usage
-The viewer can be used in two ways:
+The viewer works entirely in the browser - no server required:
 
-1. **Standalone Mode** - Open the viewer.html file directly in a browser
-   - Simple viewing of markdown files
+1. **Open viewer.html directly in your browser** 
+   - Requires Chrome 86+, Edge 86+, or Opera 72+ for full functionality
    - Drag & drop files onto the sidebar
-   - Limited functionality for file saving
+   - Select folders via the dropzone
+   - Uses the File System Access API for saving changes directly to files
 
-2. **Server Mode (Recommended)** - Run with the server for full functionality
-   ```bash
-   filetomarkdown-server
-   ```
-   Then access the viewer at http://localhost:3001/examples/viewer/viewer.html
-   
-   Server mode provides additional features:
-   - Real-time file watching and updates
-   - Save files back to disk
-   - Better file system integration
+For browsers that don't support the File System Access API, files can still be viewed but saving will only update the content in memory.
 
 ### 5. List File Types
 ```bash
@@ -66,14 +60,21 @@ filetomarkdown-filetypes
 ```
 Shows all supported file types and their descriptions.
 
-### 6. Start Server
+### 6. Start API Server
 ```bash
-filetomarkdown-server [--port 3001]
+filetomarkdown-server
 ```
-Starts a local server for the viewer application.
+Starts the API server for programmatic access to conversion functionality:
+- Runs on port 3000 by default
+- Provides REST API endpoints for file conversions
+- Enables programmatic access from other applications
+
 Options:
-- `--port <number>`: Specify a custom port (default: 3001)
-- `--static-path <path>`: Custom static files directory 
-- `--viewer-path <path>`: Custom viewer HTML file path
+- `--port <number>`: Specify a custom port
+- `--static-path <path>`: Specify a custom path for static files
 
 For detailed API documentation and examples, see [API Documentation](API.md). 
+
+---
+
+[← Back to Main Documentation](../Readme.md) 

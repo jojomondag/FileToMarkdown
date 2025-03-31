@@ -30,16 +30,7 @@ export const DOM_ATTRIBUTES = {
 export const FILE_EXTENSIONS = {
     'md': 'text/markdown',
     'markdown': 'text/markdown',
-    'txt': 'text/plain',
-    'html': 'text/html',
-    'htm': 'text/html',
-    'css': 'text/css',
-    'js': 'text/javascript',
-    'json': 'application/json',
-    'xml': 'application/xml',
-    'yaml': 'text/yaml',
-    'yml': 'text/yaml',
-    'csv': 'text/csv'
+    'mdown': 'text/markdown'
 };
 
 // Language mappings for syntax highlighting
