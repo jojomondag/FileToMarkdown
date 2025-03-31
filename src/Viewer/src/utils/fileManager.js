@@ -15,7 +15,7 @@ class FileManager {
 
     // Clear all loaded files and folder structure
     clearFiles() {
-        console.warn('CLEARING ALL FILES - called by:', new Error().stack);
+        // console.warn('CLEARING ALL FILES - called by:', new Error().stack); // Keep as warning? User can decide.
         this.files = [];
         this.fileMap.clear();
         this.folderStructure.clear();
@@ -24,17 +24,17 @@ class FileManager {
 
     // Process files from a file list
     async processFiles(fileList) {
-        console.log('Processing', fileList.length, 'files');
+        // console.log('Processing', fileList.length, 'files');
         let baseIndex = this.files.length;
         const newFiles = [];
         
         // Log how many files have File System API handles
         const filesWithHandles = Array.from(fileList).filter(file => file.handle).length;
-        console.log(`Files with File System API handles: ${filesWithHandles}/${fileList.length}`);
+        // console.log(`Files with File System API handles: ${filesWithHandles}/${fileList.length}`);
         
         // Check permissions for files with handles upfront
         if (filesWithHandles > 0) {
-            console.log('Verifying permissions for files with handles...');
+            // console.log('Verifying permissions for files with handles...');
             const permissionPromises = [];
             
             for (const file of fileList) {
@@ -44,7 +44,7 @@ class FileManager {
                         try {
                             const options = { mode: 'readwrite' };
                             if ((await file.handle.queryPermission(options)) !== 'granted') {
-                                console.log(`Requesting write permission for ${file.name}...`);
+                                // console.log(`Requesting write permission for ${file.name}...`);
                                 await file.handle.requestPermission(options);
                             }
                         } catch (error) {
@@ -76,7 +76,7 @@ class FileManager {
             // Skip duplicates - don't add the same file twice
             const lowerPath = filePath.toLowerCase();
             if (existingFiles.has(lowerPath)) {
-                console.log(`Skipping duplicate file: ${lowerPath}`);
+                // console.log(`Skipping duplicate file: ${lowerPath}`);
                 continue;
             }
             
@@ -107,7 +107,7 @@ class FileManager {
                     fileInfo.depth = fileInfo.folder.split('/').length;
                     
                     // Log for debugging
-                    console.log(`File ${fileInfo.name} has folder: ${fileInfo.folder}`);
+                    // console.log(`File ${fileInfo.name} has folder: ${fileInfo.folder}`);
                 }
             } else if (file.parentFolder) {
                 // Use parentFolder if provided (from directory picker)
@@ -119,7 +119,7 @@ class FileManager {
                 fileInfo.path = `${file.parentFolder}/${file.name}`;
                 
                 // Log for debugging
-                console.log(`Using parentFolder for ${fileInfo.name}: ${fileInfo.folder}`);
+                // console.log(`Using parentFolder for ${fileInfo.name}: ${fileInfo.folder}`);
             }
             
             // Add to files array
@@ -170,7 +170,7 @@ class FileManager {
     async handleFileUpload(fileList) {
         // Exit early if no files
         if (!fileList || fileList.length === 0) {
-            console.log('No files provided to handleFileUpload');
+            // console.log('No files provided to handleFileUpload');
             return false;
         }
         
@@ -179,10 +179,10 @@ class FileManager {
             const processed = await this.processFiles(fileList);
             
             if (processed) {
-                console.log(`Processed ${this.files.length} files`);
+                // console.log(`Processed ${this.files.length} files`);
                 return true;
             } else {
-                console.log('No files were processed successfully');
+                // console.log('No files were processed successfully');
                 return false;
             }
         } catch (error) {
@@ -295,13 +295,13 @@ class FileManager {
             // METHOD 1: Use the File System Access API with file handles
             if (fileInfo.file && fileInfo.file.handle) {
                 try {
-                    console.log('Attempting to save file using File System API');
+                    // console.log('Attempting to save file using File System API');
                     const handle = fileInfo.file.handle;
                     
                     // Always check for permission first to avoid errors
                     const options = { mode: 'readwrite' };
                     if ((await handle.queryPermission(options)) !== 'granted') {
-                        console.log('Requesting write permission...');
+                        // console.log('Requesting write permission...');
                         const permission = await handle.requestPermission(options);
                         if (permission !== 'granted') {
                             console.error('Permission to write to file was denied');
@@ -310,18 +310,18 @@ class FileManager {
                     }
                     
                     // Get a writable stream
-                    console.log('Creating writable stream...');
+                    // console.log('Creating writable stream...');
                     const writable = await handle.createWritable();
                     
                     // Write the content
-                    console.log('Writing content...');
+                    // console.log('Writing content...');
                     await writable.write(content);
                     
                     // Close the file
-                    console.log('Closing file...');
+                    // console.log('Closing file...');
                     await writable.close();
                     
-                    console.log('File saved successfully using File System Access API');
+                    // console.log('File saved successfully using File System Access API');
                     return true;
                 } catch (fsApiError) {
                     console.error('Error saving with File System API:', fsApiError);
@@ -340,7 +340,7 @@ class FileManager {
             } else if (fileInfo.handle) {
                 // Direct handle on the fileInfo (added for compatibility)
                 try {
-                    console.log('Attempting to save file using direct handle');
+                    // console.log('Attempting to save file using direct handle');
                     const handle = fileInfo.handle;
                     
                     // Request permission
@@ -357,7 +357,7 @@ class FileManager {
                     await writable.write(content);
                     await writable.close();
                     
-                    console.log('File saved successfully using direct handle');
+                    // console.log('File saved successfully using direct handle');
                     return true;
                 } catch (directHandleError) {
                     console.error('Error saving with direct handle:', directHandleError);
@@ -375,7 +375,7 @@ class FileManager {
                 }
             } else {
                 // No File System API handle - simply keep file in memory
-                console.log('No file handle available - saving in memory only');
+                // console.log('No file handle available - saving in memory only');
                 
                 // Let user know this was not saved to disk
                 const warningEvent = new CustomEvent('fileWarning', {
@@ -409,17 +409,17 @@ class FileManager {
 
     // Get files in folder - with safety checks and debug logging
     getFilesInFolder(folderPath) {
-        console.log(`Getting files in folder: ${folderPath}`);
+        // console.log(`Getting files in folder: ${folderPath}`);
         
         const folder = this.folderStructure.get(folderPath);
         if (!folder || !folder.files) {
-            console.log(`No folder found or no files for path: ${folderPath}`);
+            // console.log(`No folder found or no files for path: ${folderPath}`);
             return [];
         }
         
         try {
             // Debug log folder structure
-            console.log(`Folder ${folderPath} has ${folder.files.size} files:`, Array.from(folder.files));
+            // console.log(`Folder ${folderPath} has ${folder.files.size} files:`, Array.from(folder.files));
             
             // Find indices of files in this folder for proper rendering
             const fileIndices = [];
@@ -430,13 +430,13 @@ class FileManager {
                 const index = this.findFileByPath(filePath);
                 if (index !== undefined) {
                     fileIndices.push(index);
-                    console.log(`Found file index ${index} for path: ${filePath}`);
+                    // console.log(`Found file index ${index} for path: ${filePath}`);
                 } else {
                     console.warn(`Could not find index for file path: ${filePath}`);
                 }
             }
             
-            console.log(`Returning ${fileIndices.length} file indices for folder: ${folderPath}`);
+            // console.log(`Returning ${fileIndices.length} file indices for folder: ${folderPath}`);
             return fileIndices;
         } catch (error) {
             console.error(`Error getting files in folder ${folderPath}:`, error);
@@ -569,7 +569,7 @@ class FileManager {
 
     // Reconstruct folder structure from file paths
     reconstructFolderStructure() {
-        console.log('Reconstructing folder structure');
+        // console.log('Reconstructing folder structure');
         
         try {
             // Keep a backup of the old structure for comparison
@@ -628,14 +628,14 @@ class FileManager {
             const removed = oldFolders.filter(f => !this.folderStructure.has(f));
             
             if (added.length > 0 || removed.length > 0) {
-                console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
+                // console.log(`Folder structure changed: +${added.length} -${removed.length} folders`);
             }
             
             // Check for lost files and add them to the root if needed
             this.ensureAllFilesAreAccessible();
             
             // Log the total structure for debugging
-            console.log(`Folder structure has ${this.folderStructure.size} folders`);
+            // console.log(`Folder structure has ${this.folderStructure.size} folders`);
             return true;
         } catch (error) {
             console.error('Error reconstructing folder structure:', error);
@@ -690,11 +690,11 @@ class FileManager {
         // Normalize path for consistency
         path = this.normalizePath(path);
         
-        console.log(`Adding directory handle for: ${path}`);
+        // console.log(`Adding directory handle for: ${path}`);
         this.directoryHandles.set(path, handle);
         
         // Log number of directories being monitored
-        console.log(`Now monitoring ${this.directoryHandles.size} directories`);
+        // console.log(`Now monitoring ${this.directoryHandles.size} directories`);
     }
 
     // Remove a directory handle
@@ -822,6 +822,7 @@ class FileManager {
             return '/';
         }
         
+        // console.log(`Normalized path: ${path} -> ${path}`); // Debug log
         return path;
     }
 
