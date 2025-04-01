@@ -31,7 +31,6 @@ The viewer uses the File System Access API to enable direct file editing:
 
 - For browsers that support it, you can directly open and save files back to disk
 - For browsers that don't support it, files will be loaded in memory only
-- No server or installation required
 - Everything happens locally in your browser
 
 ## Customization

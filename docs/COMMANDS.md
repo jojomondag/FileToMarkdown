@@ -44,7 +44,7 @@ Options:
 - `--no-examples-structure`: Places viewer files directly in target directory
 
 #### Viewer Usage
-The viewer works entirely in the browser - no server required:
+The viewer works entirely in the browser.
 
 1. **Open viewer.html directly in your browser** 
    - Requires Chrome 86+, Edge 86+, or Opera 72+ for full functionality

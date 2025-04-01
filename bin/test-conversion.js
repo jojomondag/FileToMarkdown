@@ -168,7 +168,6 @@ const runTests = async () => {
         console.log('   - Open examples/viewer/viewer.html directly in your browser');
         console.log('   - Drag generated .md files from:');
         console.log('     examples/outputAfterConversion/');
-        console.log('   - No server needed! The viewer works directly in your browser');
 
     } catch (error) {
         console.error('💥 Critical error:', error.message);

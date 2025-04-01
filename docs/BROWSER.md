@@ -16,25 +16,20 @@ Include the browser bundle in your HTML:
 <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
 ```
 
-Then initialize the client:
+Then initialize the client. Note that the client usually connects to an API server instance (see [API Documentation](API.md)).
 ```javascript
-const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
+const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000'); // Default server URL
 ```
 
 ## Standalone Viewer
 
-FileToMarkdown includes a standalone viewer that works directly in your browser without requiring a server:
+FileToMarkdown includes a standalone viewer that works directly in your browser without requiring a server. It allows you to open, view, and even edit Markdown files using the File System Access API (in compatible browsers).
 
-### Creating the Viewer
-```bash
-# Install globally
-npm install -g filetomarkdown
+To **create** the viewer files, use the `filetomarkdown-viewer` command as described in the [CLI Commands documentation](COMMANDS.md).
 
-# Create viewer in a directory
-filetomarkdown-viewer my-directory
-
-# Open in your browser (no server needed)
-# my-directory/examples/viewer/viewer.html
+Once created (e.g., in `my-directory/examples/viewer/`), simply open the `viewer.html` file in your browser:
+```
+my-directory/examples/viewer/viewer.html
 ```
 
 The viewer provides:
@@ -42,29 +37,19 @@ The viewer provides:
 - File and folder navigation
 - Direct file editing with File System Access API (Chrome, Edge, Opera)
 - Drag and drop file loading
-- No server required
 
-## API Server (Optional)
+## Using the JavaScript Client API
 
-If you need programmatic access to conversion functionality, you can use the API server:
+To interact programmatically with the conversion and rendering features (usually via the API server), use the `FileToMarkdownClient`.
 
-```bash
-npx filetomarkdown-server
-```
+### Starting the Server (Required for Client)
 
-This will start a server with the following configuration:
-- Port: 3000 (default)
-- CORS: Enabled for all origins
-- Endpoints:
-  - GET  /api/filetypes - List supported file types
-  - POST /api/render    - Render markdown to HTML
-  - POST /api/convert   - Convert file to markdown
-  - GET  /health       - Server health check
+The JavaScript client needs to connect to a running `filetomarkdown-server` instance. You can start the server using the command described in the [CLI Commands documentation](COMMANDS.md). By default, it runs on `http://localhost:3000`.
 
-## API Reference
+See the [API Documentation](API.md) for details about the server endpoints the client interacts with.
 
 ### `client.convertFile(file)`
-Convert a file to markdown
+Convert a file to markdown by sending it to the API server's `/api/convert` endpoint.
 - Input: File object from input or drag & drop
 - Returns: Promise<{ markdown: string, status: number }>
 ```javascript
@@ -72,7 +57,7 @@ const { markdown } = await client.convertFile(file);
 ```
 
 ### `client.renderMarkdown(content)`
-Render markdown to HTML with syntax highlighting
+Render markdown string to HTML by sending it to the API server's `/api/render` endpoint.
 - Input: Markdown string
 - Returns: Promise<{ html: string, status: number }>
 ```javascript
@@ -80,7 +65,7 @@ const { html } = await client.renderMarkdown(markdown);
 ```
 
 ### `client.getSupportedTypes()`
-Get list of supported file types
+Get the list of supported file types from the API server's `/api/filetypes` endpoint.
 - Returns: Promise<{ fileTypes: string[], descriptions: Object, status: number }>
 ```javascript
 const { fileTypes, descriptions } = await client.getSupportedTypes();
@@ -88,7 +73,7 @@ const { fileTypes, descriptions } = await client.getSupportedTypes();
 
 ## Complete Example
 
-Here's a simple example showing how to use the package:
+Here's a simple example showing how to use the client to convert a file selected by the user and render the result:
 
 ### HTML
 ```html
@@ -110,17 +95,23 @@ Here's a simple example showing how to use the package:
     
     <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
     <script>
+        // Assumes the API server is running on http://localhost:3000
         const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
         const output = document.getElementById('output');
 
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                output.textContent = 'Converting...'; // Provide user feedback
                 try {
-                    const { markdown } = await client.convertFile(e.target.files[0]);
+                    // Convert the file via the API server
+                    const { markdown } = await client.convertFile(file);
+                    // Render the resulting markdown via the API server
                     const { html } = await client.renderMarkdown(markdown);
                     output.innerHTML = html;
                 } catch (error) {
-                    output.textContent = 'Error: ' + error.message;
+                    console.error('Error:', error); // Log error details
+                    output.textContent = 'Error: ' + (error.message || 'Conversion/Rendering failed');
                 }
             }
         });
@@ -129,7 +120,7 @@ Here's a simple example showing how to use the package:
 </html>
 ```
 
-For supported file types and features, see [Converters Documentation](CONVERTERS.md). 
+For the list of supported file types and conversion features, see [Converters Documentation](CONVERTERS.md). 
 
 ---
 

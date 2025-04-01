@@ -24,7 +24,7 @@ npm install -g filetomarkdown
 # Create and view test files
 filetomarkdown-test --github
 
-# Create a standalone viewer (no server required)
+# Create a standalone viewer
 filetomarkdown-viewer my-folder
 # Then open my-folder/examples/viewer/viewer.html in your browser
 
@@ -38,7 +38,7 @@ filetomarkdown-convert input.pdf output.md
 ## Features
 
 - 📄 Convert various file formats to Markdown
-- 👁️ Standalone viewer that works directly in the browser (no server required)
+- 👁️ Standalone viewer that works directly in the browser
 - 🔍 Syntax highlighting for code blocks
 - 📂 File and folder structure navigation
 - 🔧 Direct file editing using File System Access API
