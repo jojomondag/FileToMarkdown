@@ -3231,12 +3231,16 @@ class FileToMarkdownViewer {
             // Process the selected directory
             await this.processDirectory(dirHandle);
         } catch (error) {
-            // Handle errors (e.g., user cancellation)
+            // Reset UI state regardless of error type first
+            this.updateDropzoneUI(false); 
+            
             if (error.name === 'AbortError') {
-                // console.log('Directory picker was cancelled by the user.');
+                console.info('Directory picker cancelled by user.');
+                // Explicitly ensure UI is reset on cancellation
+                this.updateDropzoneUI(false); 
             } else {
-                // console.error('Error opening directory picker:', error);
-                this.showError(`Error opening directory picker: ${error.message}`);
+                console.error('Error picking directory:', error);
+                this.showError('Could not open directory picker: ' + error.message);
             }
         } finally {
             // console.log('Directory picker finished');
