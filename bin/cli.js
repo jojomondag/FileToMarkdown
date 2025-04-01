@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { convertToMarkdown } = require('../src/index.js');
+const { convertToMarkdown } = require('../dist/main.js');
 const fs = require('fs').promises;
 
 const usage = `

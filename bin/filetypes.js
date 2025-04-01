@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { MarkitDown } = require('../src/index');
+const { MarkitDown } = require('../dist/main');
 
 function displayFileTypes() {
     try {

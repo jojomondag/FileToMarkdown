@@ -61,6 +61,22 @@ module.exports = {
         { 
           from: path.resolve(__dirname, 'src/Viewer'),
           to: 'Viewer'
+        },
+        { 
+          from: path.resolve(__dirname, 'src/server'),
+          to: 'server'
+        },
+        { 
+          from: path.resolve(__dirname, 'src/api'),
+          to: 'api'
+        },
+        { 
+          from: path.resolve(__dirname, 'src/renderer'),
+          to: 'renderer'
+        },
+        { 
+          from: path.resolve(__dirname, 'src/converters'),
+          to: 'converters'
         }
       ]
     })

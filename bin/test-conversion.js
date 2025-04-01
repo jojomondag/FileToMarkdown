@@ -3,7 +3,7 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
-const { convertToMarkdown } = require('../src/index');
+const { convertToMarkdown } = require('../dist/main');
 const { createViewer } = require('../src/Viewer/createViewer');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
