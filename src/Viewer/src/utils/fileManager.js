@@ -706,12 +706,12 @@ class FileManager {
     removeFiles(filePaths) {
         if (!filePaths || filePaths.length === 0) return false;
         
-        // Safety check - don't remove too many files at once
+        /* // Safety check - don't remove too many files at once
         const maxFilesToRemove = Math.max(5, Math.floor(this.files.length * 0.2));
         if (filePaths.length > maxFilesToRemove) {
             console.warn(`Attempted to remove ${filePaths.length} files at once, exceeding safety threshold of ${maxFilesToRemove}`);
             return false;
-        }
+        } */
         
         console.log(`FileManager: Removing ${filePaths.length} files`);
         
@@ -855,6 +855,31 @@ class FileManager {
             this.fileListComponent.setState({ expandedFolders });
             console.log(`Expanded ${expandedFolders.size} folders`);
         }
+    }
+
+    /**
+     * Get all file paths within a specific folder and its subfolders.
+     * @param {string} folderPath - The path of the target folder.
+     * @returns {string[]} An array of file paths.
+     */
+    getAllFilePathsInAndBelowFolder(folderPath) {
+        const filePaths = [];
+        const folderPrefix = folderPath + '/'; // Check for files starting with folder/
+        
+        for (const file of this.files) {
+            if (file && file.path) {
+                // Check if file is directly in the folder OR in a subfolder
+                if (file.folder === folderPath || (file.folder && file.folder.startsWith(folderPrefix))) {
+                     filePaths.push(file.path);
+                }
+                // Alternative check using path (might be slightly less robust if folder names can contain special chars)
+                // if (file.path === folderPath || file.path.startsWith(folderPrefix)) {
+                //     filePaths.push(file.path);
+                // }
+            }
+        }
+        console.log(`getAllFilePathsInAndBelowFolder found ${filePaths.length} files under ${folderPath}`);
+        return filePaths;
     }
 }
 

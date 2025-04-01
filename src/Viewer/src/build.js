@@ -60,7 +60,7 @@ function processFile(filePath) {
         
         // Handle different types of exports
         content = content.replace(/export (const|let|var|class) (\w+)/g, '$1 $2');
-        content = content.replace(/export default (\w+);?/g, '$1; // exported');
+        content = content.replace(/^export default /m, '');
         
         // Handle named function exports
         content = content.replace(/export function (\w+)/g, 'function $1');

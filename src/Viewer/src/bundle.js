@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-01T08:51:08.953Z
+// FileToMarkdown Viewer Bundle - 2025-04-01T21:06:10.730Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -229,7 +229,7 @@ function createFragmentFromHTML(html) {
     return template.content;
 }
 
-DOMUtils; // exported 
+DOMUtils; 
 
 // File: utils/eventEmitter.js
 /**
@@ -302,7 +302,7 @@ class EventEmitter {
     }
 }
 
-EventEmitter; // exported 
+EventEmitter; 
 
 // File: components/BaseComponent.js
 // import from ../utils/domUtils
@@ -347,7 +347,7 @@ class BaseComponent {
     }
 }
 
-BaseComponent; // exported 
+BaseComponent; 
 
 // File: utils/renderer.js
 // import from ./constants
@@ -386,7 +386,7 @@ class BrowserRenderer {
     }
 }
 
-BrowserRenderer; // exported 
+BrowserRenderer; 
 
 // File: utils/fileManager.js
 class FileManager {
@@ -1097,12 +1097,12 @@ class FileManager {
     removeFiles(filePaths) {
         if (!filePaths || filePaths.length === 0) return false;
         
-        // Safety check - don't remove too many files at once
+        /* // Safety check - don't remove too many files at once
         const maxFilesToRemove = Math.max(5, Math.floor(this.files.length * 0.2));
         if (filePaths.length > maxFilesToRemove) {
             console.warn(`Attempted to remove ${filePaths.length} files at once, exceeding safety threshold of ${maxFilesToRemove}`);
             return false;
-        }
+        } */
         
         console.log(`FileManager: Removing ${filePaths.length} files`);
         
@@ -1247,9 +1247,34 @@ class FileManager {
             console.log(`Expanded ${expandedFolders.size} folders`);
         }
     }
+
+    /**
+     * Get all file paths within a specific folder and its subfolders.
+     * @param {string} folderPath - The path of the target folder.
+     * @returns {string[]} An array of file paths.
+     */
+    getAllFilePathsInAndBelowFolder(folderPath) {
+        const filePaths = [];
+        const folderPrefix = folderPath + '/'; // Check for files starting with folder/
+        
+        for (const file of this.files) {
+            if (file && file.path) {
+                // Check if file is directly in the folder OR in a subfolder
+                if (file.folder === folderPath || (file.folder && file.folder.startsWith(folderPrefix))) {
+                     filePaths.push(file.path);
+                }
+                // Alternative check using path (might be slightly less robust if folder names can contain special chars)
+                // if (file.path === folderPath || file.path.startsWith(folderPrefix)) {
+                //     filePaths.push(file.path);
+                // }
+            }
+        }
+        console.log(`getAllFilePathsInAndBelowFolder found ${filePaths.length} files under ${folderPath}`);
+        return filePaths;
+    }
 }
 
-FileManager; // exported 
+FileManager; 
 
 // File: components/FileList.js
 // import from ../utils/domUtils
@@ -1446,12 +1471,8 @@ class FileList extends EventEmitter {
         const folderHeader = createElementWithAttributes('div', {
             className: 'folder-header',
             onclick: (e) => {
-                // Prevent toggling if delete button was clicked
-                if (e.target.closest('.delete-folder-btn')) {
-                     e.stopPropagation();
-                     return;
-                 }
-                 this.toggleFolder(folder.path);
+            e.preventDefault();
+                this.toggleFolder(folder.path);
             }
         });
         
@@ -1474,7 +1495,7 @@ class FileList extends EventEmitter {
             className: 'folder-name',
             textContent: folder.name || 'Unknown folder'
         });
-
+        
         // Create delete button
         const deleteButton = createElementWithAttributes('button', {
             className: 'btn btn-icon delete-folder-btn',
@@ -1589,35 +1610,12 @@ class FileList extends EventEmitter {
             'data-depth': fileInfo.depth || 0
         });
         
-        // Create file link container (holds icon, name, and button)
-        const fileLinkContainer = createElementWithAttributes('div', {
-             className: 'file-link-container',
-             style: { 
-                 display: 'flex', 
-                 alignItems: 'center', 
-                 width: '100%' // Ensure container takes full width
-             }
-        });
-
-        // Create file link (for selection)
+        // Create file link
         const fileLink = createElementWithAttributes('a', {
             href: '#',
             title: fileInfo.path,
-            style: { 
-                display: 'flex', 
-                alignItems: 'center', 
-                flexGrow: 1, // Allow link to grow
-                overflow: 'hidden', // Prevent content overflow
-                textOverflow: 'ellipsis', // Add ellipsis for long names
-                whiteSpace: 'nowrap' 
-            },
             onclick: (e) => {
-                // Prevent click if delete button was the target
-                 if (e.target.closest('.delete-file-btn')) {
-                     e.stopPropagation();
-                     return;
-                 }
-                e.preventDefault();
+            e.preventDefault();
                 this.setState({ selectedIndex: index });
                 this.emit('fileSelect', { index, fileInfo });
             }
@@ -1635,39 +1633,10 @@ class FileList extends EventEmitter {
             textContent: fileInfo.name
         });
         
-        // Assemble file link content
+        // Assemble file item
         fileLink.appendChild(fileIcon);
         fileLink.appendChild(fileName);
-        
-        // Create delete button for the file
-        const deleteButton = createElementWithAttributes('button', {
-            className: 'btn btn-icon delete-file-btn',
-            title: `Delete file ${fileInfo.name}`,
-            style: { 
-                marginLeft: 'auto', // Push to the right
-                padding: '0 4px', // Add some padding
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                visibility: 'hidden', // Initially hidden
-                flexShrink: 0 // Prevent button from shrinking
-            },
-            // Using a simple 'x' icon for file deletion
-            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', 
-            onclick: (e) => {
-                e.stopPropagation(); // Prevent file selection
-                this.handleDeleteFileClick(fileInfo.path, index);
-            }
-        });
-
-        // Show delete button on hover of the file item
-        fileItem.onmouseenter = () => deleteButton.style.visibility = 'visible';
-        fileItem.onmouseleave = () => deleteButton.style.visibility = 'hidden';
-
-        // Assemble the file item structure
-        fileLinkContainer.appendChild(fileLink);
-        fileLinkContainer.appendChild(deleteButton);
-        fileItem.appendChild(fileLinkContainer);
+        fileItem.appendChild(fileLink);
         
         return fileItem;
     }
@@ -1710,6 +1679,25 @@ class FileList extends EventEmitter {
     }
 
     /**
+     * Get SVG icon for file based on extension
+     * @param {string} fileName - Name of file
+     * @returns {string} SVG markup
+     */
+    getFileIconSVG(fileName) {
+        const extension = fileName.split('.').pop().toLowerCase();
+        
+        // Map of extensions to SVG icons
+        const iconMap = {
+            md: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            markdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            mdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
+            txt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
+        };
+        
+        return iconMap[extension] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
+    }
+
+    /**
      * Handle click on the delete folder button
      * @param {string} folderPath - Path of the folder to delete
      */
@@ -1721,10 +1709,10 @@ class FileList extends EventEmitter {
         }
 
         console.log(`Deleting folder: ${folderPath}`); // Updated log message
-        const filePathsToDelete = this.getAllFilePathsInFolder(folderPath);
+        const filePathsToDelete = this.fileManager.getAllFilePathsInAndBelowFolder(folderPath);
         
         if (filePathsToDelete.length > 0) {
-            console.log(`Found ${filePathsToDelete.length} files to delete within ${folderPath}`);
+            console.log(`Found ${filePathsToDelete.length} files to delete within and below ${folderPath}`);
             // Call FileManager to remove the files. FileManager will handle
             // updating the structure and notifying about the change.
              try {
@@ -1771,101 +1759,16 @@ class FileList extends EventEmitter {
             }
         }
     }
-
-    /**
-     * Recursively find all file paths within a given folder path
-     * @param {string} folderPath - The starting folder path
-     * @returns {string[]} An array of file paths
-     */
-    getAllFilePathsInFolder(folderPath) {
-        let filePaths = [];
-        const folderInfo = this.fileManager.getFolderInfo(folderPath);
-
-        if (folderInfo) {
-            // Add files directly in this folder
-            if (folderInfo.files && folderInfo.files.size > 0) {
-                filePaths = filePaths.concat(Array.from(folderInfo.files));
-            }
-
-            // Recursively get files from subfolders
-            const subfolders = this.fileManager.getSubfolders(folderPath);
-            if (subfolders && subfolders.length > 0) {
-                subfolders.forEach(subfolder => {
-                    if (subfolder && subfolder.path) {
-                        filePaths = filePaths.concat(this.getAllFilePathsInFolder(subfolder.path));
-                    }
-                });
-            }
-        } else {
-             console.warn(`Could not find folder info for path during file path collection: ${folderPath}`);
-        }
-        
-        return filePaths;
-    }
     
-     // Helper to show errors (assuming app instance is accessible or adding a basic one here)
-     showError(message) {
-         if (window.app && typeof window.app.showError === 'function') {
-             window.app.showError(message);
-         } else {
-             console.error(message);
-             alert(`Error: ${message}`); // Fallback alert
-         }
-     }
-
-    /**
-     * Get SVG icon for file based on extension
-     * @param {string} fileName - Name of file
-     * @returns {string} SVG markup
-     */
-    getFileIconSVG(fileName) {
-        const extension = fileName.split('.').pop().toLowerCase();
-        
-        // Map of extensions to SVG icons
-        const iconMap = {
-            md: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
-            markdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
-            mdown: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"></path></svg>',
-            txt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
-        };
-        
-        return iconMap[extension] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
-    }
-
-    /**
-     * Handle click on the delete file button
-     * @param {string} filePath - Path of the file to delete
-     * @param {number} fileIndex - Index of the file in the fileManager list
-     */
-    handleDeleteFileClick(filePath, fileIndex) {
-        const fileInfo = this.fileManager.getFile(fileIndex);
-        if (!fileInfo || fileInfo.path !== filePath) {
-            console.error(`File info mismatch for path: ${filePath} at index ${fileIndex}`);
-            this.showError(`Could not find file information for deletion.`);
-            return;
-        }
-
-        console.log(`Deleting file: ${filePath}`); // Updated log message
-        
-        try {
-            const success = this.fileManager.removeFiles([filePath]); // Pass path in an array
-            if (!success) {
-                this.showError(`Failed to remove file: ${fileInfo.name}`);
-            } else {
-                // If the deleted file was the currently selected one, clear the content area
-                if (this.state.selectedIndex === fileIndex) {
-                     // Optionally clear the preview/editor
-                     this.emit('fileSelect', { index: -1, fileInfo: null }); // Signal no file selected
-                }
-            }
-        } catch (error) {
-           console.error(`Error during file removal for ${filePath}:`, error);
-            this.showError(`Error removing file: ${error.message}`);
-        }
+    // Utility to show error messages (if you have a notification system)
+    showError(message) {
+        console.error("FileList Error:", message);
+        // Replace with your actual notification/alert mechanism
+        // alert(message); 
     }
 }
 
-FileList; // exported 
+FileList; 
 
 // File: components/Header.js
 // import from ./BaseComponent
@@ -1888,7 +1791,7 @@ class Header extends BaseComponent {
     }
 }
 
-Header; // exported 
+Header; 
 
 // File: components/Editor.js
 // import from ./BaseComponent
@@ -1930,7 +1833,7 @@ class Editor extends BaseComponent {
     }
 }
 
-Editor; // exported 
+Editor; 
 
 // File: components/Preview.js
 // import from ./BaseComponent
@@ -1987,7 +1890,7 @@ class Preview extends BaseComponent {
     }
 }
 
-Preview; // exported 
+Preview; 
 
 // File: app.js
 // import from ./utils/fileManager
@@ -3447,16 +3350,12 @@ class FileToMarkdownViewer {
             // Process the selected directory
             await this.processDirectory(dirHandle);
         } catch (error) {
-            // Reset UI state regardless of error type first
-            this.updateDropzoneUI(false); 
-            
+            // Handle errors (e.g., user cancellation)
             if (error.name === 'AbortError') {
-                console.info('Directory picker cancelled by user.');
-                // Explicitly ensure UI is reset on cancellation
-                this.updateDropzoneUI(false); 
+                // console.log('Directory picker was cancelled by the user.');
             } else {
-                console.error('Error picking directory:', error);
-                this.showError('Could not open directory picker: ' + error.message);
+                // console.error('Error opening directory picker:', error);
+                this.showError(`Error opening directory picker: ${error.message}`);
             }
         } finally {
             // console.log('Directory picker finished');
@@ -3594,7 +3493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
 });
 
-FileToMarkdownViewer; // exported 
+FileToMarkdownViewer; 
 
 
 // Export all modules for global use
