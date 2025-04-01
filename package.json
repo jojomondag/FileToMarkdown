@@ -18,13 +18,10 @@
       "import": "./dist/filetomarkdown.browser.js",
       "require": "./dist/main.js"
     },
-    "./client": "./src/client.js",
-    "./server": "./dist/server.js",
-    "./api": "./dist/server.js"
+    "./client": "./dist/filetomarkdown.browser.js"
   },
   "files": [
     "dist/",
-    "src/",
     "bin/",
     "webpack.*.config.js",
     "README.md",
@@ -39,7 +36,6 @@
     "dev": "webpack serve --config webpack.browser.config.js --env development",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "start:api": "node dist/filetomarkdown.node.js",
     "build-viewer": "node src/Viewer/src/build.js"
   },
   "keywords": [

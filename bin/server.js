@@ -8,17 +8,17 @@ console.log('\n🔔 IMPORTANT: This command only starts the API server.\n');
 
 // Check if we should use the development version (src) or the built version (dist)
 const srcServerPath = path.join(__dirname, '../src/server.js');
-const distServerPath = path.join(__dirname, '../dist/server.js');
+const distServerPath = path.join(__dirname, '../dist/server/setup.js');
 
 let serverModule;
 if (fs.existsSync(srcServerPath)) {
-    console.log('Using development server from src/server.js');
-    serverModule = require('../src/server');
+    console.log('Using development server setup from src/server/setup.js');
+    serverModule = require('../src/server/setup');
 } else if (fs.existsSync(distServerPath)) {
-    console.log('Using built server from dist/server.js');
-    serverModule = require('../dist/server');
+    console.log('Using built server setup from dist/server/setup.js');
+    serverModule = require('../dist/server/setup');
 } else {
-    console.error('Error: Could not find server.js in either src or dist directory');
+    console.error('Error: Could not find server setup script in either src or dist directory');
     process.exit(1);
 }
 
@@ -40,7 +40,8 @@ for (let i = 0; i < args.length; i++) {
 }
 
 // Create and start server
-const server = serverModule.createServer(options);
+const { createServer } = serverModule;
+const server = createServer(options);
 server.start()
     .then(() => {
         // Server started successfully
