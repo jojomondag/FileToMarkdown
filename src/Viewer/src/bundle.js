@@ -1446,8 +1446,12 @@ class FileList extends EventEmitter {
         const folderHeader = createElementWithAttributes('div', {
             className: 'folder-header',
             onclick: (e) => {
-            e.preventDefault();
-                this.toggleFolder(folder.path);
+                // Prevent toggling if delete button was clicked
+                if (e.target.closest('.delete-folder-btn')) {
+                     e.stopPropagation();
+                     return;
+                 }
+                 this.toggleFolder(folder.path);
             }
         });
         
@@ -1470,11 +1474,35 @@ class FileList extends EventEmitter {
             className: 'folder-name',
             textContent: folder.name || 'Unknown folder'
         });
+
+        // Create delete button
+        const deleteButton = createElementWithAttributes('button', {
+            className: 'btn btn-icon delete-folder-btn',
+            title: `Delete folder ${folder.name}`,
+            style: { 
+                marginLeft: 'auto', // Push to the right
+                padding: '0',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                visibility: 'hidden' // Initially hidden
+            },
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="12" x2="6" y2="12"></line></svg>', // Simple minus icon
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent folder toggle
+                this.handleDeleteFolderClick(folder.path);
+            }
+        });
+        
+        // Show delete button on hover of the folder header
+        folderHeader.onmouseenter = () => deleteButton.style.visibility = 'visible';
+        folderHeader.onmouseleave = () => deleteButton.style.visibility = 'hidden';
         
         // Assemble folder header
         folderHeader.appendChild(expandIcon);
         folderHeader.appendChild(folderIcon);
         folderHeader.appendChild(folderName);
+        folderHeader.appendChild(deleteButton); // Add delete button
         folderItem.appendChild(folderHeader);
         
         // Create folder contents container
@@ -1561,12 +1589,35 @@ class FileList extends EventEmitter {
             'data-depth': fileInfo.depth || 0
         });
         
-        // Create file link
+        // Create file link container (holds icon, name, and button)
+        const fileLinkContainer = createElementWithAttributes('div', {
+             className: 'file-link-container',
+             style: { 
+                 display: 'flex', 
+                 alignItems: 'center', 
+                 width: '100%' // Ensure container takes full width
+             }
+        });
+
+        // Create file link (for selection)
         const fileLink = createElementWithAttributes('a', {
             href: '#',
             title: fileInfo.path,
+            style: { 
+                display: 'flex', 
+                alignItems: 'center', 
+                flexGrow: 1, // Allow link to grow
+                overflow: 'hidden', // Prevent content overflow
+                textOverflow: 'ellipsis', // Add ellipsis for long names
+                whiteSpace: 'nowrap' 
+            },
             onclick: (e) => {
-            e.preventDefault();
+                // Prevent click if delete button was the target
+                 if (e.target.closest('.delete-file-btn')) {
+                     e.stopPropagation();
+                     return;
+                 }
+                e.preventDefault();
                 this.setState({ selectedIndex: index });
                 this.emit('fileSelect', { index, fileInfo });
             }
@@ -1584,10 +1635,39 @@ class FileList extends EventEmitter {
             textContent: fileInfo.name
         });
         
-        // Assemble file item
+        // Assemble file link content
         fileLink.appendChild(fileIcon);
         fileLink.appendChild(fileName);
-        fileItem.appendChild(fileLink);
+        
+        // Create delete button for the file
+        const deleteButton = createElementWithAttributes('button', {
+            className: 'btn btn-icon delete-file-btn',
+            title: `Delete file ${fileInfo.name}`,
+            style: { 
+                marginLeft: 'auto', // Push to the right
+                padding: '0 4px', // Add some padding
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                visibility: 'hidden', // Initially hidden
+                flexShrink: 0 // Prevent button from shrinking
+            },
+            // Using a simple 'x' icon for file deletion
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', 
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent file selection
+                this.handleDeleteFileClick(fileInfo.path, index);
+            }
+        });
+
+        // Show delete button on hover of the file item
+        fileItem.onmouseenter = () => deleteButton.style.visibility = 'visible';
+        fileItem.onmouseleave = () => deleteButton.style.visibility = 'hidden';
+
+        // Assemble the file item structure
+        fileLinkContainer.appendChild(fileLink);
+        fileLinkContainer.appendChild(deleteButton);
+        fileItem.appendChild(fileLinkContainer);
         
         return fileItem;
     }
@@ -1630,6 +1710,110 @@ class FileList extends EventEmitter {
     }
 
     /**
+     * Handle click on the delete folder button
+     * @param {string} folderPath - Path of the folder to delete
+     */
+    handleDeleteFolderClick(folderPath) {
+        const folderInfo = this.fileManager.getFolderInfo(folderPath);
+        if (!folderInfo) {
+            console.error(`Could not find folder info for path: ${folderPath}`);
+            return;
+        }
+
+        console.log(`Deleting folder: ${folderPath}`); // Updated log message
+        const filePathsToDelete = this.getAllFilePathsInFolder(folderPath);
+        
+        if (filePathsToDelete.length > 0) {
+            console.log(`Found ${filePathsToDelete.length} files to delete within ${folderPath}`);
+            // Call FileManager to remove the files. FileManager will handle
+            // updating the structure and notifying about the change.
+             try {
+                 const success = this.fileManager.removeFiles(filePathsToDelete);
+                 if (!success) {
+                     this.showError(`Failed to remove files for folder: ${folderPath}`);
+                 } else {
+                     // Explicitly remove folder from expanded state if it was expanded
+                     const expandedFolders = new Set(this.state.expandedFolders);
+                     if (expandedFolders.has(folderPath)) {
+                         expandedFolders.delete(folderPath);
+                         // Also remove children from expanded state
+                         Array.from(expandedFolders).forEach(path => {
+                             if (path.startsWith(folderPath + '/')) {
+                                 expandedFolders.delete(path);
+                             }
+                         });
+                         this.setState({ expandedFolders }); // Trigger re-render without the deleted folder expanded
+                         this.saveExpandedFolders();
+                     }
+                 }
+             } catch (error) {
+                console.error(`Error during file removal for folder ${folderPath}:`, error);
+                 this.showError(`Error removing folder: ${error.message}`);
+             }
+        } else {
+            // If the folder was empty, we still need to remove it from the structure
+            // Note: `removeFiles` might already handle empty folders if we pass an empty array,
+            // but let's ensure the folder structure is cleaned up.
+            // We might need a dedicated `removeEmptyFolder` in FileManager if `removeFiles([])` doesn't suffice.
+            // For now, let's assume removeFiles handles the structure update correctly even with an empty list.
+            console.log(`Folder ${folderPath} appears to be empty, attempting structure cleanup via removeFiles.`);
+            try {
+               this.fileManager.removeFiles([]); // Call with empty array to trigger structure update
+               // Also remove from expanded state if it was empty and expanded
+                const expandedFolders = new Set(this.state.expandedFolders);
+                if (expandedFolders.has(folderPath)) {
+                    expandedFolders.delete(folderPath);
+                    this.setState({ expandedFolders });
+                    this.saveExpandedFolders();
+                }
+            } catch (error) {
+               console.error(`Error cleaning up empty folder ${folderPath}:`, error);
+            }
+        }
+    }
+
+    /**
+     * Recursively find all file paths within a given folder path
+     * @param {string} folderPath - The starting folder path
+     * @returns {string[]} An array of file paths
+     */
+    getAllFilePathsInFolder(folderPath) {
+        let filePaths = [];
+        const folderInfo = this.fileManager.getFolderInfo(folderPath);
+
+        if (folderInfo) {
+            // Add files directly in this folder
+            if (folderInfo.files && folderInfo.files.size > 0) {
+                filePaths = filePaths.concat(Array.from(folderInfo.files));
+            }
+
+            // Recursively get files from subfolders
+            const subfolders = this.fileManager.getSubfolders(folderPath);
+            if (subfolders && subfolders.length > 0) {
+                subfolders.forEach(subfolder => {
+                    if (subfolder && subfolder.path) {
+                        filePaths = filePaths.concat(this.getAllFilePathsInFolder(subfolder.path));
+                    }
+                });
+            }
+        } else {
+             console.warn(`Could not find folder info for path during file path collection: ${folderPath}`);
+        }
+        
+        return filePaths;
+    }
+    
+     // Helper to show errors (assuming app instance is accessible or adding a basic one here)
+     showError(message) {
+         if (window.app && typeof window.app.showError === 'function') {
+             window.app.showError(message);
+         } else {
+             console.error(message);
+             alert(`Error: ${message}`); // Fallback alert
+         }
+     }
+
+    /**
      * Get SVG icon for file based on extension
      * @param {string} fileName - Name of file
      * @returns {string} SVG markup
@@ -1646,6 +1830,38 @@ class FileList extends EventEmitter {
         };
         
         return iconMap[extension] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
+    }
+
+    /**
+     * Handle click on the delete file button
+     * @param {string} filePath - Path of the file to delete
+     * @param {number} fileIndex - Index of the file in the fileManager list
+     */
+    handleDeleteFileClick(filePath, fileIndex) {
+        const fileInfo = this.fileManager.getFile(fileIndex);
+        if (!fileInfo || fileInfo.path !== filePath) {
+            console.error(`File info mismatch for path: ${filePath} at index ${fileIndex}`);
+            this.showError(`Could not find file information for deletion.`);
+            return;
+        }
+
+        console.log(`Deleting file: ${filePath}`); // Updated log message
+        
+        try {
+            const success = this.fileManager.removeFiles([filePath]); // Pass path in an array
+            if (!success) {
+                this.showError(`Failed to remove file: ${fileInfo.name}`);
+            } else {
+                // If the deleted file was the currently selected one, clear the content area
+                if (this.state.selectedIndex === fileIndex) {
+                     // Optionally clear the preview/editor
+                     this.emit('fileSelect', { index: -1, fileInfo: null }); // Signal no file selected
+                }
+            }
+        } catch (error) {
+           console.error(`Error during file removal for ${filePath}:`, error);
+            this.showError(`Error removing file: ${error.message}`);
+        }
     }
 }
 
