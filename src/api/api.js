@@ -1,4 +1,4 @@
-const { MarkitDown, getFileTypes, getFileTypeDescriptions } = require('../index');
+const { MarkitDown, getFileTypes, getFileTypeDescriptions } = require('../main');
 const MarkdownRenderer = require('../renderer/markdown');
 
 // Direct API methods for programmatic use
