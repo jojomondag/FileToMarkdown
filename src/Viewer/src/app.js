@@ -1101,6 +1101,9 @@ class FileToMarkdownViewer {
             // Setup file system monitoring after processing files
             await this.setupFileSystemMonitoring();
         }
+        
+        // Reset the dropzone UI to its initial state
+        this.updateDropzoneUI();
     }
 
     // Recursively process directory contents
@@ -1249,10 +1252,6 @@ class FileToMarkdownViewer {
                         await this.refreshFilesFromWatchedDirectories();
                     }
                 }
-
-                // If changes detected or it's the first run
-                // console.log(`Changes detected in directory: ${path}`);
-                await this.refreshFilesFromWatchedDirectories(); // Refresh files list
 
                 // Store current state for next comparison
                 this._directoryStates.set(path, currentEntries);
