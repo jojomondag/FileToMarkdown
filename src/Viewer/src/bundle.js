@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-01T21:06:10.730Z
+// FileToMarkdown Viewer Bundle - 2025-04-02T06:22:12.426Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1501,7 +1501,6 @@ class FileList extends EventEmitter {
             className: 'btn btn-icon delete-folder-btn',
             title: `Delete folder ${folder.name}`,
             style: { 
-                marginLeft: 'auto', // Push to the right
                 padding: '0',
                 background: 'none',
                 border: 'none',
@@ -1633,9 +1632,32 @@ class FileList extends EventEmitter {
             textContent: fileInfo.name
         });
         
+        // Create delete button for the file
+        const deleteButton = createElementWithAttributes('button', {
+            className: 'btn btn-icon delete-file-btn',
+            title: `Delete file ${fileInfo.name}`,
+            style: { 
+                padding: '0',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                visibility: 'hidden' // Initially hidden
+            },
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', // Simple X icon
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent file selection
+                this.handleDeleteFileClick(fileInfo.path, index);
+            }
+        });
+
+        // Show delete button on hover of the file item
+        fileItem.onmouseenter = () => deleteButton.style.visibility = 'visible';
+        fileItem.onmouseleave = () => deleteButton.style.visibility = 'hidden';
+
         // Assemble file item
         fileLink.appendChild(fileIcon);
         fileLink.appendChild(fileName);
+        fileLink.appendChild(deleteButton);
         fileItem.appendChild(fileLink);
         
         return fileItem;
@@ -1757,6 +1779,26 @@ class FileList extends EventEmitter {
             } catch (error) {
                console.error(`Error cleaning up empty folder ${folderPath}:`, error);
             }
+        }
+    }
+    
+    /**
+     * Handle click on the delete file button
+     * @param {string} filePath - Path of the file to delete
+     * @param {number} index - Index of the file in the file manager
+     */
+    handleDeleteFileClick(filePath, index) {
+        console.log(`Deleting file: ${filePath} at index ${index}`);
+
+        try {
+            const success = this.fileManager.removeFiles([filePath]); // Pass path in an array
+            if (!success) {
+                this.showError(`Failed to remove file: ${filePath}`);
+            }
+            // No need to manage expanded state here, removeFiles handles structure update
+        } catch (error) {
+            console.error(`Error during file removal for ${filePath}:`, error);
+            this.showError(`Error removing file: ${error.message}`);
         }
     }
     

@@ -19,26 +19,38 @@
     position: relative;
 }
 
-/* Folder styles */
-.folder-header {
-    display: flex;
-    align-items: center;
-    padding: 4px 8px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+/* Common text elements */
+.folder-name, .file-name {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px; /* Space before delete button */
 }
 
-.folder-header:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
+/* Common icon styles */
 .folder-icon, .file-icon {
     margin-right: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #555;
+}
+
+/* Folder styles */
+.folder-header {
+    display: flex;
+    align-items: center;
+    padding: 0 8px; /* Match file item padding */
+    height: 32px; /* Match file item height */
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    position: relative; /* For button positioning */
+}
+
+.folder-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .folder-icon svg {
@@ -73,11 +85,14 @@
 .file-item a {
     display: flex;
     align-items: center;
-    padding: 4px 8px;
+    padding: 0 8px;
+    height: 32px;
     text-decoration: none;
-    color: #333;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    color: inherit;
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.15s ease;
+    position: relative;
+    overflow: visible;
 }
 
 .file-item a:hover {
@@ -96,6 +111,44 @@
 /* Markdown file icon color */
 .file-icon svg path[d="M9 13h2v6M16 13h2M11 13c-.5 2.5-2.5 4-5 4"] {
     color: #0078d7;
+}
+
+/* Common delete button styles (for both folder and file) */
+.folder-header .delete-folder-btn, 
+.file-item a .delete-file-btn {
+    /* Reset button styles */
+    padding: 0; 
+    border: none;
+    background: none;
+    line-height: 1; 
+    cursor: pointer; 
+    /* Improved flex centering for the button content */
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    /* Push button to the right */
+    margin-left: auto; 
+    /* Ensure it doesn't shrink */
+    flex-shrink: 0; 
+    height: 32px;
+    width: 32px;
+    visibility: hidden; /* Keep hidden by default */
+}
+
+/* Style the SVG inside the delete buttons */
+.folder-header .delete-folder-btn svg, 
+.file-item a .delete-file-btn svg {
+    width: 16px; 
+    height: 16px;
+    stroke: #666;
+    /* Ensure SVG itself is centered in the button */
+    display: block;
+}
+
+/* Show delete buttons on hover */
+.folder-header:hover .delete-folder-btn,
+.file-item a:hover .delete-file-btn {
+    visibility: visible;
 }
 
 /* Empty state */
@@ -131,13 +184,7 @@
     padding-left: 68px;
 }
 
-/* Hover styles */
-.folder-header:hover,
-.file-item a:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* Active styles */
+/* Active states */
 .folder-header:active,
 .file-item a:active {
     background-color: rgba(0, 0, 0, 0.1);
