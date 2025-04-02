@@ -115,6 +115,7 @@
 
 /* Common delete button styles (for both folder and file) */
 .folder-header .delete-folder-btn, 
+.folder-header .refresh-folder-btn,
 .file-item a .delete-file-btn {
     /* Reset button styles */
     padding: 0; 
@@ -135,8 +136,21 @@
     visibility: hidden; /* Keep hidden by default */
 }
 
-/* Style the SVG inside the delete buttons */
+/* Refresh button is separate from margin-left: auto so it doesn't push all the way right */
+.folder-header .refresh-folder-btn {
+    margin-left: 0; /* Override the auto margin */
+    margin-right: 4px;
+    visibility: hidden; /* Hidden by default like other buttons */
+}
+
+/* Show refresh button on hover only if it's not display:none (controlled by JS) */
+.folder-header:hover .refresh-folder-btn {
+    visibility: visible;
+}
+
+/* Style the SVG inside the buttons */
 .folder-header .delete-folder-btn svg, 
+.folder-header .refresh-folder-btn svg,
 .file-item a .delete-file-btn svg {
     width: 16px; 
     height: 16px;
@@ -144,6 +158,11 @@
     /* Ensure SVG itself is centered in the button */
     display: block;
 }
+
+/* Different color for refresh button - REMOVED to match other buttons */
+/* .folder-header .refresh-folder-btn svg {
+    stroke: #0078d7;
+} */
 
 /* Show delete buttons on hover */
 .folder-header:hover .delete-folder-btn,

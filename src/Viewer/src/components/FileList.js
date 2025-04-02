@@ -235,6 +235,26 @@ class FileList extends EventEmitter {
             }
         });
         
+        // Create refresh button (only visible when folder has deleted content)
+        const refreshButton = createElementWithAttributes('button', {
+            className: 'btn btn-icon refresh-folder-btn',
+            title: `Restore original files in ${folder.name}`,
+            style: { 
+                padding: '0',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                marginRight: '5px',
+                // Only show if folder has deleted content
+                display: this.fileManager.folderHasDeletedContent.has(folder.path) ? 'flex' : 'none'
+            },
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>', // Refresh icon
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent folder toggle
+                this.handleRefreshFolderClick(folder.path);
+            }
+        });
+        
         // Show delete button on hover of the folder header
         folderHeader.onmouseenter = () => deleteButton.style.visibility = 'visible';
         folderHeader.onmouseleave = () => deleteButton.style.visibility = 'hidden';
@@ -243,6 +263,7 @@ class FileList extends EventEmitter {
         folderHeader.appendChild(expandIcon);
         folderHeader.appendChild(folderIcon);
         folderHeader.appendChild(folderName);
+        folderHeader.appendChild(refreshButton); // Add refresh button before delete button
         folderHeader.appendChild(deleteButton); // Add delete button
         folderItem.appendChild(folderHeader);
         
@@ -520,6 +541,27 @@ class FileList extends EventEmitter {
         } catch (error) {
             console.error(`Error during file removal for ${filePath}:`, error);
             this.showError(`Error removing file: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Handle click on the refresh folder button
+     * @param {string} folderPath - Path of the folder to refresh
+     */
+    handleRefreshFolderClick(folderPath) {
+        console.log(`Refreshing folder: ${folderPath}`);
+        
+        try {
+            const success = this.fileManager.restoreFolderFiles(folderPath);
+            if (!success) {
+                this.showError(`Failed to restore files for folder: ${folderPath}`);
+            } else {
+                // If successful, the fileListChanged event will trigger a re-render
+                // But we could re-render this specific folder for better performance
+            }
+        } catch (error) {
+            console.error(`Error during folder refresh for ${folderPath}:`, error);
+            this.showError(`Error refreshing folder: ${error.message}`);
         }
     }
     

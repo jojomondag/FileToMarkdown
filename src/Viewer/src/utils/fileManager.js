@@ -11,6 +11,9 @@ class FileManager {
         }];
         // Add a map to store directory handles for file system monitoring
         this.directoryHandles = new Map();
+        // Track original file structure for refresh capability
+        this.originalFiles = [];
+        this.folderHasDeletedContent = new Set();
     }
 
     // Clear all loaded files and folder structure
@@ -129,6 +132,12 @@ class FileManager {
         
         // Merge with existing files
         this.files = this.files.concat(newFiles);
+        
+        // Store a deep copy of the original files for refresh capability
+        // Only store if this is the first load (originalFiles is empty)
+        if (this.originalFiles.length === 0) {
+            this.originalFiles = JSON.parse(JSON.stringify(this.files));
+        }
         
         // Reconstruct folder structure
         this.reconstructFolderStructure();
@@ -719,10 +728,18 @@ class FileManager {
         const removedIndices = [];
         let currentFileRemoved = false;
         
-        // First, find all the file indices to remove
+        // Track which folders have had content removed
+        const affectedFolders = new Set();
+        
+        // First, find all the file indices to remove and track their folders
         filePaths.forEach(path => {
             const fileIndex = this.findFileByPath(path);
             if (fileIndex !== undefined) {
+                const file = this.files[fileIndex];
+                if (file && file.folder) {
+                    affectedFolders.add(file.folder);
+                }
+                
                 removedIndices.push(fileIndex);
                 
                 // Check if we're removing the current file
@@ -758,6 +775,11 @@ class FileManager {
             });
             this.currentFileIndex -= offset;
         }
+        
+        // Mark affected folders as having deleted content
+        affectedFolders.forEach(folder => {
+            this.folderHasDeletedContent.add(folder);
+        });
         
         // Rebuild folder structure and file map
         this.reconstructFolderStructure();
@@ -880,6 +902,98 @@ class FileManager {
         }
         console.log(`getAllFilePathsInAndBelowFolder found ${filePaths.length} files under ${folderPath}`);
         return filePaths;
+    }
+
+    /**
+     * Check if a folder has had any of its original content deleted
+     * @param {string} folderPath - Path of the folder to check
+     * @returns {boolean} True if folder has deleted content
+     */
+    folderHasDeletedFiles(folderPath) {
+        // Get current files in this folder and subfolders
+        const currentFiles = this.getAllFilePathsInAndBelowFolder(folderPath);
+        
+        // Get original files that should be in this folder
+        const originalFolderFiles = this.originalFiles
+            .filter(file => file && file.path && 
+                    (file.folder === folderPath || 
+                    (file.folder && file.folder.startsWith(folderPath + '/'))))
+            .map(file => file.path);
+        
+        // If there are fewer current files than original, something was deleted
+        if (currentFiles.length < originalFolderFiles.length) {
+            return true;
+        }
+        
+        // Check if any original files are missing from current files
+        for (const origPath of originalFolderFiles) {
+            if (!currentFiles.includes(origPath)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Restore original files for a specific folder
+     * @param {string} folderPath - Path of the folder to restore
+     * @returns {boolean} True if restoration was successful
+     */
+    restoreFolderFiles(folderPath) {
+        try {
+            console.log(`Restoring original files for folder: ${folderPath}`);
+            
+            // Get original files that belong to this folder
+            const filesToRestore = this.originalFiles.filter(file => 
+                file && file.path && 
+                (file.folder === folderPath || 
+                (file.folder && file.folder.startsWith(folderPath + '/'))));
+            
+            if (filesToRestore.length === 0) {
+                console.log(`No original files found for folder: ${folderPath}`);
+                return false;
+            }
+            
+            // Create a map of current files by path
+            const currentFilePaths = new Map();
+            this.files.forEach(file => {
+                if (file && file.path) {
+                    currentFilePaths.set(file.path, true);
+                }
+            });
+            
+            // Find files that need to be restored (not in current files)
+            const filesToAdd = filesToRestore.filter(file => 
+                !currentFilePaths.has(file.path));
+            
+            if (filesToAdd.length === 0) {
+                console.log(`No files need to be restored for folder: ${folderPath}`);
+                return false;
+            }
+            
+            console.log(`Adding ${filesToAdd.length} files back to folder: ${folderPath}`);
+            
+            // Add missing files back to the files array
+            this.files = this.files.concat(
+                JSON.parse(JSON.stringify(filesToAdd))
+            );
+            
+            // Rebuild folder structure and file map
+            this.reconstructFolderStructure();
+            this.updateFileMap();
+            
+            // Remove from deleted folders tracking
+            this.folderHasDeletedContent.delete(folderPath);
+            
+            // Notify about file list change
+            this.notifyFileListChanged();
+            
+            return true;
+        } catch (error) {
+            console.error(`Error restoring folder ${folderPath}:`, error);
+            return false;
+        }
     }
 }
 
