@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-02T07:54:26.092Z
+// FileToMarkdown Viewer Bundle - 2025-04-02T19:02:17.793Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -524,26 +524,6 @@ class FileManager {
         // Merge with existing files
         this.files = this.files.concat(newFiles);
         
-        // Store a deep copy of the original files for refresh capability
-        // Only store if this is the first load (originalFiles is empty)
-        if (this.originalFiles.length === 0) {
-            this.originalFiles = JSON.parse(JSON.stringify(this.files));
-        }
-        
-        // Reconstruct folder structure
-        this.reconstructFolderStructure();
-        
-        // Update the file map
-        this.updateFileMap();
-        
-        // Auto-expand parent folders
-        this.autoExpandParentFolders();
-        
-        // If this is the first file(s) being loaded, set the first one as current
-        if (this.currentFileIndex === -1 && this.files.length > 0) {
-            this.currentFileIndex = 0;
-        }
-        
         // Load initial content for all files that don't have content yet
         await Promise.all(newFiles.map(async (fileInfo, i) => {
             try {
@@ -559,6 +539,47 @@ class FileManager {
                 console.error('Error reading file content:', error);
             }
         }));
+        
+        // Store a deep copy of the original files AFTER content is loaded
+        // Only store if this is the first load (originalFiles is empty)
+        if (this.originalFiles.length === 0) {
+            // Create a better backup with content preserved
+            this.originalFiles = this.files.map(file => {
+                // Create a simplified copy that will preserve content
+                const backup = {
+                    name: file.name,
+                    path: file.path,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified,
+                    folder: file.folder,
+                    isRoot: file.isRoot,
+                    depth: file.depth,
+                    // Most importantly, preserve the content!
+                    content: file.content
+                };
+                
+                console.log(`Backing up original file: ${file.path}, content length: ${file.content ? file.content.length : 'none'}`);
+                
+                return backup;
+            });
+            
+            console.log(`Backed up ${this.originalFiles.length} original files with content preserved`);
+        }
+        
+        // Reconstruct folder structure
+        this.reconstructFolderStructure();
+        
+        // Update the file map
+        this.updateFileMap();
+        
+        // Auto-expand parent folders
+        this.autoExpandParentFolders();
+        
+        // If this is the first file(s) being loaded, set the first one as current
+        if (this.currentFileIndex === -1 && this.files.length > 0) {
+            this.currentFileIndex = 0;
+        }
         
         // Notify listeners about the file list change
         this.notifyFileListChanged();
@@ -1327,7 +1348,7 @@ class FileManager {
     }
     
     /**
-     * Restore original files for a specific folder
+     * Restore files that were deleted from a folder
      * @param {string} folderPath - Path of the folder to restore
      * @returns {boolean} True if restoration was successful
      */
@@ -1365,10 +1386,107 @@ class FileManager {
             
             console.log(`Adding ${filesToAdd.length} files back to folder: ${folderPath}`);
             
-            // Add missing files back to the files array
-            this.files = this.files.concat(
-                JSON.parse(JSON.stringify(filesToAdd))
-            );
+            // For better debugging
+            filesToAdd.forEach(file => {
+                console.log(`File to restore: ${file.path}, has content: ${!!file.content}, content type: ${typeof file.content}`);
+            });
+            
+            // Add missing files back to the files array with proper initialization
+            const freshFilesToAdd = [];
+            
+            // Process each file with proper error handling
+            for (const file of filesToAdd) {
+                try {
+                    // Create a shallow copy of basic properties
+                    const freshFile = {
+                        name: file.name,
+                        path: file.path,
+                        size: file.size,
+                        type: file.type || 'text/plain',
+                        lastModified: file.lastModified,
+                        folder: file.folder,
+                        isRoot: file.isRoot,
+                        depth: file.depth,
+                        isDeleted: false
+                    };
+                    
+                    // Ensure we have content - prioritize from different sources
+                    let content = null;
+                    
+                    // Try different sources for content:
+                    // 1. Direct content property
+                    if (file.content) {
+                        content = file.content;
+                        console.log(`Using direct content for ${file.path}, length: ${content.length}`);
+                    } 
+                    // 2. If content exists in the original files array
+                    else {
+                        const originalFile = this.originalFiles.find(f => f.path === file.path && f.content);
+                        if (originalFile && originalFile.content) {
+                            content = originalFile.content;
+                            console.log(`Using original file content for ${file.path}, length: ${content.length}`);
+                        }
+                        // 3. Create placeholder content as a last resort
+                        else {
+                            content = `# ${file.name}\n\nThis file was restored but its original content could not be recovered.`;
+                            console.log(`Creating placeholder content for ${file.path}`);
+                        }
+                    }
+                    
+                    // Ensure content is a string
+                    if (content instanceof Blob) {
+                        // We'll handle this by creating a readable string later
+                        console.log(`Content for ${file.path} is a Blob`);
+                    } else if (typeof content !== 'string') {
+                        try {
+                            content = String(content);
+                            console.log(`Converted content for ${file.path} to string`);
+                        } catch (e) {
+                            console.error(`Error converting content to string for ${file.path}:`, e);
+                            content = `# ${file.name}\n\nThis file was restored but its content could not be properly displayed.`;
+                        }
+                    }
+                    
+                    // Set the content
+                    freshFile.content = content;
+                    
+                    // Create a Blob for file property
+                    try {
+                        if (content) {
+                            if (content instanceof Blob) {
+                                freshFile.file = content;
+                            } else {
+                                freshFile.file = new Blob([content], { type: freshFile.type });
+                            }
+                            console.log(`Created Blob for ${file.path}`);
+                        }
+                    } catch (e) {
+                        console.error(`Error creating Blob for ${file.path}:`, e);
+                    }
+                    
+                    // Handle file.handle if it exists
+                    if (file.file && file.file.handle) {
+                        freshFile.handle = file.file.handle;
+                    } else if (file.handle) {
+                        freshFile.handle = file.handle;
+                    }
+                    
+                    // Add successfully restored file
+                    console.log(`Successfully restored file ${freshFile.path} with content type: ${typeof freshFile.content}`);
+                    freshFilesToAdd.push(freshFile);
+                } catch (error) {
+                    console.error(`Error restoring file ${file.path}:`, error);
+                }
+            }
+            
+            // Add the successfully restored files
+            if (freshFilesToAdd.length === 0) {
+                console.warn(`No files could be successfully restored for folder: ${folderPath}`);
+                return false;
+            }
+            
+            console.log(`Successfully prepared ${freshFilesToAdd.length} files to be restored`);
+            this.files = this.files.concat(freshFilesToAdd);
             
             // Rebuild folder structure and file map
             this.reconstructFolderStructure();
@@ -1975,7 +2093,13 @@ class FileList extends EventEmitter {
                     }
                 }
                 
-                // Force a complete re-render to update all refresh buttons
+                // Ensure the folder is in expanded state to show restored content
+                const expandedFolders = new Set(this.state.expandedFolders);
+                expandedFolders.add(folderPath);
+                this.setState({ expandedFolders });
+                this.saveExpandedFolders();
+                
+                // Force a complete re-render to update all refresh buttons and attach event handlers
                 this.render();
             }
         } catch (error) {
@@ -2425,11 +2549,17 @@ class FileToMarkdownViewer {
             
             // Get current file
             const currentFile = this.fileManager.getCurrentFile();
-            if (!currentFile || !currentFile.file || !currentFile.file.handle) return;
+            if (!currentFile) return;
             
             try {
+                // Check if we have a valid file handle
+                const fileHandle = currentFile.file?.handle || currentFile.handle;
+                if (!fileHandle || typeof fileHandle.getFile !== 'function') {
+                    // Skip monitoring for files without valid handles
+                    return;
+                }
+                
                 // Get latest file version from disk
-                const fileHandle = currentFile.file.handle;
                 const file = await fileHandle.getFile();
                 
                 // Read file content
@@ -2852,11 +2982,12 @@ class FileToMarkdownViewer {
     loadFile(index) {
         const fileInfo = this.fileManager.getFile(index);
         if (!fileInfo) {
-            // console.error('Failed to load file: Invalid index or file not found', index);
+            console.error('Failed to load file: Invalid index or file not found', index);
             return;
         }
 
-        // console.log('Loading file:', fileInfo.path, fileInfo);
+        // Log file loading for debugging
+        console.log(`Loading file: ${fileInfo.path}, has content: ${!!fileInfo.content}, has file object: ${!!fileInfo.file}, content type: ${typeof fileInfo.content}`);
 
         // Reset edit mode to false when loading a file
         this.isEditorMode = false;
@@ -2878,70 +3009,178 @@ class FileToMarkdownViewer {
         // Show the content container and hide welcome screen
         this.updateWelcomeScreen();
 
-        // Use content directly if available or read from file object
-        if (fileInfo.content) {
-            // console.log('File has cached content, displaying directly');
+        // DIRECTLY show content if it's already available as a string - this is the most reliable method
+        if (fileInfo.content && typeof fileInfo.content === 'string') {
+            console.log(`Displaying cached content string (${fileInfo.content.length} chars)`);
             this.displayFileContent(fileInfo.content);
             return;
         }
         
+        // If we don't have a string content but have content of another type
+        if (fileInfo.content && typeof fileInfo.content !== 'string') {
+            console.log(`Have content but it's not a string, type: ${typeof fileInfo.content}`);
+            try {
+                // Try to convert the content to a string
+                if (fileInfo.content instanceof Blob) {
+                    console.log('Content is a Blob, reading...');
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const content = e.target.result;
+                        // Store string content for future use
+                        fileInfo.content = content;
+                        this.displayFileContent(content);
+                    };
+                    reader.onerror = e => {
+                        console.error('FileReader error:', e);
+                        this.showFallbackContent(fileInfo);
+                    };
+                    reader.readAsText(fileInfo.content);
+                    return;
+                } else {
+                    // Try to stringify the content
+                    const stringContent = String(fileInfo.content);
+                    fileInfo.content = stringContent; // Update for future use
+                    this.displayFileContent(stringContent);
+                    return;
+                }
+            } catch (error) {
+                console.error('Error converting content to string:', error);
+                this.showFallbackContent(fileInfo);
+                return;
+            }
+        }
+        
         // If we don't have content but have a file object, read it
         if (fileInfo.file) {
-            // console.log('Reading file content from file object');
-            const reader = new FileReader();
-            reader.onload = e => {
-                const content = e.target.result;
-                this.originalContent = content;
-                
-                // Store content in fileInfo for future use
-                fileInfo.content = content;
-                
-                this.displayFileContent(content);
-            };
-            reader.onerror = e => {
-                this.showError(`Error reading file: ${e.target.error}`);
-                // console.error('FileReader error:', e.target.error);
-            };
-            reader.readAsText(fileInfo.file);
+            try {
+                // Check if fileInfo.file is a valid Blob object
+                if (fileInfo.file instanceof Blob) {
+                    console.log('Reading content from Blob object');
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const content = e.target.result;
+                        this.originalContent = content;
+                        
+                        // Store content in fileInfo for future use
+                        fileInfo.content = content;
+                        
+                        this.displayFileContent(content);
+                    };
+                    reader.onerror = e => {
+                        this.showError(`Error reading file: ${e.target.error}`);
+                        console.error('FileReader error:', e.target.error);
+                        this.showFallbackContent(fileInfo);
+                    };
+                    reader.readAsText(fileInfo.file);
+                } else if (typeof fileInfo.file === 'string') {
+                    // If file is a string, use it directly
+                    console.log('Using string content from file property');
+                    fileInfo.content = fileInfo.file; // Store for future use
+                    this.displayFileContent(fileInfo.file);
+                } else if (fileInfo.file && typeof fileInfo.file.toString === 'function') {
+                    // Try to convert to string if possible
+                    try {
+                        console.log('Converting file object to string');
+                        // Only use toString if it's a primitive value or a simple object
+                        // Avoid calling toString on complex objects that would just return "[object Object]"
+                        let content;
+                        if (Object.prototype.toString.call(fileInfo.file) === '[object Object]') {
+                            // Show fallback content instead of [object Object]
+                            this.showFallbackContent(fileInfo);
+                            return;
+                        } else {
+                            content = fileInfo.file.toString();
+                        }
+                        fileInfo.content = content;
+                        this.displayFileContent(content);
+                    } catch (e) {
+                        // Fall back to empty content if toString fails
+                        console.error('Error calling toString():', e);
+                        this.showFallbackContent(fileInfo);
+                    }
+                } else {
+                    // No valid content source
+                    this.showFallbackContent(fileInfo);
+                }
+            } catch (error) {
+                console.error('Error processing file:', error);
+                this.showFallbackContent(fileInfo);
+            }
         } else {
-            this.showError('File content not available');
-            // console.error('No file content or file object available', fileInfo);
+            // No file property at all
+            this.showFallbackContent(fileInfo);
         }
     }
     
     displayFileContent(content) {
         if (!content) {
-            // console.error('Cannot display empty content');
-            return;
+            console.error('Cannot display empty content');
+            // Create a placeholder message instead of showing nothing
+            content = '# No Content Available\n\nThis file appears to be empty or could not be loaded properly.';
         }
         
-        // console.log('Displaying content length:', content.length);
+        console.log(`Displaying content (type: ${typeof content}, length: ${content.length})`);
         this.originalContent = content;
+        
+        // Ensure content is a string
+        if (typeof content !== 'string') {
+            try {
+                if (content instanceof Blob) {
+                    // Handle Blob objects
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        this.displayFileContent(reader.result);
+                    };
+                    reader.readAsText(content);
+                    return;
+                } else {
+                    // Try to convert to string
+                    content = String(content);
+                }
+            } catch (error) {
+                console.error('Error converting content to string:', error);
+                content = '# Error Displaying Content\n\nThe content could not be displayed properly.';
+            }
+        }
         
         if (this.isEditorMode) {
             // In editor mode, set the textarea value
             this.elements.editor.value = content;
         } else {
             // In view mode, render markdown to HTML
-            const renderedHTML = this.renderer.render(content);
-            
-            // Make sure contentWrapper exists
-            if (!this.elements.contentWrapper) {
-                // console.error('Content wrapper element not found');
-                return;
+            try {
+                const renderedHTML = this.renderer.render(content);
+                
+                // Make sure contentWrapper exists
+                if (!this.elements.contentWrapper) {
+                    console.error('Content wrapper element not found');
+                    return;
+                }
+                
+                // Set the HTML content
+                this.elements.contentWrapper.innerHTML = renderedHTML;
+                
+                // Apply syntax highlighting
+                this.renderer.highlightAll();
+                
+                // Setup link handlers
+                this.setupLinkHandlers();
+                
+                // Make sure the content is visible
+                this.elements.contentWrapper.style.display = 'block';
+            } catch (error) {
+                console.error('Error rendering markdown:', error);
+                // Display error message in content area
+                if (this.elements.contentWrapper) {
+                    this.elements.contentWrapper.innerHTML = `
+                    <div class="error-message" style="padding: 20px; color: #e53e3e;">
+                        <h2>Error Rendering Content</h2>
+                        <p>${error.message || 'Unknown error'}</p>
+                        <pre>${content.substring(0, 100)}${content.length > 100 ? '...' : ''}</pre>
+                    </div>`;
+                    this.elements.contentWrapper.style.display = 'block';
+                }
             }
-            
-            // Set the HTML content
-            this.elements.contentWrapper.innerHTML = renderedHTML;
-            
-            // Apply syntax highlighting
-            this.renderer.highlightAll();
-            
-            // Setup link handlers
-            this.setupLinkHandlers();
-            
-            // Make sure the content is visible
-            this.elements.contentWrapper.style.display = 'block';
         }
         
         // Ensure buttons are visible after content is loaded
@@ -3714,6 +3953,14 @@ class FileToMarkdownViewer {
             if (this.elements.welcomeScreen) this.elements.welcomeScreen.style.display = 'flex';
             if (this.elements.content) this.elements.content.style.display = 'none';
         }
+    }
+
+    // Helper method to show fallback content for files that can't be loaded
+    showFallbackContent(fileInfo) {
+        console.log(`Showing fallback content for ${fileInfo.path}`);
+        const placeholderContent = `# ${fileInfo.name}\n\nThis file was restored but its content could not be loaded. You can edit it and save to replace the missing content.`;
+        fileInfo.content = placeholderContent; // Save for future use
+        this.displayFileContent(placeholderContent);
     }
 }
 

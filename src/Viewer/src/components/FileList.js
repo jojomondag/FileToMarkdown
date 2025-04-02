@@ -582,7 +582,13 @@ class FileList extends EventEmitter {
                     }
                 }
                 
-                // Force a complete re-render to update all refresh buttons
+                // Ensure the folder is in expanded state to show restored content
+                const expandedFolders = new Set(this.state.expandedFolders);
+                expandedFolders.add(folderPath);
+                this.setState({ expandedFolders });
+                this.saveExpandedFolders();
+                
+                // Force a complete re-render to update all refresh buttons and attach event handlers
                 this.render();
             }
         } catch (error) {

@@ -133,26 +133,6 @@ class FileManager {
         // Merge with existing files
         this.files = this.files.concat(newFiles);
         
-        // Store a deep copy of the original files for refresh capability
-        // Only store if this is the first load (originalFiles is empty)
-        if (this.originalFiles.length === 0) {
-            this.originalFiles = JSON.parse(JSON.stringify(this.files));
-        }
-        
-        // Reconstruct folder structure
-        this.reconstructFolderStructure();
-        
-        // Update the file map
-        this.updateFileMap();
-        
-        // Auto-expand parent folders
-        this.autoExpandParentFolders();
-        
-        // If this is the first file(s) being loaded, set the first one as current
-        if (this.currentFileIndex === -1 && this.files.length > 0) {
-            this.currentFileIndex = 0;
-        }
-        
         // Load initial content for all files that don't have content yet
         await Promise.all(newFiles.map(async (fileInfo, i) => {
             try {
@@ -168,6 +148,47 @@ class FileManager {
                 console.error('Error reading file content:', error);
             }
         }));
+        
+        // Store a deep copy of the original files AFTER content is loaded
+        // Only store if this is the first load (originalFiles is empty)
+        if (this.originalFiles.length === 0) {
+            // Create a better backup with content preserved
+            this.originalFiles = this.files.map(file => {
+                // Create a simplified copy that will preserve content
+                const backup = {
+                    name: file.name,
+                    path: file.path,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified,
+                    folder: file.folder,
+                    isRoot: file.isRoot,
+                    depth: file.depth,
+                    // Most importantly, preserve the content!
+                    content: file.content
+                };
+                
+                console.log(`Backing up original file: ${file.path}, content length: ${file.content ? file.content.length : 'none'}`);
+                
+                return backup;
+            });
+            
+            console.log(`Backed up ${this.originalFiles.length} original files with content preserved`);
+        }
+        
+        // Reconstruct folder structure
+        this.reconstructFolderStructure();
+        
+        // Update the file map
+        this.updateFileMap();
+        
+        // Auto-expand parent folders
+        this.autoExpandParentFolders();
+        
+        // If this is the first file(s) being loaded, set the first one as current
+        if (this.currentFileIndex === -1 && this.files.length > 0) {
+            this.currentFileIndex = 0;
+        }
         
         // Notify listeners about the file list change
         this.notifyFileListChanged();
@@ -936,7 +957,7 @@ class FileManager {
     }
     
     /**
-     * Restore original files for a specific folder
+     * Restore files that were deleted from a folder
      * @param {string} folderPath - Path of the folder to restore
      * @returns {boolean} True if restoration was successful
      */
@@ -974,10 +995,107 @@ class FileManager {
             
             console.log(`Adding ${filesToAdd.length} files back to folder: ${folderPath}`);
             
-            // Add missing files back to the files array
-            this.files = this.files.concat(
-                JSON.parse(JSON.stringify(filesToAdd))
-            );
+            // For better debugging
+            filesToAdd.forEach(file => {
+                console.log(`File to restore: ${file.path}, has content: ${!!file.content}, content type: ${typeof file.content}`);
+            });
+            
+            // Add missing files back to the files array with proper initialization
+            const freshFilesToAdd = [];
+            
+            // Process each file with proper error handling
+            for (const file of filesToAdd) {
+                try {
+                    // Create a shallow copy of basic properties
+                    const freshFile = {
+                        name: file.name,
+                        path: file.path,
+                        size: file.size,
+                        type: file.type || 'text/plain',
+                        lastModified: file.lastModified,
+                        folder: file.folder,
+                        isRoot: file.isRoot,
+                        depth: file.depth,
+                        isDeleted: false
+                    };
+                    
+                    // Ensure we have content - prioritize from different sources
+                    let content = null;
+                    
+                    // Try different sources for content:
+                    // 1. Direct content property
+                    if (file.content) {
+                        content = file.content;
+                        console.log(`Using direct content for ${file.path}, length: ${content.length}`);
+                    } 
+                    // 2. If content exists in the original files array
+                    else {
+                        const originalFile = this.originalFiles.find(f => f.path === file.path && f.content);
+                        if (originalFile && originalFile.content) {
+                            content = originalFile.content;
+                            console.log(`Using original file content for ${file.path}, length: ${content.length}`);
+                        }
+                        // 3. Create placeholder content as a last resort
+                        else {
+                            content = `# ${file.name}\n\nThis file was restored but its original content could not be recovered.`;
+                            console.log(`Creating placeholder content for ${file.path}`);
+                        }
+                    }
+                    
+                    // Ensure content is a string
+                    if (content instanceof Blob) {
+                        // We'll handle this by creating a readable string later
+                        console.log(`Content for ${file.path} is a Blob`);
+                    } else if (typeof content !== 'string') {
+                        try {
+                            content = String(content);
+                            console.log(`Converted content for ${file.path} to string`);
+                        } catch (e) {
+                            console.error(`Error converting content to string for ${file.path}:`, e);
+                            content = `# ${file.name}\n\nThis file was restored but its content could not be properly displayed.`;
+                        }
+                    }
+                    
+                    // Set the content
+                    freshFile.content = content;
+                    
+                    // Create a Blob for file property
+                    try {
+                        if (content) {
+                            if (content instanceof Blob) {
+                                freshFile.file = content;
+                            } else {
+                                freshFile.file = new Blob([content], { type: freshFile.type });
+                            }
+                            console.log(`Created Blob for ${file.path}`);
+                        }
+                    } catch (e) {
+                        console.error(`Error creating Blob for ${file.path}:`, e);
+                    }
+                    
+                    // Handle file.handle if it exists
+                    if (file.file && file.file.handle) {
+                        freshFile.handle = file.file.handle;
+                    } else if (file.handle) {
+                        freshFile.handle = file.handle;
+                    }
+                    
+                    // Add successfully restored file
+                    console.log(`Successfully restored file ${freshFile.path} with content type: ${typeof freshFile.content}`);
+                    freshFilesToAdd.push(freshFile);
+                } catch (error) {
+                    console.error(`Error restoring file ${file.path}:`, error);
+                }
+            }
+            
+            // Add the successfully restored files
+            if (freshFilesToAdd.length === 0) {
+                console.warn(`No files could be successfully restored for folder: ${folderPath}`);
+                return false;
+            }
+            
+            console.log(`Successfully prepared ${freshFilesToAdd.length} files to be restored`);
+            this.files = this.files.concat(freshFilesToAdd);
             
             // Rebuild folder structure and file map
             this.reconstructFolderStructure();
