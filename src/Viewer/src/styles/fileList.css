@@ -144,7 +144,7 @@
 }
 
 /* Show refresh button on hover only if it's not display:none (controlled by JS) */
-.folder-header:hover .refresh-folder-btn {
+.folder-header:hover .refresh-folder-btn:not([style*='display: none']) {
     visibility: visible;
 }
 

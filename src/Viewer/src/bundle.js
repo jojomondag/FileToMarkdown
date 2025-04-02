@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-02T06:31:32.422Z
+// FileToMarkdown Viewer Bundle - 2025-04-02T07:54:26.092Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1628,7 +1628,7 @@ class FileList extends EventEmitter {
             }
         });
         
-        // Create refresh button (only visible when folder has deleted content)
+        // Create refresh button (only visible when folder or any subfolder has deleted content)
         const refreshButton = createElementWithAttributes('button', {
             className: 'btn btn-icon refresh-folder-btn',
             title: `Restore original files in ${folder.name}`,
@@ -1638,8 +1638,8 @@ class FileList extends EventEmitter {
                 border: 'none',
                 cursor: 'pointer',
                 marginRight: '5px',
-                // Only show if folder has deleted content
-                display: this.fileManager.folderHasDeletedContent.has(folder.path) ? 'flex' : 'none'
+                // Only show if folder or any subfolder has deleted content
+                display: this.folderOrChildrenHaveDeletedContent(folder.path) ? 'flex' : 'none'
             },
             innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>', // Refresh icon
             onclick: (e) => {
@@ -1945,12 +1945,38 @@ class FileList extends EventEmitter {
         console.log(`Refreshing folder: ${folderPath}`);
         
         try {
-            const success = this.fileManager.restoreFolderFiles(folderPath);
+            // Find all subfolders that need to be refreshed
+            const allFoldersToRefresh = [folderPath];
+            
+            // Add all child folders with deleted content
+            for (const path of this.fileManager.folderHasDeletedContent) {
+                if (path.startsWith(folderPath + '/')) {
+                    allFoldersToRefresh.push(path);
+                }
+            }
+            
+            let success = false;
+            
+            // Refresh each folder
+            for (const path of allFoldersToRefresh) {
+                if (this.fileManager.restoreFolderFiles(path)) {
+                    success = true;
+                }
+            }
+            
             if (!success) {
                 this.showError(`Failed to restore files for folder: ${folderPath}`);
             } else {
-                // If successful, the fileListChanged event will trigger a re-render
-                // But we could re-render this specific folder for better performance
+                // After successful refresh, make sure all the paths are removed from folderHasDeletedContent
+                // This ensures the refresh buttons don't stay visible on restored folders
+                for (const path of [...this.fileManager.folderHasDeletedContent]) {
+                    if (path === folderPath || path.startsWith(folderPath + '/')) {
+                        this.fileManager.folderHasDeletedContent.delete(path);
+                    }
+                }
+                
+                // Force a complete re-render to update all refresh buttons
+                this.render();
             }
         } catch (error) {
             console.error(`Error during folder refresh for ${folderPath}:`, error);
@@ -1963,6 +1989,27 @@ class FileList extends EventEmitter {
         console.error("FileList Error:", message);
         // Replace with your actual notification/alert mechanism
         // alert(message); 
+    }
+
+    /**
+     * Check if a folder or any of its subfolders has deleted content
+     * @param {string} folderPath - Path of the folder to check
+     * @returns {boolean} - True if this folder or any subfolders have deleted content
+     */
+    folderOrChildrenHaveDeletedContent(folderPath) {
+        // Check if this folder has deleted content
+        if (this.fileManager.folderHasDeletedContent.has(folderPath)) {
+            return true;
+        }
+        
+        // Check all tracked folders that are subfolders of this folder
+        for (const path of this.fileManager.folderHasDeletedContent) {
+            if (path.startsWith(folderPath + '/')) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }
 

@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-02T06:31:32.429Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-02T07:54:26.126Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -721,7 +721,7 @@ a {
 }
 
 /* Show refresh button on hover only if it's not display:none (controlled by JS) */
-.folder-header:hover .refresh-folder-btn {
+.folder-header:hover .refresh-folder-btn:not([style*='display: none']) {
     visibility: visible;
 }
 
