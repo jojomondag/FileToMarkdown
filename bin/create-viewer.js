@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const path = require('path');
 const fs = require('fs');
-const { createViewer } = require('../src/Viewer/createViewer');
+const { createViewer } = require('../src/Viewer/createViewer.js');
 
 // Parse command line arguments
 const args = process.argv.slice(2);

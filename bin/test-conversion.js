@@ -4,7 +4,7 @@ const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
 const { convertToMarkdown } = require('../dist/main');
-const { createViewer } = require('../src/Viewer/createViewer');
+const { createViewer } = require('../src/Viewer/createViewer.js');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
 
