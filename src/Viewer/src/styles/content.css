@@ -1,6 +1,6 @@
 /* ===== MAIN CONTENT ===== */
 .main-content {
-  margin-left: var(--sidebar-width);
+  margin-left: calc(var(--sidebar-width) + 60px);
   flex: 1;
   padding: 10px 40px 10px 40px;
   max-width: 100%;
@@ -11,6 +11,24 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+/* Cidron Box - Blue box next to sidebar */
+.cidron-box {
+  position: fixed;
+  left: var(--sidebar-width);
+  top: 0;
+  width: 60px;
+  height: 100vh;
+  background-color: #3498db;
+  z-index: 950;
+  transition: transform .3s ease, left .3s ease;
+  border-right: 2px solid #2980b9;
+}
+
+/* When sidebar is hidden, move cidron-box to the left edge */
+.sidebar.hidden ~ .cidron-box {
+  left: 0;
 }
 
 .main-content.expanded {
@@ -144,7 +162,7 @@
 
 /* Move the button right when sidebar is visible */
 body:not(.sidebar-hidden) .btn-menu {
-  left: calc(var(--sidebar-width) - 50px);
+  left: calc(var(--sidebar-width) + 10px);
 }
 
 /* When sidebar is hidden, keep the button visible */

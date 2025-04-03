@@ -175,7 +175,7 @@ class FileList extends EventEmitter {
      */
     renderFolder(folder) {
         if (!folder || !folder.path) {
-            console.error('Invalid folder object:', folder);
+            console.error("Attempted to render invalid folder", folder);
             return document.createElement('li'); // Return empty element
         }
 
@@ -259,12 +259,20 @@ class FileList extends EventEmitter {
         folderHeader.onmouseenter = () => deleteButton.style.visibility = 'visible';
         folderHeader.onmouseleave = () => deleteButton.style.visibility = 'hidden';
         
+        // Create action buttons container
+        const actionButtons = createElementWithAttributes('div', {
+            className: 'action-buttons'
+        });
+        
+        // Add buttons to action container
+        actionButtons.appendChild(refreshButton);
+        actionButtons.appendChild(deleteButton);
+        
         // Assemble folder header
         folderHeader.appendChild(expandIcon);
         folderHeader.appendChild(folderIcon);
         folderHeader.appendChild(folderName);
-        folderHeader.appendChild(refreshButton); // Add refresh button before delete button
-        folderHeader.appendChild(deleteButton); // Add delete button
+        folderHeader.appendChild(actionButtons); // Add action buttons container
         folderItem.appendChild(folderHeader);
         
         // Create folder contents container
@@ -396,10 +404,18 @@ class FileList extends EventEmitter {
         fileItem.onmouseenter = () => deleteButton.style.visibility = 'visible';
         fileItem.onmouseleave = () => deleteButton.style.visibility = 'hidden';
 
+        // Create action buttons container
+        const actionButtons = createElementWithAttributes('div', {
+            className: 'action-buttons'
+        });
+        
+        // Add buttons to action container
+        actionButtons.appendChild(deleteButton);
+
         // Assemble file item
         fileLink.appendChild(fileIcon);
         fileLink.appendChild(fileName);
-        fileLink.appendChild(deleteButton);
+        fileLink.appendChild(actionButtons); // Add action buttons container
         fileItem.appendChild(fileLink);
         
         return fileItem;

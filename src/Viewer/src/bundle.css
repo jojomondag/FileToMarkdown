@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T05:10:08.237Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T06:51:44.925Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -704,33 +704,49 @@ a {
     display: flex; 
     align-items: center;
     justify-content: center;
-    /* Push button to the right */
-    margin-left: auto; 
     /* Ensure it doesn't shrink */
     flex-shrink: 0; 
-    height: 32px;
-    width: 32px;
+    height: 28px;
+    width: 28px;
     visibility: hidden; /* Keep hidden by default */
+    opacity: 0.8;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    border-radius: 4px;
 }
 
-/* Refresh button is separate from margin-left: auto so it doesn't push all the way right */
+/* Group buttons together in a container */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+/* Refresh button positioning */
 .folder-header .refresh-folder-btn {
-    margin-left: 0; /* Override the auto margin */
-    margin-right: 4px;
-    visibility: hidden; /* Hidden by default like other buttons */
+    margin-right: 2px;
 }
 
 /* Show refresh button on hover only if it's not display:none (controlled by JS) */
-.folder-header:hover .refresh-folder-btn:not([style*='display: none']) {
+.folder-header:hover .refresh-folder-btn:not([style*='display: none']),
+.folder-header:hover .delete-folder-btn,
+.file-item a:hover .delete-file-btn {
     visibility: visible;
+}
+
+/* Button hover effects */
+.folder-header .delete-folder-btn:hover, 
+.folder-header .refresh-folder-btn:hover,
+.file-item a .delete-file-btn:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Style the SVG inside the buttons */
 .folder-header .delete-folder-btn svg, 
 .folder-header .refresh-folder-btn svg,
 .file-item a .delete-file-btn svg {
-    width: 16px; 
-    height: 16px;
+    width: 14px; 
+    height: 14px;
     stroke: #666;
     /* Ensure SVG itself is centered in the button */
     display: block;
@@ -808,7 +824,7 @@ a {
 /* File: styles/content.css */
 /* ===== MAIN CONTENT ===== */
 .main-content {
-  margin-left: var(--sidebar-width);
+  margin-left: calc(var(--sidebar-width) + 60px);
   flex: 1;
   padding: 10px 40px 10px 40px;
   max-width: 100%;
@@ -819,6 +835,24 @@ a {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+/* Cidron Box - Blue box next to sidebar */
+.cidron-box {
+  position: fixed;
+  left: var(--sidebar-width);
+  top: 0;
+  width: 60px;
+  height: 100vh;
+  background-color: #3498db;
+  z-index: 950;
+  transition: transform .3s ease, left .3s ease;
+  border-right: 2px solid #2980b9;
+}
+
+/* When sidebar is hidden, move cidron-box to the left edge */
+.sidebar.hidden ~ .cidron-box {
+  left: 0;
 }
 
 .main-content.expanded {
@@ -952,7 +986,7 @@ a {
 
 /* Move the button right when sidebar is visible */
 body:not(.sidebar-hidden) .btn-menu {
-  left: calc(var(--sidebar-width) - 50px);
+  left: calc(var(--sidebar-width) + 10px);
 }
 
 /* When sidebar is hidden, keep the button visible */
