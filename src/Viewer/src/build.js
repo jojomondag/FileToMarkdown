@@ -18,6 +18,7 @@ const files = [
     'components/BaseComponent.js',
     'utils/renderer.js',
     'utils/fileManager.js',
+    'utils/stateManager.js',    // Add StateManager after FileManager
     'components/FileList.js',   
     'components/Header.js',
     'components/Editor.js',
@@ -103,6 +104,8 @@ window.BrowserRenderer = typeof BrowserRenderer !== 'undefined' ? BrowserRendere
 window.createElementWithAttributes = typeof createElementWithAttributes !== 'undefined' ? createElementWithAttributes : null;
 window.FileToMarkdownViewer = typeof FileToMarkdownViewer !== 'undefined' ? FileToMarkdownViewer : null;
 
+// Comment out the duplicate initialization that was causing double event handlers
+/* 
 // Initialize the application - this initializes the global app instance
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing app from bundle');
@@ -112,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.app = new FileToMarkdownViewer();
     }
 });
+*/
 `;
 
 // Write the bundle file

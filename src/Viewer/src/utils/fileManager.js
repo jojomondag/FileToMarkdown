@@ -1113,6 +1113,147 @@ class FileManager {
             return false;
         }
     }
+
+    /**
+     * Get all files for state saving
+     * @returns {Array} Array of file objects with essential information
+     */
+    getFiles() {
+        return this.files.map(file => ({
+            name: file.name,
+            path: file.path,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+            content: file.content,
+            folder: file.folder,
+            isRoot: file.isRoot,
+            depth: file.depth
+        }));
+    }
+
+    /**
+     * Get all folders for state saving
+     * @returns {Array} Array of folder objects
+     */
+    getFolders() {
+        const folders = [];
+        
+        this.folderStructure.forEach((folder, path) => {
+            try {
+                folders.push({
+                    path: path,
+                    expanded: folder.expanded,
+                    // Convert Set to Array before using map
+                    files: Array.from(folder.files || []),
+                    // Use children instead of subfolders, which is what reconstructFolderStructure creates
+                    children: Array.from(folder.children || [])
+                });
+            } catch (error) {
+                console.error(`Error processing folder ${path} for saving:`, error);
+            }
+        });
+        
+        return folders;
+    }
+
+    /**
+     * Restore state from saved files and folders
+     * @param {Array} files - Array of saved file objects
+     * @param {Array} folders - Array of saved folder objects
+     */
+    async restoreState(files, folders) {
+        try {
+            // Validate input
+            if (!files || !Array.isArray(files)) {
+                console.error('Invalid files parameter: not an array', files);
+                return false;
+            }
+
+            // Clear current state
+            this.clearFiles();
+            
+            // Filter out invalid files
+            const validFiles = files.filter(file => 
+                file && 
+                typeof file === 'object' && 
+                file.path && 
+                typeof file.path === 'string' &&
+                file.name && 
+                typeof file.name === 'string'
+            );
+            
+            if (validFiles.length < files.length) {
+                console.warn(`Filtered out ${files.length - validFiles.length} invalid file entries`);
+            }
+            
+            if (validFiles.length === 0) {
+                console.error('No valid files to restore');
+                return false;
+            }
+            
+            // Ensure each file has the minimal required properties
+            const sanitizedFiles = validFiles.map(file => {
+                // Create a new object with default values for missing properties
+                return {
+                    name: file.name,
+                    path: file.path,
+                    size: file.size || 0,
+                    type: file.type || 'text/plain',
+                    lastModified: file.lastModified || Date.now(),
+                    content: file.content || `# ${file.name}\n\nFile content could not be restored.`,
+                    folder: file.folder || '',
+                    isRoot: file.isRoot || false,
+                    depth: file.depth || 0
+                };
+            });
+            
+            // Restore files
+            this.files = sanitizedFiles;
+            
+            // Reconstruct folder structure
+            try {
+                this.reconstructFolderStructure();
+            } catch (folderError) {
+                console.error('Error reconstructing folder structure:', folderError);
+                // Continue anyway, as we might still have valid files
+            }
+            
+            // Update the file map
+            try {
+                this.updateFileMap();
+            } catch (mapError) {
+                console.error('Error updating file map:', mapError);
+                // Continue anyway
+            }
+            
+            // Set first file as current if needed
+            if (this.currentFileIndex === -1 && this.files.length > 0) {
+                this.currentFileIndex = 0;
+            }
+            
+            // Restore folder expansion states
+            if (folders && Array.isArray(folders) && folders.length > 0) {
+                folders.forEach(folder => {
+                    if (folder && folder.path && this.folderStructure) {
+                        const folderInfo = this.folderStructure.get(folder.path);
+                        if (folderInfo) {
+                            folderInfo.expanded = folder.expanded;
+                        }
+                    }
+                });
+            }
+            
+            // Notify listeners about the file list change
+            this.notifyFileListChanged();
+            
+            // Return success based on whether we restored any files
+            return this.files.length > 0;
+        } catch (error) {
+            console.error('Error restoring state:', error);
+            return false;
+        }
+    }
 }
 
 export default FileManager; 

@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Editor from './components/Editor';
 import Preview from './components/Preview';
 import { createElementWithAttributes } from './utils/domUtils';
+import { StateManager } from './utils/stateManager';
 
 /**
  * Main application class for FileToMarkdown viewer
@@ -25,6 +26,9 @@ class FileToMarkdownViewer {
         this.setupFileChangeListener();
         this.setupEditorElement();
         this.setupFileInput();
+        
+        // Initialize the StateManager
+        this.stateManager = new StateManager(this.fileManager);
         
         // Initialize sidebar-hidden class on body based on initial sidebar state
         document.body.classList.toggle('sidebar-hidden', this.elements.sidebar.classList.contains('hidden'));
@@ -84,7 +88,9 @@ class FileToMarkdownViewer {
             directoryInput: null, // Input for directory selection fallback
             buttonContainer: null, // Container for edit/save buttons (created dynamically)
             editButtonContainer: null, // Container for edit button (created dynamically)
-            contentWrapper: null // Added for the new content wrapper
+            contentWrapper: null, // Added for the new content wrapper
+            cidronSaveButton: document.getElementById('btn-save'), // Save button in cidron-box
+            cidronLoadButton: document.getElementById('btn-load')  // Load button in cidron-box
         };
     }
     /**
