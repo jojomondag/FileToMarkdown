@@ -192,15 +192,9 @@ class FileList extends EventEmitter {
         const folderHeader = createElementWithAttributes('div', {
             className: 'folder-header',
             onclick: (e) => {
-            e.preventDefault();
+                e.preventDefault();
                 this.toggleFolder(folder.path);
             }
-        });
-        
-        // Create folder icon
-        const folderIcon = createElementWithAttributes('span', {
-            className: 'folder-icon',
-            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'
         });
         
         // Create expand/collapse indicator
@@ -211,31 +205,42 @@ class FileList extends EventEmitter {
                 : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>'
         });
         
+        // Create folder icon container
+        const folderIconContainer = createElementWithAttributes('div', {
+            className: 'folder-icon-container',
+        });
+        
+        // Create folder icon
+        const folderIcon = createElementWithAttributes('span', {
+            className: 'folder-icon',
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>'
+        });
+        
+        // Create delete icon (overlay on folder icon)
+        const deleteIcon = createElementWithAttributes('span', {
+            className: 'delete-folder-icon',
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', // Trash can icon
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent folder toggle
+                e.preventDefault();
+                this.handleDeleteFolderClick(folder.path);
+            }
+        });
+        
         // Create folder name
         const folderName = createElementWithAttributes('span', {
             className: 'folder-name',
             textContent: folder.name || 'Unknown folder'
         });
-        
-        // Create delete button
-        const deleteButton = createElementWithAttributes('button', {
-            className: 'btn btn-icon delete-folder-btn',
-            title: `Delete folder ${folder.name}`,
-            style: { 
-                padding: '0',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                visibility: 'hidden' // Initially hidden
-            },
-            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="12" x2="6" y2="12"></line></svg>', // Simple minus icon
-            onclick: (e) => {
-                e.stopPropagation(); // Prevent folder toggle
-                this.handleDeleteFolderClick(folder.path);
-            }
-        });
+
+        // Add icons to container
+        folderIconContainer.appendChild(folderIcon);
+        folderIconContainer.appendChild(deleteIcon);
         
         // Create refresh button (only visible when folder or any subfolder has deleted content)
+        const hasDeletedContent = this.folderOrChildrenHaveDeletedContent(folder.path);
+        console.log(`Folder ${folder.path} has deleted content: ${hasDeletedContent}`);
+        
         const refreshButton = createElementWithAttributes('button', {
             className: 'btn btn-icon refresh-folder-btn',
             title: `Restore original files in ${folder.name}`,
@@ -244,9 +249,7 @@ class FileList extends EventEmitter {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                marginRight: '5px',
-                // Only show if folder or any subfolder has deleted content
-                display: this.folderOrChildrenHaveDeletedContent(folder.path) ? 'flex' : 'none'
+                marginLeft: 'auto'
             },
             innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>', // Refresh icon
             onclick: (e) => {
@@ -255,24 +258,16 @@ class FileList extends EventEmitter {
             }
         });
         
-        // Show delete button on hover of the folder header
-        folderHeader.onmouseenter = () => deleteButton.style.visibility = 'visible';
-        folderHeader.onmouseleave = () => deleteButton.style.visibility = 'hidden';
-        
-        // Create action buttons container
-        const actionButtons = createElementWithAttributes('div', {
-            className: 'action-buttons'
-        });
-        
-        // Add buttons to action container
-        actionButtons.appendChild(refreshButton);
-        actionButtons.appendChild(deleteButton);
+        // Apply the display property directly to the element to override CSS !important
+        if (hasDeletedContent) {
+            refreshButton.style.cssText += '; display: flex !important;';
+        }
         
         // Assemble folder header
         folderHeader.appendChild(expandIcon);
-        folderHeader.appendChild(folderIcon);
+        folderHeader.appendChild(folderIconContainer);
         folderHeader.appendChild(folderName);
-        folderHeader.appendChild(actionButtons); // Add action buttons container
+        folderHeader.appendChild(refreshButton);
         folderItem.appendChild(folderHeader);
         
         // Create folder contents container
@@ -364,16 +359,32 @@ class FileList extends EventEmitter {
             href: '#',
             title: fileInfo.path,
             onclick: (e) => {
-            e.preventDefault();
+                e.preventDefault();
                 this.setState({ selectedIndex: index });
                 this.emit('fileSelect', { index, fileInfo });
             }
         });
         
+        // Create file icon container
+        const fileIconContainer = createElementWithAttributes('div', {
+            className: 'file-icon-container',
+        });
+
         // Create file icon based on type
         const fileIcon = createElementWithAttributes('span', {
             className: 'file-icon',
             innerHTML: this.getFileIconSVG(fileInfo.name)
+        });
+        
+        // Create delete icon (overlay on file icon)
+        const deleteIcon = createElementWithAttributes('span', {
+            className: 'delete-file-icon',
+            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"></path><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>', // Trash can icon
+            onclick: (e) => {
+                e.stopPropagation(); // Prevent file selection
+                e.preventDefault(); 
+                this.handleDeleteFileClick(fileInfo.path, index);
+            }
         });
         
         // Create file name
@@ -381,41 +392,14 @@ class FileList extends EventEmitter {
             className: 'file-name',
             textContent: fileInfo.name
         });
-        
-        // Create delete button for the file
-        const deleteButton = createElementWithAttributes('button', {
-            className: 'btn btn-icon delete-file-btn',
-            title: `Delete file ${fileInfo.name}`,
-            style: { 
-                padding: '0',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                visibility: 'hidden' // Initially hidden
-            },
-            innerHTML: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>', // Simple X icon
-            onclick: (e) => {
-                e.stopPropagation(); // Prevent file selection
-                this.handleDeleteFileClick(fileInfo.path, index);
-            }
-        });
 
-        // Show delete button on hover of the file item
-        fileItem.onmouseenter = () => deleteButton.style.visibility = 'visible';
-        fileItem.onmouseleave = () => deleteButton.style.visibility = 'hidden';
-
-        // Create action buttons container
-        const actionButtons = createElementWithAttributes('div', {
-            className: 'action-buttons'
-        });
-        
-        // Add buttons to action container
-        actionButtons.appendChild(deleteButton);
+        // Add icons to container
+        fileIconContainer.appendChild(fileIcon);
+        fileIconContainer.appendChild(deleteIcon);
 
         // Assemble file item
-        fileLink.appendChild(fileIcon);
+        fileLink.appendChild(fileIconContainer);
         fileLink.appendChild(fileName);
-        fileLink.appendChild(actionButtons); // Add action buttons container
         fileItem.appendChild(fileLink);
         
         return fileItem;
@@ -628,16 +612,19 @@ class FileList extends EventEmitter {
     folderOrChildrenHaveDeletedContent(folderPath) {
         // Check if this folder has deleted content
         if (this.fileManager.folderHasDeletedContent.has(folderPath)) {
+            console.log(`Folder ${folderPath} has deleted content`);
             return true;
         }
         
         // Check all tracked folders that are subfolders of this folder
         for (const path of this.fileManager.folderHasDeletedContent) {
             if (path.startsWith(folderPath + '/')) {
+                console.log(`Subfolder ${path} of ${folderPath} has deleted content`);
                 return true;
             }
         }
         
+        console.log(`Folder ${folderPath} does NOT have deleted content`);
         return false;
     }
 }

@@ -43,6 +43,7 @@
   transition: .2s ease;
   line-height: 20px;
   height: 28px;
+  cursor: pointer;
 }
 
 .file-tree a::before {
@@ -78,7 +79,7 @@
   content: "";
   position: absolute;
   left: calc(-1 * var(--guide-width));
-  width: calc(32px + var(--icon-position) + var(--icon-middle) + var(--guide-width));
+  width: var(--icon-position);
   height: var(--guide-width);
   top: 14px;
   border-top: var(--guide-width) var(--guide-style) var(--guide-color);

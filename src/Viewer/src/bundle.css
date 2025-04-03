@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T08:23:47.737Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T10:06:26.600Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -365,6 +365,7 @@ a {
   transition: .2s ease;
   line-height: 20px;
   height: 28px;
+  cursor: pointer;
 }
 
 .file-tree a::before {
@@ -399,8 +400,8 @@ a {
 .file-tree .folder-contents > li.file-item::after {
   content: "";
   position: absolute;
-  left: 0;
-  width: calc(var(--icon-position) + var(--icon-middle));
+  left: calc(-1 * var(--guide-width));
+  width: var(--icon-position);
   height: var(--guide-width);
   top: 14px;
   border-top: var(--guide-width) var(--guide-style) var(--guide-color);
@@ -607,12 +608,52 @@ a {
 }
 
 /* Common icon styles */
-.folder-icon, .file-icon {
+.folder-icon-container, .file-icon-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 6px;
+    width: 18px;
+    height: 18px;
+}
+
+.folder-icon, .file-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: #555;
+    z-index: 1;
+}
+
+/* Delete icon overlay styles */
+.delete-folder-icon, .delete-file-icon {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+    z-index: 2;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.delete-folder-icon svg, .delete-file-icon svg {
+    width: 14px;
+    height: 14px;
+    stroke: #ff3333;
+}
+
+/* Show delete icon on hover */
+.folder-icon-container:hover .delete-folder-icon,
+.file-icon-container:hover .delete-file-icon {
+    opacity: 1;
 }
 
 /* Folder styles */
@@ -671,6 +712,7 @@ a {
     transition: background-color 0.15s ease;
     position: relative;
     overflow: visible;
+    cursor: pointer;
 }
 
 .file-item a:hover {
@@ -692,9 +734,7 @@ a {
 }
 
 /* Common delete button styles (for both folder and file) */
-.folder-header .delete-folder-btn, 
-.folder-header .refresh-folder-btn,
-.file-item a .delete-file-btn {
+.folder-header .refresh-folder-btn {
     /* Reset button styles */
     padding: 0; 
     border: none;
@@ -702,14 +742,13 @@ a {
     line-height: 1; 
     cursor: pointer; 
     /* Improved flex centering for the button content */
-    display: flex; 
+    display: none !important; /* Hidden by default with !important */
     align-items: center;
     justify-content: center;
     /* Ensure it doesn't shrink */
     flex-shrink: 0; 
     height: 28px;
     width: 28px;
-    visibility: hidden; /* Keep hidden by default */
     opacity: 0.8;
     transition: opacity 0.2s ease, background-color 0.2s ease;
     border-radius: 4px;
@@ -722,46 +761,19 @@ a {
     margin-left: auto;
 }
 
-/* Refresh button positioning */
-.folder-header .refresh-folder-btn {
-    margin-right: 2px;
-}
-
-/* Show refresh button on hover only if it's not display:none (controlled by JS) */
-.folder-header:hover .refresh-folder-btn:not([style*='display: none']),
-.folder-header:hover .delete-folder-btn,
-.file-item a:hover .delete-file-btn {
-    visibility: visible;
-}
-
 /* Button hover effects */
-.folder-header .delete-folder-btn:hover, 
-.folder-header .refresh-folder-btn:hover,
-.file-item a .delete-file-btn:hover {
+.folder-header .refresh-folder-btn:hover {
     opacity: 1;
     background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Style the SVG inside the buttons */
-.folder-header .delete-folder-btn svg, 
-.folder-header .refresh-folder-btn svg,
-.file-item a .delete-file-btn svg {
+.folder-header .refresh-folder-btn svg {
     width: 14px; 
     height: 14px;
     stroke: #666;
     /* Ensure SVG itself is centered in the button */
     display: block;
-}
-
-/* Different color for refresh button - REMOVED to match other buttons */
-/* .folder-header .refresh-folder-btn svg {
-    stroke: #0078d7;
-} */
-
-/* Show delete buttons on hover */
-.folder-header:hover .delete-folder-btn,
-.file-item a:hover .delete-file-btn {
-    visibility: visible;
 }
 
 /* Empty state */
