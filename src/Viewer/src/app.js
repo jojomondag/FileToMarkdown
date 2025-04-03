@@ -1551,6 +1551,7 @@ class FileToMarkdownViewer {
                 this.isPickerActive = false;
                 window._directoryPickerActive = false;
                 this.elements.dropZone.style.pointerEvents = 'auto';
+                this.updateDropzoneUI(); // Restore the original button state after cancellation
                 throw error; // Re-throw for the outer catch
             });
             
@@ -1573,9 +1574,11 @@ class FileToMarkdownViewer {
             // Handle errors (e.g., user cancellation)
             if (error.name === 'AbortError') {
                 // console.log('Directory picker was cancelled by the user.');
+                this.updateDropzoneUI(); // Restore the original button state after cancellation
             } else {
                 // console.error('Error opening directory picker:', error);
                 this.showError(`Error opening directory picker: ${error.message}`);
+                this.updateDropzoneUI(); // Also restore the UI for other errors
             }
         } finally {
             // console.log('Directory picker finished');
