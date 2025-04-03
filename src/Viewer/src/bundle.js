@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-03T20:50:36.986Z
+// FileToMarkdown Viewer Bundle - 2025-04-03T21:17:45.405Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1740,8 +1740,22 @@ class StateManager {
         const presetBtn = document.createElement('button');
         presetBtn.id = existingBtnId; // Use sanitized ID
         presetBtn.className = 'btn btn-preset';
-        // Store tooltip text in data attribute instead of title to avoid browser's built-in tooltip
-        presetBtn.dataset.tooltip = `Load: ${presetName} (${new Date(timestamp).toLocaleString()})`;
+        
+        // Format date without seconds (using options for date formatting)
+        const dateObj = new Date(timestamp);
+        const dateOptions = { 
+            year: 'numeric', 
+            month: 'numeric', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false // Use 24-hour format instead of AM/PM
+        };
+        const formattedDate = dateObj.toLocaleString(undefined, dateOptions);
+        
+        // Store tooltip text in data attribute with name and date on separate lines
+        presetBtn.dataset.tooltip = `${presetName}\n${formattedDate}`;
+        
         // Use a simpler SVG icon without complex paths that might render incorrectly
         presetBtn.innerHTML = `
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2344,6 +2358,92 @@ class StateManager {
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = { StateManager };
 } 
+
+// File: utils/tooltipManager.js
+/**
+ * Custom Tooltip Manager
+ * Manages tooltips for preset buttons and other elements with data-tooltip attributes
+ */
+
+// This is a self-executing function that creates the tooltip manager
+(function() {
+    // Create a tooltip element to be reused
+    const tooltipElement = document.createElement('div');
+    tooltipElement.className = 'custom-tooltip';
+    tooltipElement.style.display = 'none';
+    
+    // Add tooltip element to the document body when it's fully loaded
+    if (document.body) {
+        document.body.appendChild(tooltipElement);
+    } else {
+        window.addEventListener('DOMContentLoaded', () => {
+            document.body.appendChild(tooltipElement);
+        });
+    }
+    
+    // Handle mouseover events
+    function handleMouseOver(event) {
+        // Check if target or any parent has data-tooltip
+        const target = event.target.closest('[data-tooltip]');
+        if (!target) return;
+        
+        // Get tooltip text
+        const tooltipText = target.dataset.tooltip;
+        if (!tooltipText) return;
+        
+        // Calculate position
+        const rect = target.getBoundingClientRect();
+        
+        // Position the tooltip inline with the button at the same height
+        // Calculate vertical center of the button
+        const buttonCenterY = rect.top + (rect.height / 2);
+        
+        // Position the tooltip based on the element's position
+        tooltipElement.innerHTML = tooltipText.replace(/\n/g, '<br>');
+        
+        // Set top to center of button, minus half of tooltip height (after it's rendered)
+        tooltipElement.style.display = 'block';
+        const tooltipHeight = tooltipElement.offsetHeight;
+        tooltipElement.style.top = `${buttonCenterY - (tooltipHeight / 2)}px`;
+        tooltipElement.style.left = `${rect.right + 10}px`;
+    }
+    
+    // Handle mouseout events
+    function handleMouseOut(event) {
+        // Check if we're moving from an element with a tooltip to another element
+        const target = event.target.closest('[data-tooltip]');
+        const relatedTarget = event.relatedTarget ? event.relatedTarget.closest('[data-tooltip]') : null;
+        
+        // Only hide if we're not moving to another tooltip element
+        if (target && target !== relatedTarget) {
+            tooltipElement.style.display = 'none';
+        }
+    }
+    
+    // Set up event listeners
+    document.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mouseout', handleMouseOut);
+    
+    // Make it globally available for debugging if needed
+    window.tooltipManager = {
+        showTooltip: function(element, text) {
+            if (!element) return;
+            
+            const rect = element.getBoundingClientRect();
+            tooltipElement.innerHTML = text.replace(/\n/g, '<br>');
+            
+            // Position at same height as button
+            const buttonCenterY = rect.top + (rect.height / 2);
+            tooltipElement.style.display = 'block';
+            const tooltipHeight = tooltipElement.offsetHeight;
+            tooltipElement.style.top = `${buttonCenterY - (tooltipHeight / 2)}px`;
+            tooltipElement.style.left = `${rect.right + 10}px`;
+        },
+        hideTooltip: function() {
+            tooltipElement.style.display = 'none';
+        }
+    };
+})(); 
 
 // File: components/FileList.js
 // import from ../utils/domUtils

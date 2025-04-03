@@ -88,8 +88,22 @@ class StateManager {
         const presetBtn = document.createElement('button');
         presetBtn.id = existingBtnId; // Use sanitized ID
         presetBtn.className = 'btn btn-preset';
-        // Store tooltip text in data attribute instead of title to avoid browser's built-in tooltip
-        presetBtn.dataset.tooltip = `Load: ${presetName} (${new Date(timestamp).toLocaleString()})`;
+        
+        // Format date without seconds (using options for date formatting)
+        const dateObj = new Date(timestamp);
+        const dateOptions = { 
+            year: 'numeric', 
+            month: 'numeric', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false // Use 24-hour format instead of AM/PM
+        };
+        const formattedDate = dateObj.toLocaleString(undefined, dateOptions);
+        
+        // Store tooltip text in data attribute with name and date on separate lines
+        presetBtn.dataset.tooltip = `${presetName}\n${formattedDate}`;
+        
         // Use a simpler SVG icon without complex paths that might render incorrectly
         presetBtn.innerHTML = `
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

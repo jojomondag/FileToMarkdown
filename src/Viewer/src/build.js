@@ -19,6 +19,7 @@ const files = [
     'utils/renderer.js',
     'utils/fileManager.js',
     'utils/stateManager.js',    // Add StateManager after FileManager
+    'utils/tooltipManager.js',  // Add TooltipManager for preset button tooltips
     'components/FileList.js',   
     'components/Header.js',
     'components/Editor.js',

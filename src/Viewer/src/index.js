@@ -1,0 +1,1 @@
+// The tooltip manager is now self-initialized 
