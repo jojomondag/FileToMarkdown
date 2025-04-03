@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T07:05:45.138Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T08:23:47.737Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -396,11 +396,11 @@ a {
   content: none;
 }
 
-.file-tree .folder-contents > li::after {
+.file-tree .folder-contents > li.file-item::after {
   content: "";
   position: absolute;
-  left: calc(-1 * (var(--icon-size)/2 + 12px));
-  width: calc(var(--icon-size)/2 + 12px);
+  left: 0;
+  width: calc(var(--icon-position) + var(--icon-middle));
   height: var(--guide-width);
   top: 14px;
   border-top: var(--guide-width) var(--guide-style) var(--guide-color);

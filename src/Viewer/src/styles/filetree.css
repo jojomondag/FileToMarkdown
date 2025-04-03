@@ -74,11 +74,11 @@
   content: none;
 }
 
-.file-tree .folder-contents > li::after {
+.file-tree .folder-contents > li.file-item::after {
   content: "";
   position: absolute;
-  left: calc(-1 * (var(--icon-size)/2 + 12px));
-  width: calc(var(--icon-size)/2 + 12px);
+  left: calc(-1 * var(--guide-width));
+  width: calc(32px + var(--icon-position) + var(--icon-middle) + var(--guide-width));
   height: var(--guide-width);
   top: 14px;
   border-top: var(--guide-width) var(--guide-style) var(--guide-color);
