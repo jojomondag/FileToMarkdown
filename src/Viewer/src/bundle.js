@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-03T20:42:11.761Z
+// FileToMarkdown Viewer Bundle - 2025-04-03T20:50:36.986Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1704,7 +1704,7 @@ class StateManager {
         
         // Position the container
         container.style.position = 'absolute';
-        container.style.top = '110px'; // Position below the save button
+        container.style.top = '120px'; // Position below the spacer (increased from 110px to 140px)
         container.style.left = '50%';
         container.style.transform = 'translateX(-50%)';
         container.style.display = 'flex';
