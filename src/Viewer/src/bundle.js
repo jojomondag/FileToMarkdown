@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-03T10:06:26.571Z
+// FileToMarkdown Viewer Bundle - 2025-04-03T10:12:14.735Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {

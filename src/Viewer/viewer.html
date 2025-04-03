@@ -23,11 +23,6 @@
     <script src="src/bundle.js"></script>
 </head>
 <body>
-    <button class="btn btn-menu" id="b">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-        </svg>
-    </button>
     <div class="sidebar">
         <div class="sidebar-header">
             <h1 class="sidebar-title">FileToMarkdown</h1>
@@ -40,7 +35,13 @@
             <p>Click to select folders<br>with markdown files</p>
         </div>
     </div>
-    <div class="cidron-box"></div>
+    <div class="cidron-box">
+        <button class="btn btn-menu" id="b">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18"/>
+            </svg>
+        </button>
+    </div>
     <div class="main-content">
         <!-- Welcome screen - shown when no files are loaded -->
         <div id="welcome-screen" class="welcome-screen">

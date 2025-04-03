@@ -150,24 +150,14 @@
 
 /* Button menu positioning */
 .btn-menu {
-  position: fixed;
+  position: absolute;
   top: 10px;
   left: 10px;
   z-index: 1001;
   background: var(--color-white);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform .3s ease, left .3s ease;
-}
-
-/* Move the button right when sidebar is visible */
-body:not(.sidebar-hidden) .btn-menu {
-  left: calc(var(--sidebar-width) + 10px);
-}
-
-/* When sidebar is hidden, keep the button visible */
-.sidebar.hidden ~ .btn-menu {
-  left: 10px;
+  transition: transform .3s ease;
 }
 
 /* Content structure */
