@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-03T21:17:45.405Z
+// FileToMarkdown Viewer Bundle - 2025-04-05T09:32:46.439Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1659,7 +1659,6 @@ class StateManager {
     constructor(fileManager) {
         this.fileManager = fileManager;
         this.saveBtn = document.getElementById('btn-save');
-        this.presetContainer = null; // Will be created dynamically when needed
         this.cidronBox = document.querySelector('.cidron-box');
         this.garbageBtn = null; // Will hold reference to the garbage button
         
@@ -1680,53 +1679,21 @@ class StateManager {
         // Load saved presets from localStorage
         this.loadPresetsFromStorage();
         
-        // Create a spacer element between save button and presets
-        this.createSpacerElement();
-        
-        // Check if we have previously saved presets and create container if needed
+        // Check if we have previously saved presets and create buttons
         this.checkForSavedPresets();
         
-        // Create garbage button at the bottom
+        // Create garbage button at the end
         this.createGarbageButton();
-    }
-    
-    /**
-     * Create the preset container dynamically
-     */
-    createPresetContainer() {
-        // Don't create if it already exists
-        if (this.presetContainer) return;
-        
-        // Create the container element
-        const container = document.createElement('div');
-        container.id = 'preset-container';
-        container.className = 'preset-container';
-        
-        // Position the container
-        container.style.position = 'absolute';
-        container.style.top = '120px'; // Position below the spacer (increased from 110px to 140px)
-        container.style.left = '50%';
-        container.style.transform = 'translateX(-50%)';
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '10px';
-        container.style.alignItems = 'center';
-        container.style.width = '40px'; // Match the width of other buttons
-        
-        // Add to cidron-box
-        this.cidronBox.appendChild(container);
-        
-        // Store reference
-        this.presetContainer = container;
     }
     
     /**
      * Create a preset button dynamically
      */
     createPresetButton(presetName, timestamp) {
-        // Create the preset container if it doesn't exist yet
-        this.createPresetContainer();
-        if (!this.presetContainer) return; // Exit if container creation failed
+        if (!this.cidronBox) {
+            console.error("Cidron box not found, cannot add preset button.");
+            return; // Exit if cidronBox isn't found
+        }
 
         // Remove existing button for this preset if it exists
         const existingBtnId = `preset-${presetName.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
@@ -1753,22 +1720,15 @@ class StateManager {
         };
         const formattedDate = dateObj.toLocaleString(undefined, dateOptions);
         
-        // Store tooltip text in data attribute with name and date on separate lines
-        presetBtn.dataset.tooltip = `${presetName}\n${formattedDate}`;
-        
-        // Use a simpler SVG icon without complex paths that might render incorrectly
-        presetBtn.innerHTML = `
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 3v10M7 8l5-5 5 5M21 12v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            </svg>
-        `;
+        // Use the preset name as the button content instead of an icon
+        presetBtn.innerHTML = presetName;
         
         // Add styles specific to this button instance
         presetBtn.style.position = 'static'; 
-        presetBtn.style.margin = '0'; 
         presetBtn.style.transform = 'none'; 
-        presetBtn.style.width = '40px'; 
-        presetBtn.style.height = '40px'; 
+        presetBtn.style.padding = '5px 10px';
+        presetBtn.style.minWidth = '60px';
+        presetBtn.style.textAlign = 'center';
         
         // Add event listener
         presetBtn.addEventListener('click', () => this.loadPreset(presetName));
@@ -1780,11 +1740,11 @@ class StateManager {
              }
         });
 
-        // Add to preset container
-        if (this.clearBtn && this.presetContainer.contains(this.clearBtn)) {
-            this.presetContainer.insertBefore(presetBtn, this.clearBtn);
+        // Append directly to cidron-box, before the garbage button if it exists
+        if (this.garbageBtn && this.cidronBox.contains(this.garbageBtn)) {
+            this.cidronBox.insertBefore(presetBtn, this.garbageBtn);
         } else {
-            this.presetContainer.appendChild(presetBtn);
+            this.cidronBox.appendChild(presetBtn);
         }
         
         return presetBtn;
@@ -2224,9 +2184,9 @@ class StateManager {
             // Clear localStorage
             localStorage.removeItem('fileToMarkdownPresets');
             
-            // Remove all preset buttons
-            if (this.presetContainer) {
-                this.presetContainer.innerHTML = '';
+            // Remove all preset buttons from cidron-box
+            if (this.cidronBox) {
+                this.cidronBox.querySelectorAll('.btn-preset').forEach(btn => btn.remove());
             }
             
             console.log('All presets have been cleared');
@@ -2237,59 +2197,6 @@ class StateManager {
             console.error('Error clearing presets:', error);
             this.showNotification('error', `Error clearing presets: ${error.message}`);
             return false;
-        }
-    }
-
-    /**
-     * Create and append the "Clear Presets" button
-     */
-    createClearPresetsButton() {
-        if (this.clearBtn) return; // Already created
-
-        if (!this.cidronBox) {
-           console.error("Cidron box not found, cannot add Clear button.");
-           return;
-        }
-
-        this.clearBtn = document.createElement('button');
-        this.clearBtn.id = 'btn-clear-presets';
-        this.clearBtn.className = 'btn btn-danger'; // Use a danger class for styling? Or just 'btn'
-        // Use data-tooltip instead of title for the hover tooltip
-        this.clearBtn.dataset.tooltip = 'Clear All Saved Presets';
-        // Use a simpler SVG icon for consistency
-        this.clearBtn.innerHTML = `
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2"/>
-                <line x1="10" y1="11" x2="10" y2="17"/>
-                <line x1="14" y1="11" x2="14" y2="17"/>
-            </svg>
-        `;
-        
-        // Basic styling consistent with other buttons
-        this.clearBtn.style.position = 'static'; 
-        this.clearBtn.style.margin = '0'; 
-        this.clearBtn.style.transform = 'none'; 
-        this.clearBtn.style.width = '40px'; 
-        this.clearBtn.style.height = '40px'; 
-
-        // Add event listener
-        this.clearBtn.removeEventListener('click', this.handleClearClick); // Ensure no duplicates
-        this.clearBtn.addEventListener('click', this.handleClearClick);
-
-        // Append to preset container if it exists, otherwise wait for it
-        if (this.presetContainer) {
-            this.presetContainer.appendChild(this.clearBtn);
-            console.log("Clear Presets button created and added immediately.");
-        } else {
-            // If container doesn't exist yet, createPresetContainer will add it later
-            console.log("Clear Presets button created, will be added when container is ready.");
-             // We might need to explicitly add it if loadPresetsFromDB doesn't trigger container creation
-             // Let's try adding it directly to cidronBox for now, positioned below presets
-             this.clearBtn.style.position = 'absolute';
-             this.clearBtn.style.top = '160px'; // Example position below presets, adjust as needed
-             this.clearBtn.style.left = '50%';
-             this.clearBtn.style.transform = 'translateX(-50%)';
-             this.cidronBox.appendChild(this.clearBtn);
         }
     }
 
@@ -2317,6 +2224,9 @@ class StateManager {
             </svg>
         `;
         
+        // Push garbage button to the right
+        this.garbageBtn.style.marginLeft = 'auto';
+
         // Add event listener for removing all presets
         this.garbageBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove ALL saved presets? This cannot be undone.')) {
@@ -2327,30 +2237,6 @@ class StateManager {
         // Append to cidron-box
         this.cidronBox.appendChild(this.garbageBtn);
         console.log("Garbage button created and added to the cidron-box.");
-    }
-
-    /**
-     * Create a visual spacer element between save button and presets
-     */
-    createSpacerElement() {
-        if (!this.cidronBox) {
-            console.error("Cidron box not found, cannot add spacer element.");
-            return;
-        }
-
-        // Create spacer div
-        const spacer = document.createElement('div');
-        spacer.className = 'preset-spacer';
-        spacer.style.width = '40px';
-        spacer.style.height = '20px'; // Height of spacer
-        spacer.style.position = 'absolute';
-        spacer.style.top = '110px'; // Position right after save button (60px + 40px height + 10px)
-        spacer.style.left = '50%';
-        spacer.style.transform = 'translateX(-50%)';
-        spacer.style.zIndex = '1001';
-        
-        // Add to cidron-box
-        this.cidronBox.appendChild(spacer);
     }
 }
 

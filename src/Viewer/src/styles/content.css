@@ -1,44 +1,48 @@
 /* ===== MAIN CONTENT ===== */
 .main-content {
-  margin-left: calc(var(--sidebar-width) + 60px);
+  margin-left: var(--sidebar-width);
+  margin-top: 60px;
   flex: 1;
   padding: 10px 40px 10px 40px;
   max-width: 100%;
-  transition: margin-left .3s ease;
+  transition: margin-left .3s ease, margin-top .3s ease;
   position: relative;
-  height: 100vh;
+  height: calc(100vh - 60px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
-/* Cidron Box - Blue box next to sidebar */
+/* Cidron Box - Blue box next to sidebar, now above main content */
 .cidron-box {
   position: fixed;
   left: var(--sidebar-width);
   top: 0;
-  width: 60px;
-  height: 100vh;
+  width: calc(100% - var(--sidebar-width));
+  height: 60px;
   background-color: #3498db;
   z-index: 950;
-  transition: transform .3s ease, left .3s ease;
-  border-right: 2px solid #2980b9;
+  transition: transform .3s ease, left .3s ease, width .3s ease;
+  border-bottom: 2px solid #2980b9;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding-top: 10px;
+  justify-content: flex-start;
+  padding: 0 15px;
   gap: 10px;
 }
 
-/* When sidebar is hidden, move cidron-box to the left edge */
+/* When sidebar is hidden, move cidron-box to the left edge and make full width */
 .sidebar.hidden ~ .cidron-box {
   left: 0;
+  width: 100%;
 }
 
 .main-content.expanded {
   margin-left: 0;
-  padding-left: 70px; /* Extra space to avoid colliding with the hamburger button */
+  margin-top: 60px;
+  height: calc(100vh - 60px);
 }
 
 /* ==== WELCOME SCREEN ==== */
@@ -155,10 +159,6 @@
 
 /* Button menu positioning */
 .cidron-box .btn-menu {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
   background: var(--color-white);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -167,31 +167,30 @@
 }
 
 .cidron-box .btn-save {
-  position: absolute;
-  top: 60px; /* Position below the menu button */
-  left: 50%;
-  transform: translateX(-50%);
   background: #e6f7ff;
   border: 1px solid #0366d6;
   color: #0366d6;
   z-index: 1001;
 }
 
-/* Preset spacer */
+/* Preset spacer - REMOVED as presets are now inline */
+/*
 .preset-spacer {
   width: 40px;
   height: 20px;
   position: absolute;
-  top: 110px; /* Position after save button */
+  top: 110px; 
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001;
 }
+*/
 
-/* Preset container */
+/* Preset container - REMOVED as presets are now inline */
+/*
 .preset-container {
   position: absolute;
-  top: 140px; /* Position after spacer (110px + 20px height + 10px gap) */
+  top: 140px; 
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -200,19 +199,22 @@
   z-index: 1001;
   max-height: calc(100vh - 150px);
   overflow-y: auto;
-  padding: 0; /* Remove padding as we're using the spacer */
-  width: 40px; /* Match button width */
+  padding: 0; 
+  width: 40px; 
   align-items: center;
 }
+*/
 
-/* Remove margin from first preset button since we have the spacer */
+/* Remove margin from first preset button since we have the spacer - REMOVED */
+/*
 .preset-container .btn-preset:first-child {
   margin-top: 0;
 }
+*/
 
-/* Preset button styling */
+/* Preset button styling - Should now align horizontally in cidron-box */
 .cidron-box .btn-preset {
-  position: static; /* Not absolute - allows container to control positioning */
+  position: static; /* Keep static positioning */
   background: #f0fff4;
   border: 1px solid #38a169;
   color: #38a169;
@@ -223,7 +225,7 @@
   align-items: center;
   justify-content: center;
   margin: 0;
-  transform: none; /* Remove transforms that might affect positioning */
+  transform: none;
 }
 
 .cidron-box .btn-preset svg {
@@ -311,15 +313,11 @@
 
 /* Specific hover for cidron-box save button to prevent sideways movement */
 .cidron-box .btn-save:hover {
-  transform: translateX(-50%) translateY(-2px); /* Keep centered while moving up slightly */
+  transform: translateY(-2px);
 }
 
 /* Garbage button for removing all presets */
 .cidron-box .btn-garbage {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   background: #fff5f5;
   border: 1px solid #e53e3e;
   color: #e53e3e;
@@ -327,8 +325,7 @@
 }
 
 .cidron-box .btn-garbage:hover {
-  background: #fed7d7;
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .btn-edit {

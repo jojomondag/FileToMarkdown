@@ -130,10 +130,6 @@ a {
     padding: 10px 60px;
   }
   
-  .content-container {
-    padding: 15px 60px;
-  }
-  
   .btn-menu {
     left: 305px;
   }
@@ -147,10 +143,6 @@ a {
   .main-content {
     margin-left: var(--sidebar-width-xl);
     padding: 10px 80px;
-  }
-  
-  .content-container {
-    padding: 15px 80px;
   }
   
   .btn-menu {
