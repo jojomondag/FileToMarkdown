@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-05T12:27:52.050Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-05T13:07:53.020Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -123,29 +123,14 @@ a {
   }
 }
 
-@media (min-width: 1600px) {
-  :root {
-    --sidebar-width: 350px;
-  }
-  
-  .main-content {
-    margin-left: var(--sidebar-width-lg);
-    padding: 10px 60px;
-  }
-  
-  .btn-menu {
-    left: 305px;
-  }
-}
-
 @media (min-width: 2000px) {
   :root {
     --sidebar-width: 400px;
   }
   
   .main-content {
-    margin-left: var(--sidebar-width-xl);
-    padding: 10px 80px;
+    margin-left: 0;
+    padding: 10px;
   }
   
   .btn-menu {
@@ -832,7 +817,6 @@ a {
   margin-left: var(--sidebar-width);
   margin-top: 110px;
   flex: 1;
-  padding: 10px 40px 10px 40px;
   max-width: 100%;
   transition: margin-left .3s ease, margin-top .3s ease;
   position: relative;
@@ -973,9 +957,10 @@ a {
   position: relative;
   background: var(--color-white);
   width: 100%;
-  max-width: 100%;
-  height: calc(100% - 20px);
-  padding: 50px 40px 15px 40px;
+  height: 100%;
+  padding: 20px 20px 15px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-dark);
@@ -1643,7 +1628,7 @@ body.edit-mode .content-buttons {
 
 /* Ensure proper welcome content positioning */
 .content-container .markdown-content {
-  padding: 10px 0;
+  padding: 0 20px 20px 20px;
   overflow: visible;
 }
 
@@ -1679,12 +1664,14 @@ body.edit-mode .editor-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-width: 3000px;
+    margin: 0 auto;
     overflow: auto;
 }
 
 .markdown-content {
     flex: 1;
-    padding: 20px;
+    padding: 0 20px 20px 20px;
     overflow: auto;
 }
 

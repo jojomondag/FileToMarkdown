@@ -3,7 +3,6 @@
   margin-left: var(--sidebar-width);
   margin-top: 110px;
   flex: 1;
-  padding: 10px 40px 10px 40px;
   max-width: 100%;
   transition: margin-left .3s ease, margin-top .3s ease;
   position: relative;
@@ -144,9 +143,9 @@
   position: relative;
   background: var(--color-white);
   width: 100%;
-  max-width: 100%;
-  height: calc(100% - 20px);
-  padding: 50px 40px 15px 40px;
+  height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-dark);
@@ -814,7 +813,7 @@ body.edit-mode .content-buttons {
 
 /* Ensure proper welcome content positioning */
 .content-container .markdown-content {
-  padding: 10px 0;
+  padding: 0 20px 20px 20px;
   overflow: visible;
 }
 

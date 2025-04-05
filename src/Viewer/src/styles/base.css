@@ -120,29 +120,14 @@ a {
   }
 }
 
-@media (min-width: 1600px) {
-  :root {
-    --sidebar-width: 350px;
-  }
-  
-  .main-content {
-    margin-left: var(--sidebar-width-lg);
-    padding: 10px 60px;
-  }
-  
-  .btn-menu {
-    left: 305px;
-  }
-}
-
 @media (min-width: 2000px) {
   :root {
     --sidebar-width: 400px;
   }
   
   .main-content {
-    margin-left: var(--sidebar-width-xl);
-    padding: 10px 80px;
+    margin-left: 0;
+    padding: 10px;
   }
   
   .btn-menu {
