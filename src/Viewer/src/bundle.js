@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-05T12:21:59.075Z
+// FileToMarkdown Viewer Bundle - 2025-04-05T12:27:52.041Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -3237,7 +3237,7 @@ class FileToMarkdownViewer {
             saveButton: null, // Save button (created dynamically)
             editButton: null, // Edit button (created dynamically initially, may be replaced)
             directoryInput: null, // Input for directory selection fallback
-            buttonContainer: null, // Container for edit/save buttons (created dynamically)
+            editBar: document.getElementById('edit-bar'), // The new bar for edit buttons
             editButtonContainer: null, // Container for edit button (created dynamically)
             contentWrapper: null, // Added for the new content wrapper
             cidronSaveButton: document.getElementById('btn-save'), // Save button in cidron-box
@@ -3267,39 +3267,23 @@ class FileToMarkdownViewer {
         // Store reference to content wrapper
         this.elements.contentWrapper = contentWrapper;
         
-        // Create button container for edit/save buttons
-        this.setupButtonContainer();
+        // Setup edit/save buttons in the dedicated edit bar
+        this.setupEditBarButtons();
     }
     
     /**
-     * Create button container for edit/save buttons
+     * Create and place edit/save buttons in the #edit-bar
      */
-    setupButtonContainer() {
-        // Remove existing containers if present
-        const existingContainer = document.querySelector('.button-container');
-        if (existingContainer) {
-            existingContainer.parentNode.removeChild(existingContainer);
+    setupEditBarButtons() {
+        const editBar = this.elements.editBar;
+        if (!editBar) {
+            console.error("Edit bar element (#edit-bar) not found!");
+            return;
         }
-        
-        const existingEditContainer = document.querySelector('.edit-button-container');
-        if (existingEditContainer) {
-            existingEditContainer.parentNode.removeChild(existingEditContainer);
-        }
-        
-        // Create a single buttons container for both edit and save buttons
-        const buttonsContainer = createElementWithAttributes('div', {
-            className: 'content-buttons',
-            style: {
-                position: 'absolute',
-                top: '10px',
-                left: '10px',
-                display: 'none', // Initially hidden but will be shown when a file is loaded
-                gap: '10px',
-                zIndex: '1001',
-                visibility: 'visible' // Ensure it's visible when display is set
-            }
-        });
-        
+
+        // Clear existing buttons from edit bar if any (e.g., on re-init)
+        editBar.innerHTML = '';
+
         // Create edit button
         const editButton = createElementWithAttributes('button', {
             id: 'e',
@@ -3313,26 +3297,18 @@ class FileToMarkdownViewer {
             className: 'btn btn-save',
             id: 's',
             innerHTML: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
-            style: { display: 'none' },
+            style: { display: 'none' }, // Initially hidden, controlled by CSS/edit-mode
             onclick: () => this.saveFile()
         });
         
         // Store references to the buttons
         this.elements.saveButton = saveButton;
         this.elements.editButton = editButton;
-        this.elements.buttonContainer = buttonsContainer;
         
-        // Add buttons to the container
-        buttonsContainer.appendChild(editButton);
-        buttonsContainer.appendChild(saveButton);
-        
-        // Add the buttons container to the content container
-        // Make sure the content element exists
-        if (this.elements.content) {
-            this.elements.content.appendChild(buttonsContainer);
-        } else {
-            console.error('Content element not found');
-        }
+        // Add buttons to the edit bar
+        editBar.appendChild(editButton);
+        editButton.style.display = 'none'; // Initially hidden, controlled by CSS/edit-mode
+        editBar.appendChild(saveButton);
     }
     
     /**
@@ -3768,7 +3744,7 @@ class FileToMarkdownViewer {
             this.updateDropzoneUI();
             
             // Show the button container
-            this.elements.buttonContainer.style.display = 'flex';
+            this.elements.editButton.style.display = 'flex';
             
             // Load the first file
             this.loadFile(this.fileManager.currentFileIndex);
@@ -3889,8 +3865,8 @@ class FileToMarkdownViewer {
         this.updateFileListSelection(index);
 
         // Show button container when a file is loaded
-        if (this.elements.buttonContainer) {
-            this.elements.buttonContainer.style.display = 'flex';
+        if (this.elements.editButton) {
+            this.elements.editButton.style.display = 'flex';
         }
         
         // Update button positions
@@ -4080,42 +4056,39 @@ class FileToMarkdownViewer {
         this.updateButtonPositions();
     }
 
+    /**
+     * Update button visibility and appearance based on state
+     */
     updateButtonPositions() {
         // Get references to our elements
-        const buttonsContainer = this.elements.buttonContainer;
+        const editBar = this.elements.editBar;
         const editButton = this.elements.editButton;
         const saveButton = this.elements.saveButton;
         
-        // Safety check - if elements don't exist, don't do anything
-        if (!buttonsContainer || !editButton || !saveButton) {
-            // console.error('Missing button elements');
+        // Safety check
+        if (!editBar || !editButton || !saveButton) {
             return;
         }
         
-        // Set base visibility based on whether a file is selected
         const hasSelectedFile = this.fileManager.currentFileIndex !== undefined && this.fileManager.currentFileIndex >= 0;
         
         // Only show buttons if a file is selected
         if (hasSelectedFile) {
-            // Show container
-            buttonsContainer.style.display = 'flex';
-            buttonsContainer.style.visibility = 'visible';
-            
-            // Update button appearance based on mode
+            editButton.style.display = 'flex'; // Show edit button
+            // Save button visibility is handled by the 'edit-mode' class on the body
+
+            // Update edit button appearance based on mode
             if (this.isEditorMode) {
-                // In edit mode
                 editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
                 editButton.title = 'Exit Edit Mode';
-                // The save button visibility is now controlled by CSS with the edit-mode class
             } else {
-                // In view mode
                 editButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>';
                 editButton.title = 'Edit File';
-                // The save button visibility is now controlled by CSS with the edit-mode class
             }
         } else {
-            // No file selected, hide the buttons container
-            buttonsContainer.style.display = 'none';
+            // No file selected, hide the buttons
+            editButton.style.display = 'none';
+            saveButton.style.display = 'none';
         }
     }
 
@@ -4172,8 +4145,8 @@ class FileToMarkdownViewer {
         this.isEditorMode = !this.isEditorMode;
         
         // Ensure we have valid references to our UI elements
-        if (!this.elements.buttonContainer || !this.elements.saveButton || !this.elements.editButton) {
-            // console.error('Missing UI elements for editor mode');
+        if (!this.elements.editBar || !this.elements.saveButton || !this.elements.editButton) {
+            console.error('Missing UI elements for editor mode (editBar, saveButton, editButton)');
             return;
         }
         
@@ -4216,8 +4189,7 @@ class FileToMarkdownViewer {
             // Hide the content container but keep its space in the layout
             this.elements.content.style.visibility = 'hidden';
             
-            // Make sure buttons are visible
-            this.elements.buttonContainer.style.display = 'flex';
+            // Buttons are shown/hidden via CSS '.edit-mode' class
             
         } else {
             // Remove edit-mode class
@@ -4251,7 +4223,7 @@ class FileToMarkdownViewer {
             this.setupLinkHandlers();
         }
         
-        // Update button positions/state
+        // Update button positions/state (mainly for icon/title changes)
         this.updateButtonPositions();
     }
     
@@ -4774,7 +4746,7 @@ class FileToMarkdownViewer {
         if (!this._componentsSetup) {
             this._componentsSetup = true;
             this.setupComponents();
-            this.setupButtonContainer();
+            this.setupEditBarButtons();
             this.setupEditorElement();
         }
         

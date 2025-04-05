@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-05T12:21:59.085Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-05T12:27:52.050Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -830,13 +830,13 @@ a {
 /* ===== MAIN CONTENT ===== */
 .main-content {
   margin-left: var(--sidebar-width);
-  margin-top: 60px;
+  margin-top: 110px;
   flex: 1;
   padding: 10px 40px 10px 40px;
   max-width: 100%;
   transition: margin-left .3s ease, margin-top .3s ease;
   position: relative;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 110px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -870,8 +870,31 @@ a {
 
 .main-content.expanded {
   margin-left: 0;
-  margin-top: 60px;
-  height: calc(100vh - 60px);
+  margin-top: 110px;
+  height: calc(100vh - 110px);
+}
+
+/* Edit Bar - New container below cidron-box */
+.edit-bar {
+  position: fixed;
+  left: var(--sidebar-width);
+  top: 60px; /* Height of cidron-box */
+  width: calc(100% - var(--sidebar-width));
+  height: 50px; /* Adjust height as needed */
+  background-color: #e9ecef; /* Light gray background */
+  z-index: 940; /* Below cidron-box, above main content */
+  transition: transform .3s ease, left .3s ease, width .3s ease;
+  border-bottom: 1px solid var(--color-border-dark);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  gap: 10px;
+}
+
+/* Adjust edit bar when sidebar is hidden */
+.sidebar.hidden ~ .edit-bar {
+  left: 0;
+  width: 100%;
 }
 
 /* ==== WELCOME SCREEN ==== */
@@ -1141,7 +1164,8 @@ a {
   box-sizing: border-box;
 }
 
-/* Edit button positioning */
+/* Edit button positioning - REMOVE OLD RULE */
+/*
 .content-buttons {
   position: absolute;
   top: 10px;
@@ -1151,22 +1175,26 @@ a {
   z-index: 1001;
   visibility: visible !important;
 }
+*/
 
-/* Button styling */
-.btn-edit, .btn-save {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+/* Button styling (ensure .btn-edit and .btn-save look good in the new bar) */
+.edit-bar .btn-edit, .edit-bar .btn-save {
+  /* Reset potential absolute positioning from old setup */
+  position: static;
+  /* General button styles from .btn are likely inherited, add specifics if needed */
 }
 
-.btn-edit:hover, .btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  background: var(--color-hover);
+.edit-bar .btn-edit {
+    display: none; /* Hidden by default, shown when file selected */
 }
 
-/* Specific hover for cidron-box save button to prevent sideways movement */
-.cidron-box .btn-save:hover {
-  transform: translateY(-2px);
+/* Save button visibility control in the new bar */
+.edit-bar .btn-save {
+  display: none !important; /* Hide by default */
+}
+
+body.edit-mode .edit-bar .btn-save {
+  display: flex !important; /* Only show in edit mode */
 }
 
 /* Garbage button for removing all presets */
@@ -1596,7 +1624,8 @@ body.edit-mode .content-container {
   transform: none;
 }
 
-/* Position buttons properly in edit mode */
+/* Position buttons properly in edit mode - REMOVE OLD RULE */
+/*
 body.edit-mode .content-buttons {
   visibility: visible !important;
   z-index: 1050;
@@ -1604,6 +1633,7 @@ body.edit-mode .content-buttons {
   top: 10px !important;
   left: 10px !important;
 }
+*/
 
 /* Welcome screen specific styling */
 .content-container h2:first-child {
