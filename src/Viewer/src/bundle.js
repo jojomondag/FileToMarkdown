@@ -1,4 +1,4 @@
-// FileToMarkdown Viewer Bundle - 2025-04-05T09:32:46.439Z
+// FileToMarkdown Viewer Bundle - 2025-04-05T12:21:59.075Z
 
 // Ensure global objects exist
 if (typeof window.FileToMarkdownViewer === 'undefined') {
@@ -1711,33 +1711,59 @@ class StateManager {
         // Format date without seconds (using options for date formatting)
         const dateObj = new Date(timestamp);
         const dateOptions = { 
-            year: 'numeric', 
             month: 'numeric', 
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            hour12: false // Use 24-hour format instead of AM/PM
+            hour12: false // Use 24-hour format
         };
-        const formattedDate = dateObj.toLocaleString(undefined, dateOptions);
+        const formattedDateTime = dateObj.toLocaleString(undefined, dateOptions);
         
-        // Use the preset name as the button content instead of an icon
-        presetBtn.innerHTML = presetName;
+        // Use the preset name and time as the button content
+        presetBtn.innerHTML = `
+            <span class="preset-name">${presetName}</span>
+            <span class="preset-time">${formattedDateTime}</span>
+        `;
+        presetBtn.title = `Preset: ${presetName}\nCreated: ${dateObj.toLocaleString()}`; // Add tooltip with full info
         
-        // Add styles specific to this button instance
+        // Add/Modify styles specific to this button instance for layout
         presetBtn.style.position = 'static'; 
         presetBtn.style.transform = 'none'; 
-        presetBtn.style.padding = '5px 10px';
-        presetBtn.style.minWidth = '60px';
-        presetBtn.style.textAlign = 'center';
+        presetBtn.style.padding = '5px'; // Adjusted padding
+        presetBtn.style.minWidth = '70px'; // Slightly wider min-width
+        presetBtn.style.display = 'flex';
+        presetBtn.style.flexDirection = 'column';
+        presetBtn.style.alignItems = 'center';
+        presetBtn.style.justifyContent = 'center';
+        // Keep overflow styles from previous edit - they might be better applied to the name span via CSS
+        presetBtn.style.whiteSpace = 'normal'; // Allow wrapping generally
+        presetBtn.style.overflow = 'hidden'; // Hide overall overflow
         
-        // Add event listener
+        // Make the button draggable
+        presetBtn.draggable = true;
+
+        // Event Listeners
         presetBtn.addEventListener('click', () => this.loadPreset(presetName));
         
         presetBtn.addEventListener('contextmenu', (event) => {
              event.preventDefault();
-             if (confirm(`Delete preset "${presetName}"?`)) {
+             if (confirm(`Delete preset \"${presetName}\"?`)) {
                  this.removePreset(presetName);
              }
+        });
+
+        // Drag and Drop listeners
+        presetBtn.addEventListener('dragstart', (event) => {
+            // Store the preset name being dragged
+            event.dataTransfer.setData('text/plain', presetName);
+            event.dataTransfer.effectAllowed = 'move';
+            // Optional: Add a visual cue for dragging
+            presetBtn.style.opacity = '0.5';
+        });
+
+        presetBtn.addEventListener('dragend', () => {
+            // Reset visual cue
+            presetBtn.style.opacity = '1';
         });
 
         // Append directly to cidron-box, before the garbage button if it exists
@@ -2153,9 +2179,12 @@ class StateManager {
             }
             
             // Remove preset button from UI
-            const presetBtn = document.getElementById(`preset-${presetName.replace(/\s+/g, '-').toLowerCase()}`);
+            const buttonId = `preset-${presetName.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+            const presetBtn = document.getElementById(buttonId);
             if (presetBtn && presetBtn.parentNode) {
                 presetBtn.parentNode.removeChild(presetBtn);
+            } else {
+                console.warn(`Preset button for "${presetName}" not found in UI`);
             }
             
             // Remove from state
@@ -2231,6 +2260,38 @@ class StateManager {
         this.garbageBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to remove ALL saved presets? This cannot be undone.')) {
                 this.clearAllPresets();
+            }
+        });
+
+        // Drag and Drop listeners for the garbage button
+        this.garbageBtn.addEventListener('dragover', (event) => {
+            event.preventDefault(); // Necessary to allow drop
+            event.dataTransfer.dropEffect = 'move';
+            // Optional: Add visual feedback (e.g., change background)
+            this.garbageBtn.style.backgroundColor = '#fed7d7'; // Lighter red background
+            this.garbageBtn.style.borderColor = '#e53e3e';
+        });
+
+        this.garbageBtn.addEventListener('dragleave', () => {
+            // Optional: Remove visual feedback
+            this.garbageBtn.style.backgroundColor = ''; // Revert background
+            this.garbageBtn.style.borderColor = '';
+        });
+
+        this.garbageBtn.addEventListener('drop', (event) => {
+            event.preventDefault();
+            // Optional: Remove visual feedback
+            this.garbageBtn.style.backgroundColor = ''; // Revert background
+            this.garbageBtn.style.borderColor = '';
+
+            const presetName = event.dataTransfer.getData('text/plain');
+            if (presetName) {
+                // Confirm deletion
+                if (confirm(`Are you sure you want to delete the preset \"${presetName}\" by dropping it?`)) {
+                    this.removePreset(presetName);
+                }
+            } else {
+                console.warn('Drop event occurred on garbage bin without preset data.');
             }
         });
 
