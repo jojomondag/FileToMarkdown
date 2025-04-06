@@ -1,36 +1,61 @@
 import { LANGUAGE_MAPPINGS } from './constants';
 
 /**
- * Renderer for markdown content with syntax highlighting
+ * Simple renderer for Markdown content
  */
 class BrowserRenderer {
     constructor() {
-        this.configureMarked();
-        if (typeof window !== 'undefined') window.Prism = Prism;
+        this.markedInstance = window.marked;
+        
+        // Configure marked options if available
+        if (this.markedInstance && typeof this.markedInstance.setOptions === 'function') {
+            this.markedInstance.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: true,
+                highlight: function(code, lang) {
+                    if (window.Prism && lang && window.Prism.languages[lang]) {
+                        try {
+                            return window.Prism.highlight(code, window.Prism.languages[lang], lang);
+                        } catch (e) {
+                            console.error('Error highlighting code:', e);
+                            return code;
+                        }
+                    }
+                    return code;
+                }
+            });
+        }
     }
-
-    configureMarked() {
-        marked.setOptions({
-            highlight: (code, lang) => {
-                try {
-                    const language = LANGUAGE_MAPPINGS[lang] || lang;
-                    return Prism.languages[language] 
-                        ? Prism.highlight(code, Prism.languages[language], language)
-                        : code;
-                } catch { return code; }
-            },
-            langPrefix: 'language-',
-            gfm: true,
-            breaks: true
-        });
-    }
-
+    
+    /**
+     * Render markdown content to HTML
+     * @param {string} content - Markdown content
+     * @returns {string} HTML content
+     */
     render(content) {
-        return marked.parse(content);
+        if (!content) return '<div class="empty-content">No content to display</div>';
+        
+        try {
+            if (this.markedInstance) {
+                return this.markedInstance.parse(content);
+            } else {
+                console.error('Marked library not available');
+                return `<pre>${content}</pre>`;
+            }
+        } catch (error) {
+            console.error('Error rendering markdown:', error);
+            return `<div class="render-error">Error rendering content</div><pre>${content}</pre>`;
+        }
     }
-
+    
+    /**
+     * Apply syntax highlighting to code blocks
+     */
     highlightAll() {
-        Prism?.highlightAll();
+        if (window.Prism && typeof window.Prism.highlightAll === 'function') {
+            window.Prism.highlightAll();
+        }
     }
 }
 

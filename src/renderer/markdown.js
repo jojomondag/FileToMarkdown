@@ -108,6 +108,15 @@ class MarkdownRenderer {
             pedantic: false,
             mangle: false,
             headerIds: true,
+            // Ensure links are properly rendered
+            renderer: {
+                link(href, title, text) {
+                    // Safe URL handling
+                    const safeHref = href.replace(/"/g, '&quot;');
+                    const titleAttr = title ? ` title="${title.replace(/"/g, '&quot;')}"` : '';
+                    return `<a href="${safeHref}"${titleAttr}>${text}</a>`;
+                }
+            },
             ...options
         });
     }
