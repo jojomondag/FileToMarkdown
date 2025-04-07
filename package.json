@@ -33,6 +33,7 @@
     "test-github": "npm run build-viewer && node bin/test-conversion.js --github",
     "test-renderer": "node src/renderer/tests/run-all-tests.js",
     "test-unified": "node scripts/run-unified-tests.js",
+    "test-markdown": "node tests/markdown-renderer/run-test.js",
     "build": "npm run build:browser && npm run build:node",
     "build:browser": "webpack --config webpack.browser.config.js --env production",
     "build:node": "webpack --config webpack.node.config.js",
