@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const marked = require('marked');
 const Prism = require('prismjs');
+const katex = require('katex');
 const { langMap } = require('../converters/code');
 // Remove direct reference to main to avoid circular dependency
 // const { getFileTypes, getFileTypeDescriptions } = require('../main');
@@ -1293,15 +1294,33 @@ class MarkdownRenderer {
      */
     processMathExpressions(markdown) {
         if (!markdown) return '';
-        
-        // Handle inline math expressions $...$
-        let processed = markdown.replace(/\$([^\$]+?)\$/g, '<span class="math math-inline">$$$1$$</span>');
-        
-        // Handle multi-line block math expressions
-        processed = processed.replace(/\$\$\n([\s\S]+?)\n\$\$/g, (match, content) => {
-            return `<div class="math math-block">$$${content.trim()}$$</div>`;
+
+        // Process inline math $...$
+        let processed = markdown.replace(/\$([^\$]+?)\$/g, (match, content) => {
+            try {
+                return katex.renderToString(content.trim(), {
+                    displayMode: false,
+                    throwOnError: false // Render error inline
+                });
+            } catch (e) {
+                console.error('KaTeX inline rendering error:', e);
+                return `<span class="katex-error" title="${e.message}">${match}</span>`; // Fallback to original on error
+            }
         });
-        
+
+        // Process block math $$...$$
+        processed = processed.replace(/\$\$\n?([\s\S]+?)\n?\$\$/g, (match, content) => {
+            try {
+                return katex.renderToString(content.trim(), {
+                    displayMode: true,
+                    throwOnError: false // Render error inline
+                });
+            } catch (e) {
+                console.error('KaTeX block rendering error:', e);
+                return `<div class="katex-error" title="${e.message}">${match}</div>`; // Fallback to original on error
+            }
+        });
+
         return processed;
     }
 
