@@ -414,7 +414,7 @@
     <h2>Test Summary</h2>
     <p>This test demonstrates the conversion of various Markdown features to HTML using the FileToMarkdown renderer. Each section below shows a specific Markdown feature with its input and rendered output side by side.</p>
     <div class="meta-info">
-      <div><strong>Test Run:</strong> 2025-04-07 20:49:10</div>
+      <div><strong>Test Run:</strong> 2025-04-07 21:21:46</div>
       <div><strong>Test File:</strong> @test-results.html</div>
       <div><strong>Renderer Version:</strong> 0.4.18</div>
       <div><strong>Total Features Tested:</strong> 18</div>
@@ -429,15 +429,15 @@
         <div class="stat-label">Total Tests</div>
       </div>
       <div class="stat-box stat-passed">
-        <div class="stat-value">12</div>
+        <div class="stat-value">17</div>
         <div class="stat-label">Passed</div>
       </div>
       <div class="stat-box stat-failed">
-        <div class="stat-value">6</div>
+        <div class="stat-value">1</div>
         <div class="stat-label">Failed</div>
       </div>
-      <div class="stat-box stat-warning">
-        <div class="stat-value stat-percentage">67%</div>
+      <div class="stat-box stat-passed">
+        <div class="stat-value stat-percentage">94%</div>
         <div class="stat-label">Pass Rate</div>
       </div>
     </div>
@@ -471,9 +471,9 @@
             Ordered Lists
           </a>
         </li>
-      <li class="nav-failed">
+      <li class="nav-passed">
           <a href="#test-task-lists">
-            <span class="nav-status-dot dot-fail"></span>
+            <span class="nav-status-dot dot-pass"></span>
             Task Lists
           </a>
         </li>
@@ -507,9 +507,9 @@
             Images
           </a>
         </li>
-      <li class="nav-failed">
+      <li class="nav-passed">
           <a href="#test-tables">
-            <span class="nav-status-dot dot-fail"></span>
+            <span class="nav-status-dot dot-pass"></span>
             Tables
           </a>
         </li>
@@ -525,15 +525,15 @@
             HTML Embedding
           </a>
         </li>
-      <li class="nav-failed">
+      <li class="nav-passed">
           <a href="#test-footnotes">
-            <span class="nav-status-dot dot-fail"></span>
+            <span class="nav-status-dot dot-pass"></span>
             Footnotes
           </a>
         </li>
-      <li class="nav-failed">
+      <li class="nav-passed">
           <a href="#test-subscript-and-superscript">
-            <span class="nav-status-dot dot-fail"></span>
+            <span class="nav-status-dot dot-pass"></span>
             Subscript and Superscript
           </a>
         </li>
@@ -549,9 +549,9 @@
             Math Expressions
           </a>
         </li>
-      <li class="nav-failed">
+      <li class="nav-passed">
           <a href="#test-diagrams-(mermaid)">
-            <span class="nav-status-dot dot-fail"></span>
+            <span class="nav-status-dot dot-pass"></span>
             Diagrams (Mermaid)
           </a>
         </li>
@@ -578,244 +578,13 @@
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><h1>Heading 1</h1>
+          <h1>Heading 1</h1>
 <h2>Heading 2</h2>
 <h3>Heading 3</h3>
 <h4>Heading 4</h4>
 <h5>Heading 5</h5>
 <h6>Heading 6</h6>
-</div>
+
         </div>
       </div>
     </div>
@@ -837,239 +606,8 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
+          <p>Regular paragraph with <em>italic</em>, <strong>bold</strong>, and <em><strong>bold italic</strong></em> text.<br>Also <em>italic</em>, <strong>bold</strong>, and <em><strong>bold italic</strong></em> using underscores.<br><del>Strikethrough</del> is also supported.</p>
 
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p>Regular paragraph with <em>italic</em>, <strong>bold</strong>, and <em><strong>bold italic</strong></em> text.<br>Also <em>italic</em>, <strong>bold</strong>, and <em><strong>bold italic</strong></em> using underscores.<br><del>Strikethrough</del> is also supported.</p>
-</div>
         </div>
       </div>
     </div>
@@ -1099,238 +637,15 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
+          <ul>
+<li>Item 1</li><li>Item 2<ul>
+<li>Nested item 1</li><li>Nested item 2</li></ul>
+</li><li>Item 3</li></ul>
+<ul>
+<li>Alternative item 1</li><li>Alternative item 2</li></ul>
+<ul>
+<li>Another alternative item 1</li><li>Another alternative item 2</li></ul>
 
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><ul><li>Item 1</li><li>Item 2<ul><li>Nested item 1</li><li>Nested item 2</li></ul></li><li>Item 3</li></ul><ul><li>Alternative item 1</li><li>Alternative item 2</li></ul><ul><li>Another alternative item 1</li><li>Another alternative item 2</li></ul></div>
         </div>
       </div>
     </div>
@@ -1354,246 +669,19 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
+          <ol>
+<li>First item</li><li>Second item<ol>
+<li>Nested item 1</li><li>Nested item 2</li></ol>
+</li><li>Third item</li></ol>
 
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><ol><li>First item</li><li>Second item<ol><li>Nested item 1</li><li>Nested item 2</li></ol></li><li>Third item</li></ol></div>
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-failed" id="test-task-lists">
+    <div class="test-section test-passed" id="test-task-lists">
       <div class="test-status">
-        <span class="status-badge status-fail">FAILED</span>
+        <span class="status-badge status-pass">PASSED</span>
         <h2 class="feature-title">Task Lists</h2>
       </div>
       <p class="feature-description">GitHub-flavored Markdown task lists with checkboxes</p>
@@ -1608,10 +696,9 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <div class="rendered-content">- [x] Completed task
-- [ ] Incomplete task
-- [x] Another completed task
-  - [ ] Nested task</div>
+          <li class="task-list-item"><input type="checkbox" checked disabled> Completed task</li><li class="task-list-item"><input type="checkbox"  disabled> Incomplete task</li><li class="task-list-item"><input type="checkbox" checked disabled> Another completed task</li><ul>
+<li class="task-list-item"><input type="checkbox"  disabled> <input disabled="" type="checkbox"> Nested task</li></ul>
+
         </div>
       </div>
     </div>
@@ -1633,240 +720,9 @@ The `console.log()` function outputs to the console.</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p>Use <code>inline code</code> to refer to code within text.</p>
+          <p>Use <code>inline code</code> to refer to code within text.</p>
 <p>The <code>console.log()</code> function outputs to the console.</p>
-</div>
+
         </div>
       </div>
     </div>
@@ -1905,253 +761,19 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><pre><code class="language-javascript">// Code block with syntax highlighting
-function greet(name) {
-  return `Hello, ${name}!`;
-}
-console.log(greet(&#39;World&#39;));
-</code></pre>
+          <pre><code class="language-javascript"><span class="token comment">// Code block with syntax highlighting</span>
+<span class="token keyword">function</span> <span class="token function">greet</span><span class="token punctuation">(</span><span class="token parameter">name</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Hello, </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">!</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">greet</span><span class="token punctuation">(</span><span class="token string">'World'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
 <pre><code class="language-python"># Python example
 def greet(name):
-    return f&quot;Hello, {name}!&quot;
+    return f"Hello, {name}!"
     
-print(greet(&quot;World&quot;))
-</code></pre>
+print(greet("World"))</code></pre>
 <pre><code>Plain code block without language specification
-No syntax highlighting applied
-</code></pre>
-</div>
+No syntax highlighting applied</code></pre>
+
         </div>
       </div>
     </div>
@@ -2177,241 +799,14 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
+          <blockquote>
+<p>This is a blockquote<br>spanning multiple lines</p>
+<blockquote>
+<p>And a nested blockquote<br>with multiple lines</p>
+</blockquote>
+<p>Back to the first level</p>
+</blockquote>
 
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><blockquote><p>This is a blockquote<br>spanning multiple lines</p>
-<blockquote><p>And a nested blockquote<br>with multiple lines</p>
-</blockquote><p>Back to the first level</p>
-</blockquote></div>
         </div>
       </div>
     </div>
@@ -2437,241 +832,10 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p><a href="https://example.com" title="Example Website">Link to example</a></p>
+          <p><a href="https://example.com" title="Example Website">Link to example</a></p>
 <p><a href="https://example.com">https://example.com</a> - Automatic URL linking</p>
 <p><a href="https://example.com" title="Reference Link">Reference link</a></p>
-</div>
+
         </div>
       </div>
     </div>
@@ -2693,248 +857,17 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
+          <p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo" title="FileToMarkdown Logo"></p>
+<p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo with Size" title="Project Logo"></p>
 
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo" title="FileToMarkdown Logo"  class=""></p>
-<p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo with Size" title="Project Logo"  class=""></p>
-</div>
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-failed" id="test-tables">
+    <div class="test-section test-passed" id="test-tables">
       <div class="test-status">
-        <span class="status-badge status-fail">FAILED</span>
+        <span class="status-badge status-pass">PASSED</span>
         <h2 class="feature-title">Tables</h2>
       </div>
       <p class="feature-description">Creating tables with alignment options</p>
@@ -2950,262 +883,32 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><table>
+          <table>
 <thead>
 <tr>
-<th align="left">Header 1</th>
-<th align="center">Header 2</th>
-<th align="right">Header 3</th>
+<th style="text-align:left">Header 1</th>
+<th style="text-align:center">Header 2</th>
+<th style="text-align:right">Header 3</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left">Left</td>
-<td align="center">Center</td>
-<td align="right">Right</td>
+<tbody>
+<tr>
+<td style="text-align:left">Left</td>
+<td style="text-align:center">Center</td>
+<td style="text-align:right">Right</td>
 </tr>
 <tr>
-<td align="left">aligned</td>
-<td align="center">aligned</td>
-<td align="right">aligned</td>
+<td style="text-align:left">aligned</td>
+<td style="text-align:center">aligned</td>
+<td style="text-align:right">aligned</td>
 </tr>
 <tr>
-<td align="left">text</td>
-<td align="center">text</td>
-<td align="right">text</td>
+<td style="text-align:left">text</td>
+<td style="text-align:center">text</td>
+<td style="text-align:right">text</td>
 </tr>
-</tbody></table>
-</div>
+</tbody>
+</table>
         </div>
       </div>
     </div>
@@ -3237,245 +940,14 @@ Final content</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p>Content above</p>
+          <p>Content above</p>
 <hr>
 <p>Content between rules</p>
 <hr>
 <p>Content below</p>
 <hr>
 <p>Final content</p>
-</div>
+
         </div>
       </div>
     </div>
@@ -3501,252 +973,21 @@ Final content</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><div style="padding: 10px; border: 1px solid #ccc;">
+          <div style="padding: 10px; border: 1px solid #ccc;">
   <p>This is embedded <em>HTML</em> content</p>
   <ul>
     <li>HTML list item 1</li>
     <li>HTML list item 2</li>
   </ul>
-</div></div>
+</div>
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-failed" id="test-footnotes">
+    <div class="test-section test-passed" id="test-footnotes">
       <div class="test-status">
-        <span class="status-badge status-fail">FAILED</span>
+        <span class="status-badge status-pass">PASSED</span>
         <h2 class="feature-title">Footnotes</h2>
       </div>
       <p class="feature-description">Adding footnotes with reference links</p>
@@ -3765,252 +1006,50 @@ Final content</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p>Here&#39;s a sentence with a footnote<sup class="footnote-ref"><a href="#fn-1">1</a></sup> and another footnote<sup class="footnote-ref"><a href="#fn-2">2</a></sup>.</p>
-<p><sup class="footnote-ref"><a href="#fn-1">1</a></sup>: This is the first footnote content.<br><sup class="footnote-ref"><a href="#fn-2">2</a></sup>: This is the second footnote content with multiple paragraphs.</p>
+          <p>H<br>e<br>r<br>e<br>&#39;<br>s<br><br>a<br><br>s<br>e<br>n<br>t<br>e<br>n<br>c<br>e<br><br>w<br>i<br>t<br>h<br><br>a<br><br>f<br>o<br>o<br>t<br>n<br>o<br>t<br>e<br>[<br><sup>
+1
+]
+ 
+a
+n
+d
+ 
+a
+n
+o
+t
+h
+e
+r
+ 
+f
+o
+o
+t
+n
+o
+t
+e
+[
+</sup><br>2<br>]<br>.</p>
 <pre><code>Indent paragraphs to include them in the footnote.
 
-Like this paragraph.
-</code></pre>
-</div>
+Like this paragraph.</code></pre>
+<div class="footnotes">
+                        <div class="footnote" id="fn-1">
+                            <sup>1</sup>: This is the first footnote content.
+                        </div>
+                        <div class="footnote" id="fn-2">
+                            <sup>2</sup>: This is the second footnote content with multiple paragraphs.
+                        </div></div>
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-failed" id="test-subscript-and-superscript">
+    <div class="test-section test-passed" id="test-subscript-and-superscript">
       <div class="test-status">
-        <span class="status-badge status-fail">FAILED</span>
+        <span class="status-badge status-pass">PASSED</span>
         <h2 class="feature-title">Subscript and Superscript</h2>
       </div>
       <p class="feature-description">Text formatting for scientific notation</p>
@@ -4026,11 +1065,10 @@ This feature requires ~subscript~ and ^superscript^ extensions.</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <div class="rendered-content">H~2~O is the formula for water.
+          <p>H<sub>2</sub>O is the formula for water.</p>
+<p>E = mc<sup>2</sup> is Einstein&#39;s famous equation.</p>
+<p>This feature requires <sub>subscript</sub> and <sup>superscript</sup> extensions.</p>
 
-E = mc^2^ is Einstein's famous equation.
-
-This feature requires ~subscript~ and ^superscript^ extensions.</div>
         </div>
       </div>
     </div>
@@ -4052,240 +1090,9 @@ Use ==highlighting== to draw attention to specific parts.</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><p>This is <mark>highlighted text</mark> that stands out.</p>
+          <p>This is <mark>highlighted text</mark> that stands out.</p>
 <p>Use <mark>highlighting</mark> to draw attention to specific parts.</p>
-</div>
+
         </div>
       </div>
     </div>
@@ -4317,27 +1124,20 @@ $$</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <div class="rendered-content">Inline math: $E = mc^2$
+          <p>Inline math: <span class="math math-inline"><span class="math math-inline">$E = mc^2$</span></span></p>
+<p>Block math:</p>
+<p><span class="math math-inline">$<span class="math math-inline">$</span><br>\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}<br><span class="math math-inline">$</span><span class="math math-inline">$</span></p>
+<p>Another formula:</p>
+<p><span class="math math-inline">$</span><span class="math math-inline">$</span><br>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}<br><span class="math math-inline">$</span>$</span></p>
 
-Block math:
-
-$$
-\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
-$$
-
-Another formula:
-
-$$
-\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
-$$</div>
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-failed" id="test-diagrams-(mermaid)">
+    <div class="test-section test-passed" id="test-diagrams-(mermaid)">
       <div class="test-status">
-        <span class="status-badge status-fail">FAILED</span>
+        <span class="status-badge status-pass">PASSED</span>
         <h2 class="feature-title">Diagrams (Mermaid)</h2>
       </div>
       <p class="feature-description">Creating diagrams with Mermaid syntax</p>
@@ -4361,256 +1161,13 @@ sequenceDiagram
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <style type="text/css">
-                    /* Math expressions */
-                    .math-inline {
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        display: inline-block;
-                        padding: 0 3px;
-                    }
-                    .math-block {
-                        display: block;
-                        margin: 1em 0;
-                        padding: 10px;
-                        text-align: center;
-                        font-style: italic;
-                        font-family: 'Times New Roman', serif;
-                        background-color: #f9f9f9;
-                        border-left: 3px solid #ddd;
-                    }
-                    
-                    /* Diagrams */
-                    .diagram {
-                        margin: 1em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .diagram-container {
-                        min-height: 100px;
-                        background-color: #fff;
-                        border: 1px dashed #ccc;
-                        margin-top: 10px;
-                        padding: 10px;
-                    }
-                    
-                    /* GitHub @mentions and #issues */
-                    .github-mention, .github-issue {
-                        color: #0366d6;
-                        font-weight: 600;
-                        text-decoration: none;
-                        background-color: #f1f8ff;
-                        border-radius: 3px;
-                        padding: 0 2px;
-                    }
-                    .github-mention:hover, .github-issue:hover {
-                        text-decoration: underline;
-                        background-color: #dbedff;
-                    }
-                    
-                    /* Admonitions */
-                    .admonition {
-                        margin: 1.5em 0;
-                        padding: 0;
-                        border-left: 4px solid #448aff;
-                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                        background-color: #fff;
-                        border-radius: 2px;
-                    }
-                    .admonition-title {
-                        padding: 0.8em 1em;
-                        font-weight: 700;
-                        color: white;
-                        background-color: #448aff;
-                    }
-                    .admonition-content {
-                        padding: 1em;
-                    }
-                    .admonition.note { border-color: #448aff; }
-                    .admonition.note .admonition-title { background-color: #448aff; }
-                    .admonition.warning { border-color: #ff9100; }
-                    .admonition.warning .admonition-title { background-color: #ff9100; }
-                    .admonition.danger { border-color: #ff1744; }
-                    .admonition.danger .admonition-title { background-color: #ff1744; }
-                    .admonition.tip { border-color: #00c853; }
-                    .admonition.tip .admonition-title { background-color: #00c853; }
-                    
-                    /* Table of Contents */
-                    .table-of-contents {
-                        margin: 1.5em 0;
-                        padding: 1em;
-                        background: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .table-of-contents:before {
-                        content: "Table of Contents";
-                        font-weight: bold;
-                        font-size: 1.1em;
-                        margin-bottom: 10px;
-                        display: block;
-                    }
-                    .toc-list {
-                        margin: 0;
-                        padding-left: 20px;
-                    }
-                    .toc-list ul {
-                        padding-left: 20px;
-                    }
-                    .toc-list li {
-                        margin: 0.25em 0;
-                    }
-                    .toc-list a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    .toc-list a:hover {
-                        text-decoration: underline;
-                    }
-                    
-                    /* Image alignment */
-                    img.align-left {
-                        float: left;
-                        margin-right: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-right {
-                        float: right;
-                        margin-left: 1em;
-                        margin-bottom: 0.5em;
-                    }
-                    img.align-center {
-                        display: block;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    
-                    /* Embeds */
-                    .embed {
-                        margin: 1em 0;
-                        position: relative;
-                        overflow: hidden;
-                        padding-bottom: 56.25%;
-                        height: 0;
-                        background-color: #f8f8f8;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-                    .embed iframe {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    .embed.youtube:before, 
-                    .embed.vimeo:before,
-                    .embed.codepen:before {
-                        content: attr(class);
-                        text-transform: capitalize;
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        background: rgba(0,0,0,0.6);
-                        color: white;
-                        padding: 2px 6px;
-                        font-size: 12px;
-                        border-bottom-left-radius: 4px;
-                        z-index: 1;
-                    }
-
-                    /* Additional formatting */
-                    .task-list-item {
-                        list-style-type: none;
-                        margin-left: -1.5em;
-                    }
-                    
-                    .task-list-item input {
-                        margin-right: 0.5em;
-                    }
-                    
-                    mark {
-                        background-color: #ffd54f;
-                        padding: 0 0.2em;
-                    }
-                    
-                    /* Footnotes styling */
-                    .footnotes {
-                        margin-top: 2em;
-                        padding-top: 1em;
-                        border-top: 1px solid #ddd;
-                    }
-                    
-                    .footnote {
-                        font-size: 0.9em;
-                        margin-bottom: 0.5em;
-                        line-height: 1.5;
-                    }
-                    
-                    .footnote-ref {
-                        font-size: 0.8em;
-                        vertical-align: super;
-                        line-height: 0;
-                    }
-                    
-                    .footnote-ref a {
-                        text-decoration: none;
-                        color: #0366d6;
-                    }
-                    
-                    /* Definition lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    
-                    dt {
-                        font-weight: bold;
-                        margin-top: 0.5em;
-                    }
-                    
-                    dd {
-                        margin-left: 2em;
-                        margin-bottom: 0.5em;
-                    }
-                    
-                    /* Abbreviations */
-                    abbr {
-                        border-bottom: 1px dotted #666;
-                        cursor: help;
-                        text-decoration: none;
-                    }
-                    
-                    sub {
-                        vertical-align: sub;
-                        font-size: 0.85em;
-                    }
-                    
-                    sup {
-                        vertical-align: super;
-                        font-size: 0.85em;
-                    }
-                </style>
-<div class="rendered-content"><div class="diagram mermaid" data-diagram-source="graph TD;
+          <div class="mermaid">graph TD;
     A[Start] -->|Process| B[End];
     A -->|Alternative| C[Result];
     B -->D[Finish];
-    C -->D;">
-                  <div class="diagram-code" style="display: none;">graph TD;
-    A[Start] -->|Process| B[End];
-    A -->|Alternative| C[Result];
-    B -->D[Finish];
-    C -->D;</div>
-                  <div class="diagram-container"></div>
-                </div><div class="diagram mermaid" data-diagram-source="sequenceDiagram
-    Alice->>John: Hello John, how are you?
-    John-->>Alice: Great!">
-                  <div class="diagram-code" style="display: none;">sequenceDiagram
+    C -->D;</div><div class="mermaid">sequenceDiagram
     Alice->>John: Hello John, how are you?
     John-->>Alice: Great!</div>
-                  <div class="diagram-container"></div>
-                </div></div>
         </div>
       </div>
     </div>
@@ -4618,7 +1175,7 @@ sequenceDiagram
 
   <div class="footer">
     <p>Generated by FileToMarkdown Test Suite</p>
-    <p class="timestamp">Generated on 2025-04-07 20:49:10</p>
+    <p class="timestamp">Generated on 2025-04-07 21:21:46</p>
   </div>
 </body>
 </html>

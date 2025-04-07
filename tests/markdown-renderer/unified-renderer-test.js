@@ -323,12 +323,17 @@ function evaluateTest(testCase, renderedHtml) {
       );
     
     case 'tables':
-      return (
-        html.includes('<table>') && 
-        html.includes('<tr>') && 
-        html.includes('<th>') && 
-        html.includes('<td>')
-      );
+      // Removed detailed logging
+      const hasTable = html.includes('<table>');
+      const hasTr = html.includes('<tr>');
+      // Check for opening tags instead of exact match
+      const hasTh = html.includes('<th'); 
+      const hasTd = html.includes('<td'); 
+      const hasAlignLeft = html.includes('style="text-align:left"');
+      const hasAlignCenter = html.includes('style="text-align:center"');
+      const hasAlignRight = html.includes('style="text-align:right"');
+      const result = hasTable && hasTr && hasTh && hasTd && hasAlignLeft && hasAlignCenter && hasAlignRight;
+      return result;
     
     case 'horizontal rule':
       return html.includes('<hr');
