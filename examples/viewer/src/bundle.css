@@ -1,4 +1,4 @@
-/* FileToMarkdown Viewer CSS Bundle - 2025-04-03T21:17:45.413Z */
+/* FileToMarkdown Viewer CSS Bundle - 2025-04-05T13:07:53.020Z */
 
 /* File: styles/base.css */
 /* ===== BASE STYLES ===== */
@@ -123,37 +123,14 @@ a {
   }
 }
 
-@media (min-width: 1600px) {
-  :root {
-    --sidebar-width: 350px;
-  }
-  
-  .main-content {
-    margin-left: var(--sidebar-width-lg);
-    padding: 10px 60px;
-  }
-  
-  .content-container {
-    padding: 15px 60px;
-  }
-  
-  .btn-menu {
-    left: 305px;
-  }
-}
-
 @media (min-width: 2000px) {
   :root {
     --sidebar-width: 400px;
   }
   
   .main-content {
-    margin-left: var(--sidebar-width-xl);
-    padding: 10px 80px;
-  }
-  
-  .content-container {
-    padding: 15px 80px;
+    margin-left: 0;
+    padding: 10px;
   }
   
   .btn-menu {
@@ -837,45 +814,71 @@ a {
 /* File: styles/content.css */
 /* ===== MAIN CONTENT ===== */
 .main-content {
-  margin-left: calc(var(--sidebar-width) + 60px);
+  margin-left: var(--sidebar-width);
+  margin-top: 110px;
   flex: 1;
-  padding: 10px 40px 10px 40px;
   max-width: 100%;
-  transition: margin-left .3s ease;
+  transition: margin-left .3s ease, margin-top .3s ease;
   position: relative;
-  height: 100vh;
+  height: calc(100vh - 110px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
-/* Cidron Box - Blue box next to sidebar */
+/* Cidron Box - Blue box next to sidebar, now above main content */
 .cidron-box {
   position: fixed;
   left: var(--sidebar-width);
   top: 0;
-  width: 60px;
-  height: 100vh;
+  width: calc(100% - var(--sidebar-width));
+  height: 60px;
   background-color: #3498db;
   z-index: 950;
-  transition: transform .3s ease, left .3s ease;
-  border-right: 2px solid #2980b9;
+  transition: transform .3s ease, left .3s ease, width .3s ease;
+  border-bottom: 2px solid #2980b9;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding-top: 10px;
+  justify-content: flex-start;
+  padding: 0 15px;
   gap: 10px;
 }
 
-/* When sidebar is hidden, move cidron-box to the left edge */
+/* When sidebar is hidden, move cidron-box to the left edge and make full width */
 .sidebar.hidden ~ .cidron-box {
   left: 0;
+  width: 100%;
 }
 
 .main-content.expanded {
   margin-left: 0;
-  padding-left: 70px; /* Extra space to avoid colliding with the hamburger button */
+  margin-top: 110px;
+  height: calc(100vh - 110px);
+}
+
+/* Edit Bar - New container below cidron-box */
+.edit-bar {
+  position: fixed;
+  left: var(--sidebar-width);
+  top: 60px; /* Height of cidron-box */
+  width: calc(100% - var(--sidebar-width));
+  height: 50px; /* Adjust height as needed */
+  background-color: #e9ecef; /* Light gray background */
+  z-index: 940; /* Below cidron-box, above main content */
+  transition: transform .3s ease, left .3s ease, width .3s ease;
+  border-bottom: 1px solid var(--color-border-dark);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  gap: 10px;
+}
+
+/* Adjust edit bar when sidebar is hidden */
+.sidebar.hidden ~ .edit-bar {
+  left: 0;
+  width: 100%;
 }
 
 /* ==== WELCOME SCREEN ==== */
@@ -952,12 +955,12 @@ a {
 /* ==== CONTENT CONTAINER ==== */
 .content-container {
   position: relative;
-  margin: 10px auto;
   background: var(--color-white);
   width: 100%;
-  max-width: 100%;
-  height: calc(100% - 20px);
-  padding: 50px 40px 15px 40px;
+  height: 100%;
+  padding: 20px 20px 15px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border-dark);
@@ -992,10 +995,6 @@ a {
 
 /* Button menu positioning */
 .cidron-box .btn-menu {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
   background: var(--color-white);
   border-radius: var(--border-radius-sm);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -1004,31 +1003,30 @@ a {
 }
 
 .cidron-box .btn-save {
-  position: absolute;
-  top: 60px; /* Position below the menu button */
-  left: 50%;
-  transform: translateX(-50%);
   background: #e6f7ff;
   border: 1px solid #0366d6;
   color: #0366d6;
   z-index: 1001;
 }
 
-/* Preset spacer */
+/* Preset spacer - REMOVED as presets are now inline */
+/*
 .preset-spacer {
   width: 40px;
   height: 20px;
   position: absolute;
-  top: 110px; /* Position after save button */
+  top: 110px; 
   left: 50%;
   transform: translateX(-50%);
   z-index: 1001;
 }
+*/
 
-/* Preset container */
+/* Preset container - REMOVED as presets are now inline */
+/*
 .preset-container {
   position: absolute;
-  top: 140px; /* Position after spacer (110px + 20px height + 10px gap) */
+  top: 140px; 
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1037,30 +1035,58 @@ a {
   z-index: 1001;
   max-height: calc(100vh - 150px);
   overflow-y: auto;
-  padding: 0; /* Remove padding as we're using the spacer */
-  width: 40px; /* Match button width */
+  padding: 0; 
+  width: 40px; 
   align-items: center;
 }
+*/
 
-/* Remove margin from first preset button since we have the spacer */
+/* Remove margin from first preset button since we have the spacer - REMOVED */
+/*
 .preset-container .btn-preset:first-child {
   margin-top: 0;
 }
+*/
 
-/* Preset button styling */
+/* Preset button styling - Should now align horizontally in cidron-box */
 .cidron-box .btn-preset {
-  position: static; /* Not absolute - allows container to control positioning */
+  position: static; /* Keep static positioning */
   background: #f0fff4;
   border: 1px solid #38a169;
   color: #38a169;
-  width: 40px;
-  height: 40px;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 5px; /* Match JS */
+  display: flex; /* Match JS */
+  flex-direction: column; /* Match JS */
+  align-items: center; /* Match JS */
+  justify-content: center; /* Match JS */
   margin: 0;
-  transform: none; /* Remove transforms that might affect positioning */
+  transform: none;
+  min-width: 70px; /* Match JS */
+  height: 40px; /* Set fixed height */
+  overflow: hidden; /* Match JS */
+  white-space: normal; /* Match JS */
+  text-align: center; /* Ensure text centering */
+}
+
+.cidron-box .btn-preset .preset-name {
+  display: block;
+  font-size: 0.9em;
+  font-weight: 500; /* Slightly less bold than default button text */
+  line-height: 1.2;
+  width: 100%; /* Needed for ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.cidron-box .btn-preset .preset-time {
+  display: block;
+  font-size: 0.75em;
+  color: var(--color-text-light);
+  margin-top: 2px;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .cidron-box .btn-preset svg {
@@ -1123,7 +1149,8 @@ a {
   box-sizing: border-box;
 }
 
-/* Edit button positioning */
+/* Edit button positioning - REMOVE OLD RULE */
+/*
 .content-buttons {
   position: absolute;
   top: 10px;
@@ -1133,30 +1160,30 @@ a {
   z-index: 1001;
   visibility: visible !important;
 }
+*/
 
-/* Button styling */
-.btn-edit, .btn-save {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+/* Button styling (ensure .btn-edit and .btn-save look good in the new bar) */
+.edit-bar .btn-edit, .edit-bar .btn-save {
+  /* Reset potential absolute positioning from old setup */
+  position: static;
+  /* General button styles from .btn are likely inherited, add specifics if needed */
 }
 
-.btn-edit:hover, .btn-save:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  background: var(--color-hover);
+.edit-bar .btn-edit {
+    display: none; /* Hidden by default, shown when file selected */
 }
 
-/* Specific hover for cidron-box save button to prevent sideways movement */
-.cidron-box .btn-save:hover {
-  transform: translateX(-50%) translateY(-2px); /* Keep centered while moving up slightly */
+/* Save button visibility control in the new bar */
+.edit-bar .btn-save {
+  display: none !important; /* Hide by default */
+}
+
+body.edit-mode .edit-bar .btn-save {
+  display: flex !important; /* Only show in edit mode */
 }
 
 /* Garbage button for removing all presets */
 .cidron-box .btn-garbage {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   background: #fff5f5;
   border: 1px solid #e53e3e;
   color: #e53e3e;
@@ -1164,8 +1191,7 @@ a {
 }
 
 .cidron-box .btn-garbage:hover {
-  background: #fed7d7;
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
 }
 
 .btn-edit {
@@ -1179,7 +1205,6 @@ a {
   border: 1px solid #0366d6;
   color: #0366d6;
   z-index: 1001;
-  margin-top: 10px;
   top: 0; /* Ensures it starts from the top of cidron-box */
 }
 
@@ -1584,7 +1609,8 @@ body.edit-mode .content-container {
   transform: none;
 }
 
-/* Position buttons properly in edit mode */
+/* Position buttons properly in edit mode - REMOVE OLD RULE */
+/*
 body.edit-mode .content-buttons {
   visibility: visible !important;
   z-index: 1050;
@@ -1592,6 +1618,7 @@ body.edit-mode .content-buttons {
   top: 10px !important;
   left: 10px !important;
 }
+*/
 
 /* Welcome screen specific styling */
 .content-container h2:first-child {
@@ -1601,7 +1628,7 @@ body.edit-mode .content-buttons {
 
 /* Ensure proper welcome content positioning */
 .content-container .markdown-content {
-  padding: 10px 0;
+  padding: 0 20px 20px 20px;
   overflow: visible;
 }
 
@@ -1637,12 +1664,14 @@ body.edit-mode .editor-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
+    max-width: 3000px;
+    margin: 0 auto;
     overflow: auto;
 }
 
 .markdown-content {
     flex: 1;
-    padding: 20px;
+    padding: 0 20px 20px 20px;
     overflow: auto;
 }
 

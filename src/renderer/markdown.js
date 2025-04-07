@@ -5,6 +5,7 @@ const Prism = require('prismjs');
 const { langMap } = require('../converters/code');
 // Remove direct reference to main to avoid circular dependency
 // const { getFileTypes, getFileTypeDescriptions } = require('../main');
+const { preProcessMarkdown, fallbackProcessing, fixExtensionTokenIssues } = require('./fix-extension-tokens');
 
 // Initialize Prism in browser environment
 if (typeof window !== 'undefined') {
@@ -610,7 +611,10 @@ class MarkdownRenderer {
             gfm: true,
             pedantic: false,
             breaks: true,
-            smartLists: true
+            smartLists: true,
+            enableFootnotes: true,
+            enableDefinitionLists: true,
+            enableAbbreviations: true
         }, options);
 
         // Base language mappings that should always be available
@@ -693,6 +697,10 @@ class MarkdownRenderer {
 
         // Initialize a collection for storing reference link definitions
         this.referenceLinks = {};
+        
+        // Initialize collections for advanced features
+        this.footnotes = {};
+        this.abbreviations = {};
 
         // Create a custom renderer to fix issues with nested elements
         const renderer = new marked.Renderer();
@@ -748,30 +756,9 @@ class MarkdownRenderer {
             originalWalkTokens(token);
         };
 
-        // Register all extensions with marked
-        const extensions = [
-            taskListsExtension,
-            subSupExtension,
-            highlightExtension,
-            strikethroughExtension,
-            footnotesExtension,
-            footnoteRefExtension,
-            defListExtension,
-            emojiExtension,
-            abbrExtension,
-            mathExtension,
-            diagramExtension,
-            githubExtension,
-            admonitionExtension,
-            tocExtension,
-            imageExtensionEnhanced,
-            embedExtension
-        ];
-        
-        // Configure marked with all extensions and options
+        // Configure marked with basic options - we'll handle extensions differently
         marked.use({ 
             renderer,
-            extensions,
             walkTokens,
             gfm: this.options.gfm,
             pedantic: this.options.pedantic,
@@ -781,6 +768,9 @@ class MarkdownRenderer {
             xhtml: true,
             highlight: (code, lang) => this.highlightCode(code, lang)
         });
+
+        // Fix extension issues using our utility
+        fixExtensionTokenIssues([]);
 
         // Load language components for syntax highlighting
         if (this.options.highlight) {
@@ -944,170 +934,15 @@ class MarkdownRenderer {
     preprocessMarkdown(markdown) {
         if (!markdown) return '';
         
+        // Use our improved preprocessing function for better extension support
+        let processedMarkdown = preProcessMarkdown(markdown);
+        
         // Process reference links
         const referenceRegex = /\[([^\]]+)\]:\s+(\S+)(?:\s+"([^"]+)")?\s*$/gm;
         let match;
         while ((match = referenceRegex.exec(markdown)) !== null) {
             const [, id, url, title] = match;
             this.referenceLinks[id.toLowerCase()] = { url, title };
-        }
-        
-        // Process advanced Markdown features manually
-        let processedMarkdown = markdown;
-        
-        // Process math expressions
-        processedMarkdown = processedMarkdown.replace(/\$\$([^$]+)\$\$/g, (_, formula) => {
-            return `<div class="math math-block" data-latex="${formula.replace(/"/g, '&quot;')}">${formula}</div>`;
-        });
-        
-        processedMarkdown = processedMarkdown.replace(/\$([^$\n]+)\$/g, (_, formula) => {
-            return `<span class="math math-inline" data-latex="${formula.replace(/"/g, '&quot;')}">${formula}</span>`;
-        });
-        
-        // Process @mentions and #issues
-        processedMarkdown = processedMarkdown.replace(/@([a-zA-Z0-9-]+)/g, (_, username) => {
-            return `<a href="https://github.com/${username}" class="github-mention">@${username}</a>`;
-        });
-        
-        processedMarkdown = processedMarkdown.replace(/#(\d+)\b/g, (_, issueNumber) => {
-            return `<a href="https://github.com/issues/${issueNumber}" class="github-issue">#${issueNumber}</a>`;
-        });
-        
-        // Process admonitions/custom containers
-        processedMarkdown = processedMarkdown.replace(/^:::\s*([a-zA-Z]+)(?:\s+(.+?))?[\r\n]([\s\S]+?)[\r\n]:::/gm, (_, type, title, content) => {
-            title = title || type.charAt(0).toUpperCase() + type.slice(1);
-            return `<div class="admonition ${type}">
-                <div class="admonition-title">${title}</div>
-                <div class="admonition-content">${content}</div>
-            </div>`;
-        });
-        
-        // Process enhanced images with attributes
-        processedMarkdown = processedMarkdown.replace(/!\[((?:[^\]]*\|[^\]]*)+)\]\(([^)]+)\)/g, (match, altAndAttrs, src) => {
-            const parts = altAndAttrs.split('|').map(p => p.trim());
-            const alt = parts[0];
-            
-            // Extract attributes
-            let width = '';
-            let height = '';
-            let align = '';
-            
-            for (let i = 1; i < parts.length; i++) {
-                const attrMatch = /^([^=]+)=(.+)$/.exec(parts[i]);
-                if (attrMatch) {
-                    const [, name, value] = attrMatch;
-                    if (name === 'width') width = value;
-                    if (name === 'height') height = value;
-                    if (name === 'align') align = value;
-                }
-            }
-            
-            // Extract URL and title
-            const urlMatch = /^([^\s"]+)(?:\s+"([^"]+)")?/.exec(src);
-            const url = urlMatch[1];
-            const title = urlMatch[2] || '';
-            
-            // Create style string
-            const style = [];
-            if (width) style.push(`width: ${width}`);
-            if (height) style.push(`height: ${height}`);
-            
-            let classes = '';
-            if (align) classes = `align-${align}`;
-            
-            // Don't use the custom extension anymore, just replace with HTML
-            return `<img src="${url}" alt="${alt}" title="${title}" ${style.length ? `style="${style.join('; ')}"` : ''} class="${classes}">`;
-        });
-        
-        // Process embeds
-        processedMarkdown = processedMarkdown.replace(/@\[([a-z]+)\]\(([^)]+)\)(?:\{([^}]+)\})?/g, (match, type, url, attributes) => {
-            // Parse attributes
-            const attrMap = {};
-            if (attributes) {
-                const pairs = attributes.split(' ');
-                for (const pair of pairs) {
-                    const [key, value] = pair.split('=');
-                    if (key && value) {
-                        attrMap[key] = value.replace(/["']/g, '');
-                    }
-                }
-            }
-            
-            // Default dimensions
-            const width = attrMap.width || '560';
-            const height = attrMap.height || '315';
-            
-            let embedHtml = '';
-            
-            if (type === 'youtube') {
-                // Extract video ID from URL
-                let videoId = url;
-                const ytMatch = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/.exec(url);
-                if (ytMatch) videoId = ytMatch[1];
-                
-                embedHtml = `<div class="embed youtube">
-                    <iframe width="${width}" height="${height}" 
-                            src="https://www.youtube.com/embed/${videoId}" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen></iframe>
-                </div>`;
-            } else if (type === 'vimeo') {
-                // Extract video ID from URL
-                let videoId = url;
-                const vimeoMatch = /vimeo\.com\/(?:video\/)?([0-9]+)/.exec(url);
-                if (vimeoMatch) videoId = vimeoMatch[1];
-                
-                embedHtml = `<div class="embed vimeo">
-                    <iframe width="${width}" height="${height}" 
-                            src="https://player.vimeo.com/video/${videoId}" 
-                            frameborder="0" 
-                            allow="autoplay; fullscreen; picture-in-picture" 
-                            allowfullscreen></iframe>
-                </div>`;
-            } else if (type === 'codepen') {
-                embedHtml = `<div class="embed codepen">
-                    <iframe height="${height}" style="width: 100%;" scrolling="no" title="CodePen Embed" 
-                            src="${url}" 
-                            frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
-                    </iframe>
-                </div>`;
-            } else {
-                embedHtml = `<div class="embed unknown">Unsupported embed type: ${type}</div>`;
-            }
-            
-            return embedHtml;
-        });
-        
-        // Handle subscript, superscript, and strikethrough
-        processedMarkdown = processedMarkdown.replace(/~([^~]+)~/g, '<sub>$1</sub>');
-        processedMarkdown = processedMarkdown.replace(/\^([^\^]+)\^/g, '<sup>$1</sup>');
-        processedMarkdown = processedMarkdown.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-        
-        // Handle highlighting
-        processedMarkdown = processedMarkdown.replace(/==([^=]+)==/g, '<mark>$1</mark>');
-        
-        // Handle footnotes
-        processedMarkdown = processedMarkdown.replace(/\[\^(\w+)\]/g, '<sup class="footnote-ref"><a href="#fn-$1">$1</a></sup>');
-        processedMarkdown = processedMarkdown.replace(/^\[\^(\w+)\]:\s*(.+)$/gm, '<div class="footnote" id="fn-$1"><sup>$1</sup>: $2</div>');
-        
-        // Handle abbreviations
-        const abbrRegex = /^\*\[([^\]]+)\]:\s*(.+)$/gm;
-        const abbrs = {};
-        
-        // Collect all abbreviation definitions
-        while ((match = abbrRegex.exec(markdown)) !== null) {
-            const [, abbr, desc] = match;
-            abbrs[abbr] = desc;
-        }
-        
-        // Remove the abbreviation definitions from the content
-        processedMarkdown = processedMarkdown.replace(abbrRegex, '');
-        
-        // Apply abbreviations to the content
-        for (const [abbr, desc] of Object.entries(abbrs)) {
-            const regex = new RegExp(`\\b${abbr.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'g');
-            processedMarkdown = processedMarkdown.replace(regex, `<abbr title="${desc}">${abbr}</abbr>`);
         }
         
         return processedMarkdown;
@@ -1192,289 +1027,347 @@ class MarkdownRenderer {
             // Check for table of contents marker
             const hasToc = markdownContent.includes('[[toc]]');
             
+            // Reset advanced feature collections
+            this.footnotes = {};
+            this.abbreviations = {};
+            
             // Process the markdown to handle special cases before rendering
             const processedMarkdown = this.preprocessMarkdown(markdownContent);
 
-            // Parse markdown to HTML
-            let rendered = marked.parse(processedMarkdown);
-            
-            // Generate Table of Contents if needed
-            if (hasToc) {
-                const headings = [];
-                const headingRegex = /<h([1-6]).*?>(.*?)<\/h\1>/g;
-                let match;
+            // Add proper error handling for each extension type to prevent token errors
+            try {
+                // Parse markdown to HTML
+                let rendered = marked.parse(processedMarkdown);
                 
-                // First pass: collect all headings
-                while ((match = headingRegex.exec(rendered)) !== null) {
-                    const level = parseInt(match[1], 10);
-                    const text = match[2].replace(/<[^>]*>/g, ''); // Remove any HTML tags in heading
-                    
-                    // Create slug from heading text
-                    const slug = text
-                        .toLowerCase()
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-');
-                    
-                    headings.push({ level, text, id: `heading-${slug}` });
+                // Add footnotes to the end of the document if any were found
+                if (Object.keys(this.footnotes).length > 0) {
+                    let footnotesHtml = '<div class="footnotes">';
+                    for (const [id, content] of Object.entries(this.footnotes)) {
+                        footnotesHtml += `
+                            <div class="footnote" id="fn-${id}">
+                                <sup>${id}</sup>: ${content}
+                            </div>`;
+                    }
+                    footnotesHtml += '</div>';
+                    rendered += footnotesHtml;
                 }
                 
-                // Second pass: replace heading tags with ones that include IDs
-                for (const heading of headings) {
-                    const regex = new RegExp(`<h(${heading.level})>(${heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})<\/h${heading.level}>`, 'g');
-                    rendered = rendered.replace(regex, `<h${heading.level} id="${heading.id}">${heading.text}</h${heading.level}>`);
-                }
-                
-                // Generate TOC HTML
-                if (headings.length > 0) {
-                    let toc = '<div class="table-of-contents" id="markdown-toc"><ul class="toc-list">';
-                    let lastLevel = 0;
+                // Generate Table of Contents if needed
+                if (hasToc) {
+                    const headings = [];
+                    const headingRegex = /<h([1-6]).*?>(.*?)<\/h\1>/g;
+                    let match;
                     
+                    // First pass: collect all headings
+                    while ((match = headingRegex.exec(rendered)) !== null) {
+                        const level = parseInt(match[1], 10);
+                        const text = match[2].replace(/<[^>]*>/g, ''); // Remove any HTML tags in heading
+                        
+                        // Create slug from heading text
+                        const slug = text
+                            .toLowerCase()
+                            .replace(/[^\w\s-]/g, '')
+                            .replace(/\s+/g, '-');
+                        
+                        headings.push({ level, text, id: `heading-${slug}` });
+                    }
+                    
+                    // Second pass: replace heading tags with ones that include IDs
                     for (const heading of headings) {
-                        // Adjust list nesting based on heading level
-                        if (heading.level > lastLevel) {
-                            // Start new nested list for each level increase
-                            for (let i = 0; i < heading.level - lastLevel; i++) {
-                                toc += '<ul>';
+                        const regex = new RegExp(`<h(${heading.level})>(${heading.text.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})<\/h${heading.level}>`, 'g');
+                        rendered = rendered.replace(regex, `<h${heading.level} id="${heading.id}">${heading.text}</h${heading.level}>`);
+                    }
+                    
+                    // Generate TOC HTML
+                    if (headings.length > 0) {
+                        let toc = '<div class="table-of-contents" id="markdown-toc"><ul class="toc-list">';
+                        let lastLevel = 0;
+                        
+                        for (const heading of headings) {
+                            // Adjust list nesting based on heading level
+                            if (heading.level > lastLevel) {
+                                // Start new nested list for each level increase
+                                for (let i = 0; i < heading.level - lastLevel; i++) {
+                                    toc += '<ul>';
+                                }
+                            } else if (heading.level < lastLevel) {
+                                // Close nested lists
+                                for (let i = 0; i < lastLevel - heading.level; i++) {
+                                    toc += '</ul></li>';
+                                }
+                            } else {
+                                // Same level, close previous item
+                                toc += '</li>';
                             }
-                        } else if (heading.level < lastLevel) {
-                            // Close nested lists
-                            for (let i = 0; i < lastLevel - heading.level; i++) {
-                                toc += '</ul></li>';
-                            }
-                        } else {
-                            // Same level, close previous item
-                            toc += '</li>';
+                            
+                            // Add heading to TOC
+                            toc += `<li><a href="#${heading.id}">${heading.text}</a>`;
+                            
+                            lastLevel = heading.level;
                         }
                         
-                        // Add heading to TOC
-                        toc += `<li><a href="#${heading.id}">${heading.text}</a>`;
+                        // Close any remaining open tags
+                        for (let i = 0; i < lastLevel; i++) {
+                            toc += '</li></ul>';
+                        }
                         
-                        lastLevel = heading.level;
+                        toc += '</div>';
+                        
+                        // Replace TOC placeholder
+                        rendered = rendered.replace(/<div class="table-of-contents" id="markdown-toc"><\/div>/i, toc);
+                    }
+                }
+                
+                // Add CSS styles for all extensions
+                const additionalCSS = `
+                    /* Math expressions */
+                    .math-inline {
+                        font-style: italic;
+                        font-family: 'Times New Roman', serif;
+                        display: inline-block;
+                        padding: 0 3px;
+                    }
+                    .math-block {
+                        display: block;
+                        margin: 1em 0;
+                        padding: 10px;
+                        text-align: center;
+                        font-style: italic;
+                        font-family: 'Times New Roman', serif;
+                        background-color: #f9f9f9;
+                        border-left: 3px solid #ddd;
                     }
                     
-                    // Close any remaining open tags
-                    for (let i = 0; i < lastLevel; i++) {
-                        toc += '</li></ul>';
+                    /* Diagrams */
+                    .diagram {
+                        margin: 1em 0;
+                        padding: 1em;
+                        background: #f8f8f8;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                    }
+                    .diagram-container {
+                        min-height: 100px;
+                        background-color: #fff;
+                        border: 1px dashed #ccc;
+                        margin-top: 10px;
+                        padding: 10px;
                     }
                     
-                    toc += '</div>';
+                    /* GitHub @mentions and #issues */
+                    .github-mention, .github-issue {
+                        color: #0366d6;
+                        font-weight: 600;
+                        text-decoration: none;
+                        background-color: #f1f8ff;
+                        border-radius: 3px;
+                        padding: 0 2px;
+                    }
+                    .github-mention:hover, .github-issue:hover {
+                        text-decoration: underline;
+                        background-color: #dbedff;
+                    }
                     
-                    // Replace TOC placeholder
-                    rendered = rendered.replace(/<p>\s*\[\[toc\]\]\s*<\/p>/i, toc);
-                }
-            }
-            
-            // Add CSS styles for all extensions
-            const additionalCSS = `
-                /* Math expressions */
-                .math-inline {
-                    font-style: italic;
-                    font-family: 'Times New Roman', serif;
-                    display: inline-block;
-                    padding: 0 3px;
-                }
-                .math-block {
-                    display: block;
-                    margin: 1em 0;
-                    padding: 10px;
-                    text-align: center;
-                    font-style: italic;
-                    font-family: 'Times New Roman', serif;
-                    background-color: #f9f9f9;
-                    border-left: 3px solid #ddd;
-                }
-                
-                /* Diagrams */
-                .diagram {
-                    margin: 1em 0;
-                    padding: 1em;
-                    background: #f8f8f8;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                }
-                .diagram-container {
-                    min-height: 100px;
-                    background-color: #fff;
-                    border: 1px dashed #ccc;
-                    margin-top: 10px;
-                    padding: 10px;
-                }
-                
-                /* GitHub @mentions and #issues */
-                .github-mention, .github-issue {
-                    color: #0366d6;
-                    font-weight: 600;
-                    text-decoration: none;
-                    background-color: #f1f8ff;
-                    border-radius: 3px;
-                    padding: 0 2px;
-                }
-                .github-mention:hover, .github-issue:hover {
-                    text-decoration: underline;
-                    background-color: #dbedff;
-                }
-                
-                /* Admonitions */
-                .admonition {
-                    margin: 1.5em 0;
-                    padding: 0;
-                    border-left: 4px solid #448aff;
-                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
-                    background-color: #fff;
-                    border-radius: 2px;
-                }
-                .admonition-title {
-                    padding: 0.8em 1em;
-                    font-weight: 700;
-                    color: white;
-                    background-color: #448aff;
-                }
-                .admonition-content {
-                    padding: 1em;
-                }
-                .admonition.note { border-color: #448aff; }
-                .admonition.note .admonition-title { background-color: #448aff; }
-                .admonition.warning { border-color: #ff9100; }
-                .admonition.warning .admonition-title { background-color: #ff9100; }
-                .admonition.danger { border-color: #ff1744; }
-                .admonition.danger .admonition-title { background-color: #ff1744; }
-                .admonition.tip { border-color: #00c853; }
-                .admonition.tip .admonition-title { background-color: #00c853; }
-                
-                /* Table of Contents */
-                .table-of-contents {
-                    margin: 1.5em 0;
-                    padding: 1em;
-                    background: #f8f8f8;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                }
-                .table-of-contents:before {
-                    content: "Table of Contents";
-                    font-weight: bold;
-                    font-size: 1.1em;
-                    margin-bottom: 10px;
-                    display: block;
-                }
-                .toc-list {
-                    margin: 0;
-                    padding-left: 20px;
-                }
-                .toc-list ul {
-                    padding-left: 20px;
-                }
-                .toc-list li {
-                    margin: 0.25em 0;
-                }
-                .toc-list a {
-                    text-decoration: none;
-                    color: #0366d6;
-                }
-                .toc-list a:hover {
-                    text-decoration: underline;
-                }
-                
-                /* Image alignment */
-                img.align-left {
-                    float: left;
-                    margin-right: 1em;
-                    margin-bottom: 0.5em;
-                }
-                img.align-right {
-                    float: right;
-                    margin-left: 1em;
-                    margin-bottom: 0.5em;
-                }
-                img.align-center {
-                    display: block;
-                    margin-left: auto;
-                    margin-right: auto;
-                }
-                
-                /* Embeds */
-                .embed {
-                    margin: 1em 0;
-                    position: relative;
-                    overflow: hidden;
-                    padding-bottom: 56.25%;
-                    height: 0;
-                    background-color: #f8f8f8;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                }
-                .embed iframe {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                }
-                .embed.youtube:before, 
-                .embed.vimeo:before,
-                .embed.codepen:before {
-                    content: attr(class);
-                    text-transform: capitalize;
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    background: rgba(0,0,0,0.6);
-                    color: white;
-                    padding: 2px 6px;
-                    font-size: 12px;
-                    border-bottom-left-radius: 4px;
-                    z-index: 1;
-                }
+                    /* Admonitions */
+                    .admonition {
+                        margin: 1.5em 0;
+                        padding: 0;
+                        border-left: 4px solid #448aff;
+                        box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                        background-color: #fff;
+                        border-radius: 2px;
+                    }
+                    .admonition-title {
+                        padding: 0.8em 1em;
+                        font-weight: 700;
+                        color: white;
+                        background-color: #448aff;
+                    }
+                    .admonition-content {
+                        padding: 1em;
+                    }
+                    .admonition.note { border-color: #448aff; }
+                    .admonition.note .admonition-title { background-color: #448aff; }
+                    .admonition.warning { border-color: #ff9100; }
+                    .admonition.warning .admonition-title { background-color: #ff9100; }
+                    .admonition.danger { border-color: #ff1744; }
+                    .admonition.danger .admonition-title { background-color: #ff1744; }
+                    .admonition.tip { border-color: #00c853; }
+                    .admonition.tip .admonition-title { background-color: #00c853; }
+                    
+                    /* Table of Contents */
+                    .table-of-contents {
+                        margin: 1.5em 0;
+                        padding: 1em;
+                        background: #f8f8f8;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                    }
+                    .table-of-contents:before {
+                        content: "Table of Contents";
+                        font-weight: bold;
+                        font-size: 1.1em;
+                        margin-bottom: 10px;
+                        display: block;
+                    }
+                    .toc-list {
+                        margin: 0;
+                        padding-left: 20px;
+                    }
+                    .toc-list ul {
+                        padding-left: 20px;
+                    }
+                    .toc-list li {
+                        margin: 0.25em 0;
+                    }
+                    .toc-list a {
+                        text-decoration: none;
+                        color: #0366d6;
+                    }
+                    .toc-list a:hover {
+                        text-decoration: underline;
+                    }
+                    
+                    /* Image alignment */
+                    img.align-left {
+                        float: left;
+                        margin-right: 1em;
+                        margin-bottom: 0.5em;
+                    }
+                    img.align-right {
+                        float: right;
+                        margin-left: 1em;
+                        margin-bottom: 0.5em;
+                    }
+                    img.align-center {
+                        display: block;
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    
+                    /* Embeds */
+                    .embed {
+                        margin: 1em 0;
+                        position: relative;
+                        overflow: hidden;
+                        padding-bottom: 56.25%;
+                        height: 0;
+                        background-color: #f8f8f8;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                    }
+                    .embed iframe {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .embed.youtube:before, 
+                    .embed.vimeo:before,
+                    .embed.codepen:before {
+                        content: attr(class);
+                        text-transform: capitalize;
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        background: rgba(0,0,0,0.6);
+                        color: white;
+                        padding: 2px 6px;
+                        font-size: 12px;
+                        border-bottom-left-radius: 4px;
+                        z-index: 1;
+                    }
 
-                /* Additional formatting */
-                .task-list-item {
-                    list-style-type: none;
-                    margin-left: -1.5em;
-                }
+                    /* Additional formatting */
+                    .task-list-item {
+                        list-style-type: none;
+                        margin-left: -1.5em;
+                    }
+                    
+                    .task-list-item input {
+                        margin-right: 0.5em;
+                    }
+                    
+                    mark {
+                        background-color: #ffd54f;
+                        padding: 0 0.2em;
+                    }
+                    
+                    /* Footnotes styling */
+                    .footnotes {
+                        margin-top: 2em;
+                        padding-top: 1em;
+                        border-top: 1px solid #ddd;
+                    }
+                    
+                    .footnote {
+                        font-size: 0.9em;
+                        margin-bottom: 0.5em;
+                        line-height: 1.5;
+                    }
+                    
+                    .footnote-ref {
+                        font-size: 0.8em;
+                        vertical-align: super;
+                        line-height: 0;
+                    }
+                    
+                    .footnote-ref a {
+                        text-decoration: none;
+                        color: #0366d6;
+                    }
+                    
+                    /* Definition lists */
+                    dl {
+                        margin: 1em 0;
+                    }
+                    
+                    dt {
+                        font-weight: bold;
+                        margin-top: 0.5em;
+                    }
+                    
+                    dd {
+                        margin-left: 2em;
+                        margin-bottom: 0.5em;
+                    }
+                    
+                    /* Abbreviations */
+                    abbr {
+                        border-bottom: 1px dotted #666;
+                        cursor: help;
+                        text-decoration: none;
+                    }
+                    
+                    sub {
+                        vertical-align: sub;
+                        font-size: 0.85em;
+                    }
+                    
+                    sup {
+                        vertical-align: super;
+                        font-size: 0.85em;
+                    }
+                `;
                 
-                .task-list-item input {
-                    margin-right: 0.5em;
-                }
+                // Add CSS to the rendered HTML
+                rendered = `<style type="text/css">${additionalCSS}</style>\n<div class="rendered-content">${rendered}</div>`;
                 
-                mark {
-                    background-color: #ffd54f;
-                    padding: 0 0.2em;
-                }
+                // Apply Prism syntax highlighting
+                this.highlightAll();
                 
-                .footnote {
-                    font-size: 0.9em;
-                    margin-top: 1em;
-                    padding-top: 1em;
-                    border-top: 1px solid #ddd;
+                return rendered;
+            } catch (error) {
+                // Handle specific token errors gracefully
+                if (error.message.includes('Token with')) {
+                    console.warn('Extension token error:', error.message);
+                    // Fall back to basic rendering without extensions
+                    const fallbackHtml = fallbackProcessing(markdownContent);
+                    return `<div class="rendered-content">${fallbackHtml}</div>`;
                 }
-                
-                .footnote-ref {
-                    font-size: 0.8em;
-                    vertical-align: super;
-                }
-                
-                sub {
-                    vertical-align: sub;
-                    font-size: 0.85em;
-                }
-                
-                sup {
-                    vertical-align: super;
-                    font-size: 0.85em;
-                }
-                
-                abbr {
-                    border-bottom: 1px dotted #666;
-                    cursor: help;
-                }
-            `;
-            
-            // Add CSS to the rendered HTML
-            rendered = `<style type="text/css">${additionalCSS}</style>\n<div class="rendered-content">${rendered}</div>`;
-            
-            // Apply Prism syntax highlighting
-            this.highlightAll();
-            
-            return rendered;
+                throw error; // Re-throw other errors
+            }
         } catch (error) {
             console.error('Error rendering markdown:', error);
             return `<div class="error">Error rendering markdown: ${error.message}</div>`;
