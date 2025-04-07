@@ -1,0 +1,2327 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Markdown Feature Tests</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-case { border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; padding: 15px; }
+        .test-header { background-color: #f7f7f7; padding: 10px; margin: -15px -15px 15px; border-bottom: 1px solid #ddd; border-radius: 5px 5px 0 0; }
+        .test-name { font-size: 18px; font-weight: bold; }
+        .test-description { color: #666; font-style: italic; margin-top: 5px; }
+        .markdown-source { background-color: #f5f5f5; border: 1px solid #ddd; padding: 10px; font-family: monospace; white-space: pre-wrap; margin-bottom: 15px; }
+        .html-output { background-color: #f5f5f5; border: 1px solid #ddd; padding: 10px; font-family: monospace; white-space: pre-wrap; margin-bottom: 15px; overflow: auto; max-height: 300px; }
+        h1 { color: #333; }
+        .rendered { border: 1px solid #ddd; padding: 15px; background-color: white; }
+    </style>
+</head>
+<body>
+    <h1>Advanced Markdown Feature Tests</h1>
+
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">1. Math Expressions (Inline)</div>
+            <div class="test-description">Tests rendering of inline math expressions using $...$ syntax</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">This is an inline math formula: $E = mc^2$ within text.</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><p>This is an inline math formula: <span class="math math-inline" data-latex="E = mc^2">E = mc^2</span> within text.</p>
+</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">2. Math Expressions (Block)</div>
+            <div class="test-description">Tests rendering of block math expressions using $$...$$ syntax</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">Here's a block math formula:
+
+$$\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+
+The quadratic formula.</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><p>Here&#39;s a block math formula:</p>
+<div class="math math-block" data-latex="\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}</div>
+
+<p>The quadratic formula.</p>
+</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">3. Diagrams (Mermaid)</div>
+            <div class="test-description">Tests rendering of Mermaid diagrams</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">```mermaid
+graph TD;
+    A--&gt;B;
+    A--&gt;C;
+    B--&gt;D;
+    C--&gt;D;
+```</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="diagram mermaid" data-diagram-source="graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;">
+                  <div class="diagram-code" style="display: none;">graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;</div>
+                  <div class="diagram-container"></div>
+                </div></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">4. Diagrams (PlantUML)</div>
+            <div class="test-description">Tests rendering of PlantUML diagrams</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">```plantuml
+@startuml
+Alice -&gt; Bob: Authentication Request
+Bob --&gt; Alice: Authentication Response
+@enduml
+```</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="diagram plantuml" data-diagram-source="<a href=&quot;https://github.com/startuml&quot; class=&quot;github-mention&quot;>@startuml</a>
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+<a href=&quot;https://github.com/enduml&quot; class=&quot;github-mention&quot;>@enduml</a>">
+                  <div class="diagram-code" style="display: none;"><a href="https://github.com/startuml" class="github-mention">@startuml</a>
+Alice -> Bob: Authentication Request
+Bob --> Alice: Authentication Response
+<a href="https://github.com/enduml" class="github-mention">@enduml</a></div>
+                  <div class="diagram-container"></div>
+                </div></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">5. GitHub @mentions</div>
+            <div class="test-description">Tests rendering of GitHub-style @mentions</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">This feature was implemented by @username and reviewed by @anotheruser.</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><div class="error">Error rendering markdown: Token with "mention" type was not found.
+Please report this to https://github.com/markedjs/marked.</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">6. GitHub #issue References</div>
+            <div class="test-description">Tests rendering of GitHub-style issue references</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">This fixes #123 and addresses #456.</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><div class="error">Error rendering markdown: Token with "issue" type was not found.
+Please report this to https://github.com/markedjs/marked.</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">7. Custom Containers (Admonitions)</div>
+            <div class="test-description">Tests rendering of custom admonition containers</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">:::note
+This is a note admonition
+:::
+
+:::warning Some Warning Title
+This is a warning with a custom title
+:::
+
+:::danger
+This is a danger admonition
+:::
+
+:::tip
+This is a tip admonition
+:::</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="admonition note">
+                <div class="admonition-title">This is a note admonition</div>
+                <div class="admonition-content">:::
+</div>
+            </div>warning Some Warning Title
+This is a warning with a custom title
+:::
+
+<div class="admonition danger">
+                <div class="admonition-title">This is a danger admonition</div>
+                <div class="admonition-content">:::
+</div>
+            </div>tip
+This is a tip admonition
+:::</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">8. Table of Contents</div>
+            <div class="test-description">Tests automatic table of contents generation</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source"># Document with TOC
+
+[[toc]]
+
+## First Section
+Content here
+
+## Second Section
+More content
+
+### Subsection 2.1
+Nested content
+
+## Third Section
+Final content</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><h1 id="heading-document-with-toc">Document with TOC</h1>
+<div class="table-of-contents" id="markdown-toc"><ul class="toc-list"><ul><li><a href="#heading-document-with-toc">Document with TOC</a><ul><li><a href="#heading-first-section">First Section</a></li><li><a href="#heading-second-section">Second Section</a><ul><li><a href="#heading-subsection-21">Subsection 2.1</a></ul></li><li><a href="#heading-third-section">Third Section</a></li></ul></li></ul></div>
+
+<h2 id="heading-first-section">First Section</h2>
+<p>Content here</p>
+<h2 id="heading-second-section">Second Section</h2>
+<p>More content</p>
+<h3 id="heading-subsection-21">Subsection 2.1</h3>
+<p>Nested content</p>
+<h2 id="heading-third-section">Third Section</h2>
+<p>Final content</p>
+</div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">9. Image Sizing and Alignment</div>
+            <div class="test-description">Tests image sizing and alignment attributes</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">![Standard image](https://example.com/image.jpg)
+
+![Image with width|width=300px](https://example.com/image.jpg)
+
+![Left aligned image|align=left|width=200px](https://example.com/image.jpg)
+
+![Centered image|align=center|width=50%](https://example.com/image.jpg)
+
+![Image with dimensions|width=300px|height=200px](https://example.com/image.jpg)</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><p><img src="https://example.com/image.jpg" alt="Standard image" title=""  class=""></p>
+<img src="https://example.com/image.jpg" alt="Image with width" title="" style="width: 300px" class="">
+
+<img src="https://example.com/image.jpg" alt="Left aligned image" title="" style="width: 200px" class="align-left">
+
+<img src="https://example.com/image.jpg" alt="Centered image" title="" style="width: 50%" class="align-center">
+
+<img src="https://example.com/image.jpg" alt="Image with dimensions" title="" style="width: 300px; height: 200px" class=""></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">10. Embedded YouTube Video</div>
+            <div class="test-description">Tests embedding YouTube videos</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">@[youtube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
+@[youtube](https://www.youtube.com/watch?v=dQw4w9WgXcQ){width=400 height=300}</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="embed youtube">
+                    <iframe width="560" height="315" 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen></iframe>
+                </div>
+
+<div class="embed youtube">
+                    <iframe width="400" height="300" 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen></iframe>
+                </div></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">11. Embedded Vimeo Video</div>
+            <div class="test-description">Tests embedding Vimeo videos</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">@[vimeo](https://vimeo.com/123456789)
+
+@[vimeo](https://vimeo.com/123456789){width=400 height=300}</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="embed vimeo">
+                    <iframe width="560" height="315" 
+                            src="https://player.vimeo.com/video/123456789" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen></iframe>
+                </div>
+
+<div class="embed vimeo">
+                    <iframe width="400" height="300" 
+                            src="https://player.vimeo.com/video/123456789" 
+                            frameborder="0" 
+                            allow="autoplay; fullscreen; picture-in-picture" 
+                            allowfullscreen></iframe>
+                </div></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">12. Embedded CodePen</div>
+            <div class="test-description">Tests embedding CodePen snippets</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source">@[codepen](https://codepen.io/your-username/pen/abcdef)</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><style type="text/css">
+                /* Math expressions */
+                .math-inline {
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    display: inline-block;
+                    padding: 0 3px;
+                }
+                .math-block {
+                    display: block;
+                    margin: 1em 0;
+                    padding: 10px;
+                    text-align: center;
+                    font-style: italic;
+                    font-family: 'Times New Roman', serif;
+                    background-color: #f9f9f9;
+                    border-left: 3px solid #ddd;
+                }
+                
+                /* Diagrams */
+                .diagram {
+                    margin: 1em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .diagram-container {
+                    min-height: 100px;
+                    background-color: #fff;
+                    border: 1px dashed #ccc;
+                    margin-top: 10px;
+                    padding: 10px;
+                }
+                
+                /* GitHub @mentions and #issues */
+                .github-mention, .github-issue {
+                    color: #0366d6;
+                    font-weight: 600;
+                    text-decoration: none;
+                    background-color: #f1f8ff;
+                    border-radius: 3px;
+                    padding: 0 2px;
+                }
+                .github-mention:hover, .github-issue:hover {
+                    text-decoration: underline;
+                    background-color: #dbedff;
+                }
+                
+                /* Admonitions */
+                .admonition {
+                    margin: 1.5em 0;
+                    padding: 0;
+                    border-left: 4px solid #448aff;
+                    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12), 0 3px 1px -2px rgba(0,0,0,.2);
+                    background-color: #fff;
+                    border-radius: 2px;
+                }
+                .admonition-title {
+                    padding: 0.8em 1em;
+                    font-weight: 700;
+                    color: white;
+                    background-color: #448aff;
+                }
+                .admonition-content {
+                    padding: 1em;
+                }
+                .admonition.note { border-color: #448aff; }
+                .admonition.note .admonition-title { background-color: #448aff; }
+                .admonition.warning { border-color: #ff9100; }
+                .admonition.warning .admonition-title { background-color: #ff9100; }
+                .admonition.danger { border-color: #ff1744; }
+                .admonition.danger .admonition-title { background-color: #ff1744; }
+                .admonition.tip { border-color: #00c853; }
+                .admonition.tip .admonition-title { background-color: #00c853; }
+                
+                /* Table of Contents */
+                .table-of-contents {
+                    margin: 1.5em 0;
+                    padding: 1em;
+                    background: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .table-of-contents:before {
+                    content: "Table of Contents";
+                    font-weight: bold;
+                    font-size: 1.1em;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                .toc-list {
+                    margin: 0;
+                    padding-left: 20px;
+                }
+                .toc-list ul {
+                    padding-left: 20px;
+                }
+                .toc-list li {
+                    margin: 0.25em 0;
+                }
+                .toc-list a {
+                    text-decoration: none;
+                    color: #0366d6;
+                }
+                .toc-list a:hover {
+                    text-decoration: underline;
+                }
+                
+                /* Image alignment */
+                img.align-left {
+                    float: left;
+                    margin-right: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-right {
+                    float: right;
+                    margin-left: 1em;
+                    margin-bottom: 0.5em;
+                }
+                img.align-center {
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                /* Embeds */
+                .embed {
+                    margin: 1em 0;
+                    position: relative;
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    height: 0;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                }
+                .embed iframe {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+                .embed.youtube:before, 
+                .embed.vimeo:before,
+                .embed.codepen:before {
+                    content: attr(class);
+                    text-transform: capitalize;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    background: rgba(0,0,0,0.6);
+                    color: white;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    border-bottom-left-radius: 4px;
+                    z-index: 1;
+                }
+
+                /* Existing styles */
+                .rendered-content em {
+                    font-style: italic !important;
+                }
+                
+                .rendered-content strong {
+                    font-weight: bold !important;
+                }
+                
+                /* Blockquotes */
+                .rendered-content blockquote {
+                    padding-left: 1em !important;
+                    margin-left: 1em !important;
+                    border-left: 4px solid #ddd !important;
+                    color: #666 !important;
+                }
+                
+                .rendered-content blockquote blockquote {
+                    margin-left: 1em !important;
+                    border-left: 4px solid #aaa !important;
+                }
+                
+                /* Lists */
+                .rendered-content ul, 
+                .rendered-content ol {
+                    padding-left: 2em !important;
+                    margin-bottom: 1em !important;
+                }
+                
+                .rendered-content ul ul,
+                .rendered-content ol ul,
+                .rendered-content ul ol,
+                .rendered-content ol ol {
+                    margin-bottom: 0 !important;
+                }
+                
+                .rendered-content li {
+                    margin-bottom: 0.25em !important;
+                }
+            </style>
+<div class="rendered-content"><div class="embed codepen">
+                    <iframe height="315" style="width: 100%;" scrolling="no" title="CodePen Embed" 
+                            src="https://codepen.io/your-username/pen/abcdef" 
+                            frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+                    </iframe>
+                </div></div></div>
+    </div>
+    <div class="test-case">
+        <div class="test-header">
+            <div class="test-name">13. Combined Advanced Features</div>
+            <div class="test-description">Tests multiple advanced features in a single document</div>
+        </div>
+        <h3>Markdown Source:</h3>
+        <div class="markdown-source"># Advanced Document
+
+[[toc]]
+
+## Math and Diagrams
+
+Inline math: $a^2 + b^2 = c^2$
+
+```mermaid
+sequenceDiagram
+    participant Alice
+    participant Bob
+    Alice-&gt;&gt;Bob: Hello Bob, how are you?
+    Bob--&gt;&gt;Alice: I am good thanks!
+```
+
+## Admonitions and References
+
+:::note
+Mentioned by @username in #123
+:::
+
+## Embedded Content and Images
+
+![Sized image|width=300px|align=center](https://example.com/image.jpg)
+
+@[youtube](https://www.youtube.com/watch?v=dQw4w9WgXcQ)</div>
+        <h3>Rendered Output:</h3>
+        <div class="rendered"><div class="error">Error rendering markdown: Token with "superscript" type was not found.
+Please report this to https://github.com/markedjs/marked.</div></div>
+    </div>
+</body>
+</html>

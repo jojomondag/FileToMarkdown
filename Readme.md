@@ -40,6 +40,7 @@ filetomarkdown-convert input.pdf output.md
 - 📄 Convert various file formats to Markdown
 - 👁️ Standalone viewer that works directly in the browser
 - 🔍 Syntax highlighting for code blocks
+- 🔗 Proper rendering of Markdown links
 - 📂 File and folder structure navigation
 - 🔧 Direct file editing using File System Access API
 - 🛠️ Command-line tools for batch processing

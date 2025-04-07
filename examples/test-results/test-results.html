@@ -1,0 +1,1450 @@
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Markdown Renderer Test Results</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-results {
+        margin-top: 20px;
+      }
+      .test-case {
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .passed {
+        background-color: #e6ffe6;
+        border-left: 5px solid #4CAF50;
+      }
+      .failed {
+        background-color: #ffebeb;
+        border-left: 5px solid #f44336;
+      }
+      .unsupported {
+        background-color: #e6f3ff;
+        border-left: 5px solid #2196F3;
+      }
+      .test-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .test-details {
+        margin-top: 5px;
+        font-size: 0.9em;
+        color: #666;
+      }
+      .test-input, .test-output {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #f8f8f8;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      .test-output {
+        border-left: 3px solid #9E9E9E;
+      }
+      .summary {
+        margin-bottom: 20px;
+        font-size: 1.1em;
+      }
+      .category {
+        margin-top: 30px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Markdown Renderer Test Results</h1>
+    
+    <div class="summary">
+      <p>
+        <strong>Total Tests:</strong> 86<br>
+        <strong>Passed:</strong> 86 (100%)<br>
+        <strong>Failed:</strong> 0<br>
+        <strong>Unsupported Features:</strong> 0
+      </p>
+    </div>
+    
+    <div class="test-results">
+  <div class="category">Basic Markdown Tests</div>
+      <div class="test-case passed">
+        <div class="test-name">Headings - PASSED</div>
+        <div class="test-details">Checks for all heading levels h1-h6</div>
+        <div class="test-input"><strong>Input:</strong><pre># Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Paragraph - PASSED</div>
+        <div class="test-details">Checks for proper paragraph rendering</div>
+        <div class="test-input"><strong>Input:</strong><pre>This is a simple paragraph.
+
+This is another paragraph with multiple sentences. It should be properly rendered.</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Emphasis - PASSED</div>
+        <div class="test-details">Checks for italic, bold, and combined formatting</div>
+        <div class="test-input"><strong>Input:</strong><pre>*Italic text* and _also italic_
+
+**Bold text** and __also bold__
+
+***Bold and italic*** and ___also bold and italic___</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Strikethrough - PASSED</div>
+        <div class="test-details">Checks for strikethrough formatting</div>
+        <div class="test-input"><strong>Input:</strong><pre>~~Strikethrough text~~</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Blockquotes - PASSED</div>
+        <div class="test-details">Checks for blockquotes including nested ones</div>
+        <div class="test-input"><strong>Input:</strong><pre>&gt; Simple blockquote
+
+&gt; Multi-line blockquote
+&gt; second line
+
+&gt; Nested blockquote
+&gt;&gt; Nested level 2</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>&lt;div class="rendered-content"&gt;&lt;blockquote&gt;&lt;p&gt;Simple blockquote&lt;/p&gt;&lt;/blockquote&gt;
+&lt;blockquote&gt;&lt;p&gt;Multi-line blockquote&lt;br&gt;second line&lt;/p&gt;&lt;/blockquote&gt;
+&lt;blockquote&gt;&lt;p&gt;Nested blockquote&lt;/p&gt;&lt;blockquote&gt;&lt;p&gt;Nested level 2&lt;/p&gt;&lt;/blockquote&gt;&lt;/blockquote&gt;&lt;/div&gt;</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Unordered Lists - PASSED</div>
+        <div class="test-details">Checks for unordered lists with nesting and different markers</div>
+        <div class="test-input"><strong>Input:</strong><pre>* Item 1
+* Item 2
+  * Nested item 1
+  * Nested item 2
+* Item 3
+
+- Alternate 1
+- Alternate 2
+
++ Another alternate 1
++ Another alternate 2</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>&lt;div class="rendered-content"&gt;&lt;ul&gt;&lt;li&gt;Item 1&lt;/li&gt;
+&lt;li&gt;Item 2&lt;ul&gt;&lt;li&gt;Nested item 1&lt;/li&gt;
+&lt;li&gt;Nested item 2&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;Item 3&lt;/li&gt;
+&lt;li&gt;Alternate 1&lt;/li&gt;
+&lt;li&gt;Alternate 2&lt;/li&gt;
+&lt;li&gt;Another alternate 1&lt;/li&gt;
+&lt;li&gt;Another alternate 2&lt;/li&gt;&lt;/ul&gt;&lt;/div&gt;</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Ordered Lists - PASSED</div>
+        <div class="test-details">Checks for ordered lists with nesting</div>
+        <div class="test-input"><strong>Input:</strong><pre>1. Item 1
+2. Item 2
+   1. Nested item 1
+   2. Nested item 2
+3. Item 3</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>&lt;div class="rendered-content"&gt;&lt;ol&gt;&lt;li&gt;Item 1&lt;/li&gt;
+&lt;li&gt;Item 2&lt;ol&gt;&lt;li&gt;Nested item 1&lt;/li&gt;
+&lt;li&gt;Nested item 2&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;
+&lt;li&gt;Item 3&lt;/li&gt;&lt;/ol&gt;&lt;/div&gt;</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Task Lists - PASSED</div>
+        <div class="test-details">Checks for task lists with checkboxes (may vary by markdown implementation)</div>
+        <div class="test-input"><strong>Input:</strong><pre>- [x] Completed task
+- [ ] Incomplete task</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Inline Code - PASSED</div>
+        <div class="test-details">Checks for inline code formatting</div>
+        <div class="test-input"><strong>Input:</strong><pre>`This is inline code`</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Code Blocks - PASSED</div>
+        <div class="test-details">Checks for code block without syntax highlighting</div>
+        <div class="test-input"><strong>Input:</strong><pre>```
+Plain code block
+Second line
+```</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Syntax Highlighting - PASSED</div>
+        <div class="test-details">Checks for code block with JavaScript syntax highlighting</div>
+        <div class="test-input"><strong>Input:</strong><pre>```javascript
+function test() {
+  return "Hello world!";
+}
+```</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Horizontal Rules - PASSED</div>
+        <div class="test-details">Checks for horizontal rules with different syntax</div>
+        <div class="test-input"><strong>Input:</strong><pre>Above rule
+
+---
+
+Between rules
+
+***
+
+Below rule
+
+___</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Links - PASSED</div>
+        <div class="test-details">Checks for different types of links</div>
+        <div class="test-input"><strong>Input:</strong><pre>[Basic link](https://example.com)
+
+[Link with title](https://example.com "Example")
+
+&lt;https://example.com&gt;
+
+&lt;user@example.com&gt;</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Reference Links - PASSED</div>
+        <div class="test-details">Checks for reference-style links</div>
+        <div class="test-input"><strong>Input:</strong><pre>[Reference link][ref]
+
+[ref]: https://example.com "Reference"</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>&lt;div class="rendered-content"&gt;&lt;p&gt;&lt;a href="https://example.com" title="Reference"&gt;Reference link&lt;/a&gt;&lt;/p&gt;&lt;/div&gt;</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Images - PASSED</div>
+        <div class="test-details">Checks for image rendering</div>
+        <div class="test-input"><strong>Input:</strong><pre>![Alt text](https://example.com/image.jpg "Image title")</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Tables - PASSED</div>
+        <div class="test-details">Checks for table rendering</div>
+        <div class="test-input"><strong>Input:</strong><pre>| Header 1 | Header 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |
+| Cell 3   | Cell 4   |</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Table Alignment - PASSED</div>
+        <div class="test-details">Checks for table alignment (implementation varies)</div>
+        <div class="test-input"><strong>Input:</strong><pre>| Left | Center | Right |
+|:-----|:------:|------:|
+| A    | B      | C     |</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">HTML in Markdown - PASSED</div>
+        <div class="test-details">Checks for HTML content within Markdown</div>
+        <div class="test-input"><strong>Input:</strong><pre>&lt;div class="custom"&gt;
+  &lt;p&gt;HTML content&lt;/p&gt;
+&lt;/div&gt;</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    
+      <div class="test-case passed">
+        <div class="test-name">Escape Characters - PASSED</div>
+        <div class="test-details">Checks for proper escaping of special characters</div>
+        <div class="test-input"><strong>Input:</strong><pre>\*not italic\*
+
+\`not code\`
+
+\[not link\]</pre></div>
+        <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+      </div>
+    <div class="category">Advanced Markdown Tests</div>
+        <div class="test-case passed">
+          <div class="test-name">Footnotes - SUPPORTED</div>
+          <div class="test-details">Checks for footnote support (not available in all Markdown implementations)</div>
+          <div class="test-input"><strong>Input:</strong><pre>Text with a footnote[^1].
+
+[^1]: Footnote content.</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Definition Lists - SUPPORTED</div>
+          <div class="test-details">Checks for definition list support (not available in all Markdown implementations)</div>
+          <div class="test-input"><strong>Input:</strong><pre>Term 1
+: Definition 1
+
+Term 2
+: Definition 2a
+: Definition 2b</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Abbreviations - SUPPORTED</div>
+          <div class="test-details">Checks for abbreviation support (not available in all Markdown implementations)</div>
+          <div class="test-input"><strong>Input:</strong><pre>*[HTML]: Hyper Text Markup Language
+
+The HTML specification.</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Subscript and Superscript - SUPPORTED</div>
+          <div class="test-details">Checks for subscript/superscript support (not available in all Markdown implementations)</div>
+          <div class="test-input"><strong>Input:</strong><pre>H~2~O and X^2^</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Emoji - SUPPORTED</div>
+          <div class="test-details">Checks for emoji support (implementation varies)</div>
+          <div class="test-input"><strong>Input:</strong><pre>:smile: :heart: :+1:</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Highlighting - SUPPORTED</div>
+          <div class="test-details">Checks for text highlighting support (not available in all Markdown implementations)</div>
+          <div class="test-input"><strong>Input:</strong><pre>==Highlighted text==</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      <div class="category">Syntax Highlighting Tests</div>
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - javascript - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for javascript</div>
+          <div class="test-input"><strong>Input:</strong><pre>```javascript
+// Example code in javascript
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - python - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for python</div>
+          <div class="test-input"><strong>Input:</strong><pre>```python
+// Example code in python
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - java - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for java</div>
+          <div class="test-input"><strong>Input:</strong><pre>```java
+// Example code in java
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - csharp - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for csharp</div>
+          <div class="test-input"><strong>Input:</strong><pre>```csharp
+// Example code in csharp
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - cpp - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for cpp</div>
+          <div class="test-input"><strong>Input:</strong><pre>```cpp
+// Example code in cpp
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - css - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for css</div>
+          <div class="test-input"><strong>Input:</strong><pre>```css
+// Example code in css
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - html - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for html</div>
+          <div class="test-input"><strong>Input:</strong><pre>```html
+// Example code in html
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - bash - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for bash</div>
+          <div class="test-input"><strong>Input:</strong><pre>```bash
+// Example code in bash
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - sql - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for sql</div>
+          <div class="test-input"><strong>Input:</strong><pre>```sql
+// Example code in sql
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - typescript - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for typescript</div>
+          <div class="test-input"><strong>Input:</strong><pre>```typescript
+// Example code in typescript
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - md - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for md files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```md
+// Example code in md
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - txt - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for txt files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```txt
+// Example code in txt
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - pptx - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for pptx files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```pptx
+// Example code in pptx
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - 7z - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for 7z files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```7z
+// Example code in 7z
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - zip - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for zip files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```zip
+// Example code in zip
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - js - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for js files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```js
+// Example code in js
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - htm - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for htm files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```htm
+// Example code in htm
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - xml - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for xml files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```xml
+// Example code in xml
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - scss - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for scss files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```scss
+// Example code in scss
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - less - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for less files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```less
+// Example code in less
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - json - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for json files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```json
+// Example code in json
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - cs - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for cs files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```cs
+// Example code in cs
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - py - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for py files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```py
+// Example code in py
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - rb - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for rb files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```rb
+// Example code in rb
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - c - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for c files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```c
+// Example code in c
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - h - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for h files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```h
+// Example code in h
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - hpp - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for hpp files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```hpp
+// Example code in hpp
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - go - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for go files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```go
+// Example code in go
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - rs - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for rs files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```rs
+// Example code in rs
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - php - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for php files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```php
+// Example code in php
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - swift - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for swift files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```swift
+// Example code in swift
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - kt - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for kt files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```kt
+// Example code in kt
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - scala - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for scala files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```scala
+// Example code in scala
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - dart - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for dart files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```dart
+// Example code in dart
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - lua - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for lua files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```lua
+// Example code in lua
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - r - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for r files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```r
+// Example code in r
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - m - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for m files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```m
+// Example code in m
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - pl - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for pl files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```pl
+// Example code in pl
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - ts - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for ts files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```ts
+// Example code in ts
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - sh - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for sh files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```sh
+// Example code in sh
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - zsh - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for zsh files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```zsh
+// Example code in zsh
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - ps1 - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for ps1 files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```ps1
+// Example code in ps1
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - bat - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for bat files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```bat
+// Example code in bat
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - cmd - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for cmd files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```cmd
+// Example code in cmd
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - pgsql - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for pgsql files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```pgsql
+// Example code in pgsql
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - mysql - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for mysql files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```mysql
+// Example code in mysql
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - jsx - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for jsx files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```jsx
+// Example code in jsx
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - tsx - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for tsx files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```tsx
+// Example code in tsx
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - vue - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for vue files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```vue
+// Example code in vue
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - svelte - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for svelte files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```svelte
+// Example code in svelte
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - astro - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for astro files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```astro
+// Example code in astro
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - yml - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for yml files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```yml
+// Example code in yml
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - yaml - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for yaml files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```yaml
+// Example code in yaml
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - toml - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for toml files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```toml
+// Example code in toml
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - ini - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for ini files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```ini
+// Example code in ini
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - conf - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for conf files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```conf
+// Example code in conf
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - dockerfile - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for dockerfile files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```dockerfile
+// Example code in dockerfile
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - docker - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for docker files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```docker
+// Example code in docker
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - tex - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for tex files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```tex
+// Example code in tex
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - graphql - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for graphql files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```graphql
+// Example code in graphql
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+        <div class="test-case passed">
+          <div class="test-name">Syntax Highlighting - gql - SUPPORTED</div>
+          <div class="test-details">Checks syntax highlighting for gql files</div>
+          <div class="test-input"><strong>Input:</strong><pre>```gql
+// Example code in gql
+function example() { }
+```</pre></div>
+          <div class="test-output"><strong>Rendered HTML (partial):</strong><pre>
+                    &lt;style&gt;
+                    .rendered-content code[class*="language-"],
+                    .rendered-content pre[class*="language-"] {
+                        color: #f8f8f2 !important;
+                        background: none !important;
+                        text-shadow: 0 ...</pre></div>
+        </div>
+      
+    </div>
+  </body>
+  </html>
+  

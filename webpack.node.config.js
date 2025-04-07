@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -19,7 +20,10 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          /src\/Viewer\/node_modules/
+        ],
         use: {
           loader: 'babel-loader',
           options: {
@@ -37,7 +41,26 @@ module.exports = {
     ]
   },
   optimization: {
-    minimize: true
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          parse: {
+            ecma: 2020
+          },
+          mangle: {
+            safari10: true,
+          },
+          format: {
+            comments: false,
+          }
+        },
+        // Exclude problematic files from Terser
+        exclude: [
+          /src\/Viewer\/node_modules/
+        ]
+      })
+    ]
   },
   externals: [
     {
@@ -60,7 +83,15 @@ module.exports = {
       patterns: [
         { 
           from: path.resolve(__dirname, 'src/Viewer'),
-          to: 'Viewer'
+          to: 'Viewer',
+          globOptions: {
+            ignore: [
+              '**/node_modules/**', // Ignore node_modules in Viewer
+              '**/webpack.config.js',
+              '**/package.json',
+              '**/package-lock.json'
+            ]
+          }
         },
         { 
           from: path.resolve(__dirname, 'src/server'),

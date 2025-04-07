@@ -1,0 +1,317 @@
+/**
+ * Comprehensive example showing how to test all Markdown syntax elements
+ * with the MarkdownRenderer
+ */
+const MarkdownRenderer = require('../src/renderer/markdown');
+const path = require('path');
+const fs = require('fs').promises;
+
+// Comprehensive markdown content with all common elements
+const COMPREHENSIVE_MARKDOWN = `
+# Markdown Syntax Test
+
+This document tests all common Markdown syntax elements to ensure proper rendering.
+
+## 1. Text Formatting
+
+*Italic text* and _also italic_
+
+**Bold text** and __also bold__
+
+***Bold and italic*** and ___also bold and italic___
+
+~~Strikethrough text~~
+
+\`Inline code\` with backticks
+
+> Blockquote text
+> 
+> Multiple lines in a blockquote
+> 
+>> Nested blockquote
+
+## 2. Lists
+
+### Unordered Lists
+
+* Item 1
+* Item 2
+  * Nested item 2.1
+  * Nested item 2.2
+* Item 3
+
+- Alternative item 1
+- Alternative item 2
+
++ Another alternative 1
++ Another alternative 2
+
+### Ordered Lists
+
+1. First item
+2. Second item
+   1. Nested item 2.1
+   2. Nested item 2.2
+3. Third item
+
+### Task Lists
+
+- [x] Completed task
+- [ ] Incomplete task
+- [x] Another completed task
+
+## 3. Links
+
+[Basic link to GitHub](https://github.com)
+
+[Link with title](https://github.com "GitHub's Homepage")
+
+Auto-link: <https://github.com>
+
+Email link: <example@example.com>
+
+Reference style [link][1]
+
+[1]: https://github.com "GitHub"
+
+## 4. Images
+
+![Alt text for image](https://via.placeholder.com/150 "Image title")
+
+Reference style ![image][img1]
+
+[img1]: https://via.placeholder.com/150 "A placeholder image"
+
+## 5. Code Blocks
+
+\`\`\`javascript
+// JavaScript code block
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+}
+greet('world');
+\`\`\`
+
+\`\`\`python
+# Python code block
+def greet(name):
+    print(f"Hello, {name}!")
+    
+greet("world")
+\`\`\`
+
+\`\`\`csharp
+// C# code block
+public class Hello {
+    public static void Main() {
+        string name = "world";
+        Console.WriteLine($"Hello, {name}!");
+    }
+}
+\`\`\`
+
+\`\`\`java
+// Java code block
+public class Hello {
+    public static void main(String[] args) {
+        String name = "world";
+        System.out.println("Hello, " + name + "!");
+    }
+}
+\`\`\`
+
+\`\`\`html
+<!-- HTML code block -->
+<div class="container">
+  <h1>Hello, world!</h1>
+  <p>This is an HTML example.</p>
+</div>
+\`\`\`
+
+\`\`\`css
+/* CSS code block */
+.container {
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+\`\`\`
+
+## 6. Tables
+
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+
+| Left-aligned | Center-aligned | Right-aligned |
+|:-------------|:--------------:|-------------:|
+| Left         | Center         | Right        |
+| Text         | Text           | Text         |
+
+## 7. Horizontal Rules
+
+---
+
+***
+
+___
+
+## 8. HTML in Markdown
+
+<div style="color: blue;">
+  <p>This is an HTML block in Markdown.</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+</div>
+
+## 9. Escape Characters
+
+\\* Escaped asterisk
+
+\\# Escaped hash
+
+\\[ Escaped bracket
+
+## 10. Footnotes
+
+Here's a sentence with a footnote. [^1]
+
+[^1]: This is the footnote content.
+
+## 11. Definition Lists
+
+Term 1
+: Definition 1
+
+Term 2
+: Definition 2a
+: Definition 2b
+
+## 12. Abbreviations
+
+*[HTML]: Hyper Text Markup Language
+*[W3C]: World Wide Web Consortium
+
+The HTML specification is maintained by the W3C.
+
+## 13. Superscript and Subscript
+
+Superscript: X^2^
+
+Subscript: H~2~O
+
+## 14. Emoji
+
+:smile: :heart: :thumbsup:
+
+## 15. Highlighting
+
+==Highlighted text==
+`;
+
+async function main() {
+  try {
+    console.log('Comprehensive Markdown Syntax Test\n');
+    
+    // Create a markdown renderer with default options
+    const renderer = new MarkdownRenderer({
+      highlight: true,
+      loadLanguages: true
+    });
+    
+    // Render comprehensive markdown from a string
+    console.log('Rendering comprehensive markdown...');
+    const htmlContent = renderer.render(COMPREHENSIVE_MARKDOWN);
+    console.log('HTML Output Length:', htmlContent.length);
+    
+    // Write the output to a file for visual inspection
+    const htmlOutputFile = path.join(__dirname, 'markdown-test-output.html');
+    await fs.writeFile(htmlOutputFile, `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Markdown Syntax Test</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        pre {
+          background-color: #f5f5f5;
+          padding: 10px;
+          border-radius: 5px;
+          overflow-x: auto;
+        }
+      </style>
+    </head>
+    <body>
+      ${htmlContent}
+      
+      <hr>
+      <footer>
+        <p>Generated by FileToMarkdown Renderer Test</p>
+      </footer>
+    </body>
+    </html>
+    `);
+    console.log(`HTML output saved to ${htmlOutputFile} for visual inspection`);
+    
+    // Create a test file with the comprehensive markdown
+    const mdTestFile = path.join(__dirname, 'comprehensive-markdown-test.md');
+    await fs.writeFile(mdTestFile, COMPREHENSIVE_MARKDOWN);
+    console.log(`Markdown test file saved to ${mdTestFile}`);
+    
+    // Read and render from file (async)
+    console.log('\nReading and rendering markdown file...');
+    try {
+      const fileHtml = await renderer.readMarkdownFromFile(mdTestFile);
+      console.log('Successfully rendered markdown file with length:', fileHtml.length);
+      
+      // Check for missing or problematic syntax rendering
+      const checkForProblems = (html) => {
+        const problems = [];
+        
+        // Check for common issues
+        if (!html.includes('<h1>')) problems.push('Headings (h1)');
+        if (!html.includes('<ul>')) problems.push('Unordered lists');
+        if (!html.includes('<ol>')) problems.push('Ordered lists');
+        if (!html.includes('<table>')) problems.push('Tables');
+        if (!html.includes('<pre><code class="language-')) problems.push('Code blocks with syntax highlighting');
+        if (!html.includes('<blockquote>')) problems.push('Blockquotes');
+        if (!html.includes('<a href=')) problems.push('Links');
+        if (!html.includes('<img')) problems.push('Images');
+        if (!html.includes('<hr')) problems.push('Horizontal rules');
+        if (!html.includes('<strong>')) problems.push('Bold text');
+        if (!html.includes('<em>')) problems.push('Italic text');
+        if (!html.includes('<del>')) problems.push('Strikethrough text');
+        
+        return problems;
+      };
+      
+      const problems = checkForProblems(fileHtml);
+      if (problems.length > 0) {
+        console.warn('Potential rendering issues detected with:', problems.join(', '));
+      } else {
+        console.log('All basic Markdown syntax elements appear to be rendering correctly.');
+      }
+      
+    } catch (error) {
+      console.error('File reading/rendering failed:', error.message);
+    }
+    
+    console.log('\nTest completed!');
+  } catch (error) {
+    console.error('Error running test:', error);
+  }
+}
+
+// Run the test
+main(); 
