@@ -766,7 +766,25 @@ class MarkdownRenderer {
             smartLists: this.options.smartLists,
             smartypants: true,
             xhtml: true,
-            highlight: (code, lang) => this.highlightCode(code, lang)
+            highlight: (code, lang) => this.highlightCode(code, lang),
+            extensions: [
+                taskListsExtension,
+                subSupExtension,
+                highlightExtension,
+                strikethroughExtension,
+                footnotesExtension,
+                footnoteRefExtension,
+                defListExtension,
+                emojiExtension,
+                abbrExtension,
+                mathExtension,
+                diagramExtension,
+                githubExtension,
+                admonitionExtension,
+                tocExtension,
+                imageExtensionEnhanced,
+                embedExtension
+            ]
         });
 
         // Fix extension issues using our utility

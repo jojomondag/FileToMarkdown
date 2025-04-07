@@ -66,8 +66,14 @@ async function generateUnifiedTestPage() {
     
     if (test.name === 'HTML in Markdown') {
       // Wrap HTML in Markdown output in special container to prevent layout issues
-      processedHtml = '<div class="html-markdown-container" style="position: relative; overflow: hidden;">' + renderedHtml + '</div>';
+      // Fix iframe allowfullscreen attribute issue by using only the allow attribute
+      processedHtml = processedHtml.replace(/allowfullscreen/g, '');
+      processedHtml = '<div class="html-markdown-container" style="position: relative;">' + processedHtml + '</div>';
     }
+    
+    // Ensure all external resources have proper fallbacks to prevent 404 errors
+    processedHtml = processedHtml.replace(/<img([^>]*)src=['"](https?:\/\/[^'"]+)['"]/g, 
+      '<img$1src="$2" onerror="this.onerror=null; this.src=\'data:image/svg+xml;charset=utf-8,%3Csvg xmlns%3D%22http://www.w3.org/2000/svg%22 width%3D%22100%22 height%3D%2260%22%3E%3Crect width%3D%22100%22 height%3D%2260%22 fill%3D%22%23eee%22/%3E%3Ctext x%3D%2250%25%22 y%3D%2250%25%22 dominant-baseline%3D%22middle%22 text-anchor%3D%22middle%22 font-family%3D%22sans-serif%22 font-size%3D%2212%22 fill%3D%22%23999%22%3EImage not found%3C/text%3E%3C/svg%3E\';"');
     
     // Generate example markdown based on the test name
     let exampleMarkdown = '';
@@ -400,10 +406,10 @@ async function generateUnifiedTestPage() {
     }
     
     if (test.name === 'Enhanced Images') {
-      // Create a VS Code-style enhanced image preview
+      // Create a VS Code-style enhanced image preview with fallback for missing images
       vsCodePreviewHtml = `<div class="vscode-enhanced-images-preview">
-        <p><img src="https://images.unsplash.com/photo-1495954484750-af469f2f9be5?w=500&auto=format" alt="Beautiful sunset over the ocean" /></p>
-        <p><img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=300&auto=format" alt="Golden Gate Bridge in San Francisco" style="width: 300px;" /></p>
+        <p><img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='300' viewBox='0 0 500 300'%3E%3Crect width='500' height='300' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%23999'%3EBeautiful sunset (example)%3C/text%3E%3C/svg%3E" alt="Beautiful sunset over the ocean" /></p>
+        <p><img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23999'%3EGolden Gate Bridge (example)%3C/text%3E%3C/svg%3E" alt="Golden Gate Bridge in San Francisco" style="width: 300px;" /></p>
       </div>`;
     }
     
@@ -432,6 +438,7 @@ async function generateUnifiedTestPage() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' https: data:; img-src 'self' https: data:;">
   <title>Unified Markdown Renderer Tests</title>
   <style>
     * {
@@ -445,9 +452,23 @@ async function generateUnifiedTestPage() {
       padding: 20px;
       max-width: 1600px;
       margin: 0 auto;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     h1, h2 {
       text-align: center;
+    }
+    
+    /* Test container to allow sticky elements to work properly */
+    .test-container {
+      contain: none;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      position: relative;
+      isolation: isolate;
+      overflow: visible !important;
     }
     
     /* Grid container with forced equal widths */
@@ -461,13 +482,26 @@ async function generateUnifiedTestPage() {
       width: 100%;
       overflow: visible;
       isolation: isolate;
-      position: relative;
-      z-index: 1;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background-color: white;
+    }
+    
+    /* Sticky header grid */
+    .header-grid {
+      position: sticky;
+      top: 0;
+      z-index: 11;
+      background-color: white;
+      margin-bottom: 0;
+      border-bottom: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     /* Grid header styling */
     .grid-header {
-      background-color: #f5f5f5;
+      background-color: white;
       padding: 10px;
       font-weight: bold;
       border-radius: 4px;
@@ -478,6 +512,7 @@ async function generateUnifiedTestPage() {
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
     /* Each cell in the grid */
@@ -500,11 +535,21 @@ async function generateUnifiedTestPage() {
     
     .test-name {
       grid-column: 1 / -1;
-      background-color: #e9f5ff;
+      background-color: white;
       padding: 10px;
       font-weight: bold;
       border-radius: 4px;
       margin-top: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Add colored left border for test status */
+    .test-passed {
+      border-left: 4px solid #28a745;
+    }
+    
+    .test-failed {
+      border-left: 4px solid #dc3545;
     }
     
     pre {
@@ -524,7 +569,8 @@ async function generateUnifiedTestPage() {
     
     .html-content {
       background-color: #fffaf0;
-      contain: content; /* Use CSS containment to prevent layout issues */
+      contain: none;
+      overflow: visible;
     }
     
     .html-view {
@@ -773,11 +819,13 @@ async function generateUnifiedTestPage() {
     
     /* Test status styles */
     .test-status {
+      background-color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       display: flex;
       align-items: center;
       margin-bottom: 10px;
-      padding: 5px 10px;
-      border-radius: 4px;
       font-size: 0.9em;
     }
     .test-status.pass {
@@ -981,25 +1029,15 @@ async function generateUnifiedTestPage() {
     
     /* Ensure all test-grids have independent layout */
     .test-name {
-      contain: layout;
+      contain: none;
     }
     
     /* For browsers that don't support :has */
     @supports not (selector(:has(*))) {
       /* Use a more specific approach for modern browsers */
       .test-grid:not(:first-of-type) {
-        contain: layout;
+        contain: none;
       }
-    }
-    
-    /* Container for each test to prevent layout influence */
-    .test-container {
-      contain: layout;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
-      position: relative;
-      isolation: isolate;
     }
   </style>
 </head>
@@ -1031,7 +1069,7 @@ async function generateUnifiedTestPage() {
   </div>
   
   <!-- Grid Headers -->
-  <div class="test-grid">
+  <div class="test-grid header-grid">
     <div class="grid-header">Test Input</div>
     <div class="grid-header">Test Output (Rendered)</div>
     <div class="grid-header">Example Input</div>
@@ -1041,7 +1079,7 @@ async function generateUnifiedTestPage() {
   <!-- Test Cases -->
   ${allTests.map(test => `
     <div class="test-container">
-      <div class="test-name">${test.name}</div>
+      <div class="test-name ${test.passed ? 'test-passed' : 'test-failed'}">${test.name}</div>
       <div class="test-status ${test.passed ? 'pass' : 'fail'}">
         <span class="status-badge ${test.passed ? 'badge-success' : 'badge-danger'}">${test.passed ? 'PASS' : 'FAIL'}</span>
         <div class="test-criteria">${test.testCriteria}</div>
@@ -1087,6 +1125,16 @@ async function generateUnifiedTestPage() {
             container.classList.remove('show-code');
           }
         });
+      });
+
+      // Handle TrustedHTML issues by setting the HTML content safely
+      const contentContainers = document.querySelectorAll('.html-view');
+      contentContainers.forEach(container => {
+        // We're keeping the existing HTML but doing this in a safer way
+        // that should prevent TrustedHTML errors
+        const clone = container.cloneNode(true);
+        const parent = container.parentNode;
+        parent.replaceChild(clone, container);
       });
     });
   </script>
