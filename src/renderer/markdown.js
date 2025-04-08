@@ -274,6 +274,51 @@ function getCustomExtensions(renderer) {
         }
         return undefined;
       }
+    },
+    
+    // YouTube Thumbnail Embed
+    {
+      name: 'youtubeThumbnail',
+      level: 'inline',
+      start(src) { return src.indexOf('@[youtube-thumbnail]('); },
+      tokenizer(src) {
+        const rule = /^@\[youtube-thumbnail\]\((.+?)\)/; // Matches @[youtube-thumbnail](URL)
+        const match = rule.exec(src);
+        
+        if (match) {
+          const url = match[1];
+          let videoId = null;
+          
+          try {
+            const parsedUrl = new URL(url);
+            if (parsedUrl.hostname === 'www.youtube.com' || parsedUrl.hostname === 'youtube.com') {
+              videoId = parsedUrl.searchParams.get('v');
+            } else if (parsedUrl.hostname === 'youtu.be') {
+              videoId = parsedUrl.pathname.substring(1);
+            }
+          } catch (e) {
+            // Invalid URL, ignore
+            return undefined;
+          }
+          
+          if (videoId) {
+            return {
+              type: 'youtubeThumbnail',
+              raw: match[0],
+              videoId: videoId,
+              videoUrl: url
+            };
+          }
+        }
+        return undefined;
+      },
+      renderer(token) {
+        const thumbnailUrl = `https://img.youtube.com/vi/${token.videoId}/mqdefault.jpg`;
+        return `
+<a href="${token.videoUrl}" target="_blank" rel="noopener noreferrer" class="youtube-thumbnail-link">
+  <img src="${thumbnailUrl}" alt="YouTube Video Thumbnail (${token.videoId})" class="youtube-thumbnail-image">
+</a>`.trim();
+      }
     }
   ];
 }

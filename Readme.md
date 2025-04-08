@@ -51,3 +51,15 @@ filetomarkdown-convert input.pdf output.md
     <img src="https://img.youtube.com/vi/UkGT3DDPTGI/mqdefault.jpg" width="320" alt="Demo Video" />
   </a>
 </div>
+
+## Running Tests
+
+### Renderer Tests
+
+To run the Markdown renderer tests and generate an HTML report:
+
+```bash
+node tests/markdown-renderer/unified-renderer-test.js
+```
+
+The test results will be output to the console, and a detailed HTML report will be generated at `tests/results/@test-results.html`.

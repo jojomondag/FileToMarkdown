@@ -129,8 +129,16 @@ No syntax highlighting applied
 
 [Reference link][ref-link]
 
-[ref-link]: https://example.com "Reference Link"`,
+[ref-link]: https://example.com "Reference Link"
+
+[YouTube Video Link](https://www.youtube.com/watch?v=JstToSe6BsQ&t=700s)`,
     criteria: 'Links should be rendered as a tags with proper href attributes'
+  },
+  {
+    name: 'Video Links',
+    description: 'Embedding video links using standard Markdown link syntax and thumbnail syntax',
+    markdown: `Thumbnail Link:\n@[youtube-thumbnail](https://www.youtube.com/watch?v=JstToSe6BsQ&t=700s)\n\nBare Auto-Link:\nhttps://www.youtube.com/watch?v=AnotherVideoID`,
+    criteria: 'Video URLs should render as a thumbnail image link or a standard anchor tag.'
   },
   {
     name: 'Images',
@@ -315,6 +323,12 @@ function evaluateTest(testCase, renderedHtml) {
     case 'links':
       return html.includes('<a href=');
     
+    case 'video links':
+      // Check for the thumbnail image link and the standard autolink with simplified regex
+      const hasThumbnail = /<a .*?href=".*?v=jsttose6bsq.*?t=700s.*?".*?class=".*?youtube-thumbnail-link.*?".*?>.*?<img .*?src=".*?img\.youtube\.com\/vi\/jsttose6bsq.*?".*?class=".*?youtube-thumbnail-image.*?".*?>.*?<\/a>/si.test(html);
+      const hasAutoLink = /<a .*?href=".*?v=anothervideoid.*?".*?>.*?v=anothervideoid.*?<\/a>/si.test(html);
+      return hasThumbnail && hasAutoLink;
+    
     case 'images':
       return (
         html.includes('<img') && 
@@ -417,66 +431,61 @@ async function generateUnifiedTestPage() {
     }
   }
   
-  // Track overall test statistics
+  // Track overall test statistics and store individual results
   const testStats = {
     total: TEST_CASES.length,
     passed: 0,
     failed: 0
   };
+  const testResults = [];
 
-  // Generate content for each test case
-  const testSectionsHtml = TEST_CASES.map(testCase => {
+  // Render and evaluate each test case once
+  TEST_CASES.forEach(testCase => {
     const renderedHtml = renderer.render(testCase.markdown);
-    
-    // Evaluate test success
     const passed = evaluateTest(testCase, renderedHtml);
-    
-    // Update statistics
+    testResults.push({ ...testCase, renderedHtml, passed });
+
     if (passed) {
       testStats.passed++;
     } else {
       testStats.failed++;
     }
-    
-    return `
-    <div class="test-section ${passed ? 'test-passed' : 'test-failed'}" id="test-${testCase.name.toLowerCase().replace(/\s+/g, '-')}">
+  });
+
+  // Generate content for each test case using stored results
+  const testSectionsHtml = testResults.map(result => `
+    <div class="test-section ${result.passed ? 'test-passed' : 'test-failed'}" id="test-${result.name.toLowerCase().replace(/\s+/g, '-')}">
       <div class="test-status">
-        <span class="status-badge ${passed ? 'status-pass' : 'status-fail'}">${passed ? 'PASSED' : 'FAILED'}</span>
-        <h2 class="feature-title">${testCase.name}</h2>
+        <span class="status-badge ${result.passed ? 'status-pass' : 'status-fail'}">${result.passed ? 'PASSED' : 'FAILED'}</span>
+        <h2 class="feature-title">${result.name}</h2>
       </div>
-      <p class="feature-description">${testCase.description}</p>
-      <p class="test-criteria"><strong>Success Criteria:</strong> ${testCase.criteria}</p>
+      <p class="feature-description">${result.description}</p>
+      <p class="test-criteria"><strong>Success Criteria:</strong> ${result.criteria}</p>
       <div class="test-container">
         <div class="test-input">
           <div class="section-header">Markdown Input</div>
-          <pre><code>${escapeHtml(testCase.markdown)}</code></pre>
+          <pre><code>${escapeHtml(result.markdown)}</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          ${renderedHtml}
+          ${result.renderedHtml}
         </div>
       </div>
     </div>
-    <hr class="section-divider">`;
-  }).join('\n');
+    <hr class="section-divider">`).join('\n');
   
-  // Generate navigation for test cases with pass/fail indicators
+  // Generate navigation for test cases with pass/fail indicators using stored results
   const navigationHtml = `
   <div class="test-navigation">
     <h3>Jump to Feature:</h3>
     <ul class="nav-list">
-      ${TEST_CASES.map((testCase, index) => {
-        // Determine if this specific test passed by evaluating it directly
-        const renderedHtml = renderer.render(testCase.markdown);
-        const passed = evaluateTest(testCase, renderedHtml);
-        
-        return `<li class="${passed ? 'nav-passed' : 'nav-failed'}">
-          <a href="#test-${testCase.name.toLowerCase().replace(/\s+/g, '-')}">
-            <span class="nav-status-dot ${passed ? 'dot-pass' : 'dot-fail'}"></span>
-            ${testCase.name}
+      ${testResults.map(result => `
+        <li class="${result.passed ? 'nav-passed' : 'nav-failed'}">
+          <a href="#test-${result.name.toLowerCase().replace(/\s+/g, '-')}">
+            <span class="nav-status-dot ${result.passed ? 'dot-pass' : 'dot-fail'}"></span>
+            ${result.name}
           </a>
-        </li>`;
-      }).join('\n      ')}
+        </li>`).join('\n      ')}
     </ul>
   </div>`;
   
@@ -893,6 +902,55 @@ async function generateUnifiedTestPage() {
     }
     .language-javascript .comment {
       color: #999;
+    }
+    /* Add Python styles */
+    .language-python {
+      color: #333;
+    }
+    .language-python .keyword {
+      color: #0077aa; /* Similar to JS keyword color */
+    }
+    .language-python .string,
+    .language-python .string-literal {
+      color: #669900; /* Similar to JS string color */
+    }
+    .language-python .function {
+      color: #dd4a68; /* Similar to JS function color */
+    }
+    .language-python .comment {
+      color: #999;    /* Same as JS comment color */
+    }
+    .language-python .number {
+      color: #990055;
+    }
+    .language-python .class-name {
+      color: #55aaff;
+    }
+    .language-python .builtin,
+    .language-python .decorator {
+       color: #aa00ff;
+    }
+    /* YouTube Thumbnail Styles */
+    .youtube-thumbnail-link {
+      display: inline-block;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative; /* For potential play icon overlay later */
+    }
+    .youtube-thumbnail-link:hover {
+      border-color: #aaa;
+    }
+    .youtube-thumbnail-image {
+      display: block;
+      max-width: 240px; /* Limit thumbnail size */
+      height: auto;
+    }
+    /* More specific rule for images within the test output container */
+    .test-output img {
+      width: 100%;  /* Make image fill container width */
+      height: auto; /* Maintain aspect ratio */
+      max-width: none; /* Override the global max-width if needed */
     }
     /* Improved responsive design */
     @media (max-width: 768px) {

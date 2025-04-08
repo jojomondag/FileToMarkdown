@@ -7,7 +7,7 @@ This folder contains the consolidated tests for the Markdown renderer functional
 To run the unified test:
 
 ```bash
-node C:\Users\Josef\Documents\Github\FileToMarkdown\tests\markdown-renderer\run-test.js
+node tests/markdown-renderer/unified-renderer-test.js
 ```
 
 This will generate an HTML file at `tests/results/@test-results.html` that displays the renderer's output for a comprehensive Markdown test.
