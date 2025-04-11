@@ -1,7 +1,0 @@
----
-description: 
-globs: 
-alwaysApply: true
----
-run the node src/build.js script at the end.
-you dont have to explain what you did just do it!

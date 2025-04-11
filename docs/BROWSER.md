@@ -1,126 +1,46 @@
-# FileToMarkdown API Usage
+# Browser Usage Guide
 
 [← Back to Main Documentation](../Readme.md)
 
-## Installation
+FileToMarkdown can also be used directly in web browsers, enabling client-side file conversion without needing a server.
 
-### NPM
-```bash
-npm install filetomarkdown
-```
+## Using the Browser Bundle
 
-### Browser Setup
+A UMD (Universal Module Definition) bundle is provided in the `dist` directory:
 
-Include the browser bundle in your HTML:
+*   `dist/filetomarkdown.browser.js`: Minified production bundle.
+
+You can include this script in your HTML file:
+
 ```html
-<script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
+<script src="path/to/dist/filetomarkdown.browser.js"></script>
+<script>
+  // Access the library via the global `filetomarkdown` object
+  const { convertToMarkdown } = filetomarkdown;
+
+  async function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        const markdown = await convertToMarkdown(file);
+        document.getElementById('output').textContent = markdown;
+      } catch (error) {
+        console.error('Conversion failed:', error);
+        document.getElementById('output').textContent = `Error: ${error.message}`;
+      }
+    }
+  }
+</script>
+
+<input type="file" onchange="handleFileSelect(event)">
+<pre id="output"></pre>
 ```
 
-Then initialize the client. Note that the client usually connects to an API server instance (see [API Documentation](API.md)).
-```javascript
-const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000'); // Default server URL
-```
+## Key Differences in Browser
 
-## Standalone Viewer
-
-FileToMarkdown includes a standalone viewer that works directly in your browser without requiring a server. It allows you to open, view, and even edit Markdown files using the File System Access API (in compatible browsers).
-
-To **create** the viewer files, use the `filetomarkdown-viewer` command as described in the [CLI Commands documentation](COMMANDS.md).
-
-Once created (e.g., in `my-directory/examples/viewer/`), simply open the `viewer.html` file in your browser:
-```
-my-directory/examples/viewer/viewer.html
-```
-
-The viewer provides:
-- Full markdown rendering with syntax highlighting
-- File and folder navigation
-- Direct file editing with File System Access API (Chrome, Edge, Opera)
-- Drag and drop file loading
-
-## Using the JavaScript Client API
-
-To interact programmatically with the conversion and rendering features (usually via the API server), use the `FileToMarkdownClient`.
-
-### Starting the Server (Required for Client)
-
-The JavaScript client needs to connect to a running `filetomarkdown-server` instance. You can start the server using the command described in the [CLI Commands documentation](COMMANDS.md). By default, it runs on `http://localhost:3000`.
-
-See the [API Documentation](API.md) for details about the server endpoints the client interacts with.
-
-### `client.convertFile(file)`
-Convert a file to markdown by sending it to the API server's `/api/convert` endpoint.
-- Input: File object from input or drag & drop
-- Returns: Promise<{ markdown: string, status: number }>
-```javascript
-const { markdown } = await client.convertFile(file);
-```
-
-### `client.renderMarkdown(content)`
-Render markdown string to HTML by sending it to the API server's `/api/render` endpoint.
-- Input: Markdown string
-- Returns: Promise<{ html: string, status: number }>
-```javascript
-const { html } = await client.renderMarkdown(markdown);
-```
-
-### `client.getSupportedTypes()`
-Get the list of supported file types from the API server's `/api/filetypes` endpoint.
-- Returns: Promise<{ fileTypes: string[], descriptions: Object, status: number }>
-```javascript
-const { fileTypes, descriptions } = await client.getSupportedTypes();
-```
-
-## Complete Example
-
-Here's a simple example showing how to use the client to convert a file selected by the user and render the result:
-
-### HTML
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>File to Markdown</title>
-    <style>
-        #output {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <input type="file" id="fileInput">
-    <div id="output"></div>
-    
-    <script src="node_modules/filetomarkdown/dist/filetomarkdown.browser.js"></script>
-    <script>
-        // Assumes the API server is running on http://localhost:3000
-        const client = new FileToMarkdown.FileToMarkdownClient('http://localhost:3000');
-        const output = document.getElementById('output');
-
-        document.getElementById('fileInput').addEventListener('change', async (e) => {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                output.textContent = 'Converting...'; // Provide user feedback
-                try {
-                    // Convert the file via the API server
-                    const { markdown } = await client.convertFile(file);
-                    // Render the resulting markdown via the API server
-                    const { html } = await client.renderMarkdown(markdown);
-                    output.innerHTML = html;
-                } catch (error) {
-                    console.error('Error:', error); // Log error details
-                    output.textContent = 'Error: ' + (error.message || 'Conversion/Rendering failed');
-                }
-            }
-        });
-    </script>
-</body>
-</html>
-```
-
-For the list of supported file types and conversion features, see [Converters Documentation](CONVERTERS.md). 
+*   **Input**: The `convertToMarkdown` function accepts a `File` object (from an `<input type="file">` or drag-and-drop) instead of a file path.
+*   **Dependencies**: External CLI tools like `7z` are not available. Archive conversion relies on JavaScript libraries (`adm-zip`).
+*   **Output**: By default, returns the Markdown string. Saving to a file requires additional browser-specific logic (e.g., creating a download link).
 
 ---
 

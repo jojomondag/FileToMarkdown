@@ -6,12 +6,11 @@
   "main": "dist/main.js",
   "browser": "dist/filetomarkdown.browser.js",
   "bin": {
-    "filetomarkdown-convert": "bin/cli.js",
-    "filetomarkdown-render": "bin/render.js",
+    "filetomarkdown": "bin/cli.js",
+    "filetomarkdown-convert": "bin/convert.js",
+    "filetomarkdown-server": "bin/server.js",
     "filetomarkdown-test": "bin/test-conversion.js",
-    "filetomarkdown-viewer": "bin/create-viewer.js",
-    "filetomarkdown-filetypes": "bin/filetypes.js",
-    "filetomarkdown-server": "bin/server.js"
+    "filetomarkdown-filetypes": "bin/list-filetypes.js"
   },
   "exports": {
     ".": {
@@ -29,18 +28,17 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run build-viewer && node bin/test-conversion.js",
-    "test-github": "npm run build-viewer && node bin/test-conversion.js --github",
-    "test-renderer": "node src/renderer/tests/run-all-tests.js",
-    "test-unified": "node scripts/run-unified-tests.js",
-    "test-markdown": "node tests/markdown-renderer/run-test.js",
+    "start": "node bin/server.js",
     "build": "npm run build:browser && npm run build:node",
-    "build:browser": "webpack --config webpack.browser.config.js --env production",
     "build:node": "webpack --config webpack.node.config.js",
-    "dev": "webpack serve --config webpack.browser.config.js --env development",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
-    "build-viewer": "cd src/Viewer && npm install && npm run build"
+    "build:browser": "webpack --config webpack.browser.config.js --env production",
+    "dev": "webpack --config webpack.node.config.js --watch",
+    "test": "node bin/test-conversion.js",
+    "test-github": "node bin/test-conversion.js --github",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "husky install",
+    "docs": "jsdoc -c jsdoc.json"
   },
   "keywords": [
     "markdown",
@@ -60,11 +58,8 @@
     "express": "^4.18.2",
     "katex": "^0.16.21",
     "mammoth": "^1.8.0",
-    "marked": "^11.1.1",
-    "mermaid": "^11.6.0",
     "multer": "^1.4.5-lts.1",
     "pdfjs-dist": "^4.9.155",
-    "prismjs": "^1.29.0",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"
   },
@@ -75,10 +70,12 @@
     "buffer": "^6.0.3",
     "copy-webpack-plugin": "^12.0.2",
     "crypto-browserify": "^3.12.1",
+    "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "terser-webpack-plugin": "^5.3.9",
+    "url": "^0.11.4",
     "util": "^0.12.5",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",

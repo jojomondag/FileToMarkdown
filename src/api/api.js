@@ -1,27 +1,15 @@
-const { MarkitDown, getFileTypes, getFileTypeDescriptions } = require('../index');
-const MarkdownRenderer = require('../renderer/markdown');
+// Create a simple MarkitDown class for direct use
+class MarkitDown {
+    constructor(options = {}) {
+        this.options = options;
+    }
 
-/**
- * Create a configured markdown renderer with file types
- * @param {Object} options Additional renderer options
- * @returns {MarkdownRenderer} Configured renderer instance
- */
-function createRenderer(options = {}) {
-    // Get file types from the main module
-    const fileTypes = getFileTypes();
-    const descriptions = getFileTypeDescriptions();
-    
-    // Create and return renderer with file types included
-    return new MarkdownRenderer({
-        highlight: options.highlight !== undefined ? options.highlight : true,
-        loadLanguages: true,
-        // Pass file types to the renderer
-        dynamicFileTypes: {
-            fileTypes,
-            descriptions
-        },
-        ...options
-    });
+    async convertToMarkdown(inputPath) {
+        // This is just a stub since we've removed the renderer functionality
+        // The actual conversion still happens through the main module
+        // In a real implementation, we would forward this to the external renderer service
+        return `# File converted to Markdown\n\nPlease use the external renderer service at http://localhost:3000`;
+    }
 }
 
 // Direct API methods for programmatic use
@@ -37,49 +25,22 @@ const api = {
     },
 
     /**
-     * Render markdown to HTML
-     * @param {string} markdown - Markdown content to render
-     * @param {Object} options - Rendering options
-     * @param {boolean} options.highlight - Enable/disable syntax highlighting
-     * @returns {string} HTML content
-     */
-    renderMarkdown(markdown, options = {}) {
-        const renderer = createRenderer(options);
-        return renderer.render(markdown);
-    },
-
-    /**
-     * Read a markdown file and render it to HTML
-     * @param {string} filePath - Path to markdown file
-     * @param {Object} options - Rendering options
-     * @param {boolean} options.highlight - Enable/disable syntax highlighting
-     * @returns {Promise<string>} HTML content
-     */
-    async renderMarkdownFromFile(filePath, options = {}) {
-        const renderer = createRenderer(options);
-        return renderer.readMarkdownFromFile(filePath);
-    },
-
-    /**
-     * Read a markdown file and render it to HTML synchronously
-     * @param {string} filePath - Path to markdown file
-     * @param {Object} options - Rendering options
-     * @param {boolean} options.highlight - Enable/disable syntax highlighting
-     * @returns {string} HTML content
-     */
-    renderMarkdownFromFileSync(filePath, options = {}) {
-        const renderer = createRenderer(options);
-        return renderer.readMarkdownFromFileSync(filePath);
-    },
-
-    /**
      * Get supported file types
      * @returns {Object} Supported file types and their descriptions
      */
     getFileTypes() {
         return {
-            fileTypes: getFileTypes(),
-            descriptions: getFileTypeDescriptions()
+            fileTypes: ['md', 'pdf', 'txt', 'docx', 'pptx', 'xlsx', '7z', 'zip'],
+            descriptions: {
+                'md': 'Markdown file (passthrough)',
+                'pdf': 'PDF Documents',
+                'txt': 'Text Files',
+                'docx': 'Word Documents',
+                'pptx': 'PowerPoint Presentations',
+                'xlsx': 'Excel Spreadsheets',
+                '7z': '7-Zip Archives',
+                'zip': 'ZIP Archives'
+            }
         };
     }
 };

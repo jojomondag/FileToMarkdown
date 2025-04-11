@@ -22,7 +22,6 @@ module.exports = {
         test: /\.js$/,
         exclude: [
           /node_modules/,
-          /src\/Viewer\/node_modules/
         ],
         use: {
           loader: 'babel-loader',
@@ -57,7 +56,6 @@ module.exports = {
         },
         // Exclude problematic files from Terser
         exclude: [
-          /src\/Viewer\/node_modules/
         ]
       })
     ]
@@ -79,37 +77,5 @@ module.exports = {
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer']
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { 
-          from: path.resolve(__dirname, 'src/Viewer'),
-          to: 'Viewer',
-          globOptions: {
-            ignore: [
-              '**/node_modules/**', // Ignore node_modules in Viewer
-              '**/webpack.config.js',
-              '**/package.json',
-              '**/package-lock.json'
-            ]
-          }
-        },
-        { 
-          from: path.resolve(__dirname, 'src/server'),
-          to: 'server'
-        },
-        { 
-          from: path.resolve(__dirname, 'src/api'),
-          to: 'api'
-        },
-        { 
-          from: path.resolve(__dirname, 'src/renderer'),
-          to: 'renderer'
-        },
-        { 
-          from: path.resolve(__dirname, 'src/converters'),
-          to: 'converters'
-        }
-      ]
-    })
   ]
 };
