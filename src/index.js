@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs').promises;
-const fsSync = require('fs');
 const CodeConverter = require('./converters/code');
 
 class MarkitDown {
@@ -83,6 +82,7 @@ module.exports = {
     const converter = new MarkitDown(options);
     return converter.convertToMarkdown(input, output);
   },
+
   getFileTypes: () => Object.keys(MarkitDown.typeMap),
   getFileTypeDescriptions: () => MarkitDown.getTypeDescriptions()
 };

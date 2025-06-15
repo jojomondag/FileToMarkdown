@@ -30,40 +30,22 @@
   - Supports GitHub Flavored Markdown
 
 ## Code Converters
-Supports multiple programming languages with syntax highlighting:
 
-### Web Technologies
-- JavaScript (.js, .jsx)
-- TypeScript (.ts, .tsx)
-- HTML (.html)
-- CSS (.css)
-- Vue (.vue)
-- Svelte (.svelte)
+Supports common programming languages:
 
-### Programming Languages
-- Python (.py)
-- Java (.java)
-- C# (.cs)
-- C++ (.cpp)
-- C (.c)
-- Go (.go)
-- Ruby (.rb)
-- Rust (.rs)
-- Kotlin (.kt)
-- Swift (.swift)
-- PHP (.php)
-- Lua (.lua)
+*   JavaScript (`.js`, `.jsx`, `.ts`, `.tsx`)
+*   Python (`.py`)
+*   Java (`.java`)
+*   C# (`.cs`)
+*   HTML (`.html`, `.htm`)
+*   CSS (`.css`)
+*   ...and potentially others detected by `highlight.js`.
 
-### Other
-- SQL (.sql)
-- Shell (.sh, .bash)
-- MATLAB (.m)
+**Features:**
 
-Features:
-- Syntax highlighting in viewer
-- Language-specific formatting
-- Preserves comments and structure
-- Support for mixed language files (e.g., JSX)
+*   Syntax highlighting using `highlight.js`.
+*   Outputs code within a fenced code block with the detected language tag.
+*   Line numbering (optional, if supported by renderer).
 
 ## Archive Converters
 - **ZIP** (.zip)

@@ -1,79 +1,65 @@
-# FileToMarkdown CLI Commands
+# CLI Commands
 
 [← Back to Main Documentation](../Readme.md)
 
-## Installation
+The `filetomarkdown` package provides several command-line tools:
+
+1.  `filetomarkdown` (Main Alias)
+2.  `filetomarkdown-convert`
+3.  `filetomarkdown-server`
+4.  `filetomarkdown-test`
+5.  `filetomarkdown-filetypes`
+
+## Command Details
+
+### 1. Convert File (`filetomarkdown` or `filetomarkdown-convert`)
+
+Converts a single file to Markdown.
+
 ```bash
-npm install -g filetomarkdown
+filetomarkdown -f <input-path> [-o <output-path>] [-n <output-name>]
+# OR
+filetomarkdown-convert <input-path> [<output-path>]
 ```
 
-## Available Commands
+*   `<input-path>`: Path to the source file.
+*   `<output-path>`: (Optional) Path to the output Markdown file. If omitted, outputs to console.
+*   `-f, --file`: Specify the input file path (alternative syntax).
+*   `-o, --output`: Specify the output file path (alternative syntax).
+*   `-n, --name`: Specify the base name for the output file (e.g., `myDoc` results in `myDoc.md`). The directory specified by `-o` must exist.
 
-### 1. Convert Files
+### 2. Start API Server (`filetomarkdown-server`)
+
+Starts a local API server for file conversions.
+
 ```bash
-filetomarkdown-convert <input-file> <output-file>
+filetomarkdown-server [--port <number>] [--serve-static <path>]
 ```
-Converts files to markdown format. Output file is optional (defaults to input name with .md).
 
-### 2. Render Markdown
+*   `--port <number>`: (Optional) Port number for the server (default: 3000).
+*   `--serve-static <path>`: (Optional) Serve static files from the specified directory path.
+
+See [API Documentation](API.md) for endpoint details.
+
+### 3. Run Test Conversion (`filetomarkdown-test`)
+
+Downloads example files and runs conversions, useful for testing the installation.
+
 ```bash
-filetomarkdown-render <input-markdown> <output-html>
+filetomarkdown-test [--github]
 ```
-Renders markdown files to HTML with syntax highlighting.
 
-### 3. Test Package
-```bash
-filetomarkdown-test --github
-```
-Tests all converters using example files:
-- Downloads fresh examples from GitHub
-- Converts the examples to markdown
-- Creates a viewer for .md files
+*   `--github`: Use example files directly from the GitHub repository.
 
-### 4. Create Viewer
-```bash
-filetomarkdown-viewer [target-directory]
-```
-Creates a standalone viewer application that can:
-- Open and display markdown files
-- Edit markdown content directly
-- Organize files in a folder structure
+Creates `examples/exampleFiles` and `examples/outputAfterConversion` directories.
 
-By default, the viewer is created in an `examples/viewer` directory structure.
-Options:
-- `--no-examples-structure`: Places viewer files directly in target directory
+### 4. List Supported Filetypes (`filetomarkdown-filetypes`)
 
-#### Viewer Usage
-The viewer works entirely in the browser.
+Lists the file extensions supported by the converters.
 
-1. **Open viewer.html directly in your browser** 
-   - Requires Chrome 86+, Edge 86+, or Opera 72+ for full functionality
-   - Drag & drop files onto the sidebar
-   - Select folders via the dropzone
-   - Uses the File System Access API for saving changes directly to files
-
-For browsers that don't support the File System Access API, files can still be viewed but saving will only update the content in memory.
-
-### 5. List File Types
 ```bash
 filetomarkdown-filetypes
 ```
-Shows all supported file types and their descriptions.
-
-### 6. Start API Server
-```bash
-filetomarkdown-server
-```
-Starts the API server for programmatic access to conversion functionality:
-- Runs on port 3000 by default
-- Provides REST API endpoints for file conversions
-- Enables programmatic access from other applications
-
-Options:
-- `--port <number>`: Specify a custom port
-- `--static-path <path>`: Specify a custom path for static files
-
-For detailed API documentation and examples, see [API Documentation](API.md). 
 
 ---
 

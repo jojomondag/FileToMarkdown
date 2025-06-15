@@ -8,10 +8,18 @@ examples/
 .npmrc
 *.log
 node_modules/
-dist/Viewer/README.md
+
+# Build artifacts
+dist/
 
 # IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Config files
+.env
+
+# OS specific
+Thumbs.db

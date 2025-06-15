@@ -130,9 +130,9 @@ function createServer(options = {}) {
                     console.log(`👉 Access at: http://localhost:${PORT}`);
                     console.log(`📡 API endpoints:`);
                     console.log(`   GET  /api/filetypes - List supported file types`);
-                    console.log(`   POST /api/render    - Render markdown to HTML`);
                     console.log(`   POST /api/convert   - Convert file to markdown`);
                     console.log(`   GET  /health       - Server health check\n`);
+                    console.log(`ℹ️  The markdown renderer has been moved to: http://localhost:3000\n`);
                     resolve(server);
                 }).on('error', (err) => {
                     console.error('❗ Server failed to start:', err);

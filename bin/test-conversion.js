@@ -4,7 +4,6 @@ const fsSync = require('fs');
 const path = require('path');
 const https = require('https');
 const { convertToMarkdown } = require('../dist/main');
-const { createViewer } = require('../src/Viewer/createViewer.js');
 
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/jojomondag/FileToMarkdown/main/examples';
 
@@ -13,7 +12,6 @@ const createDirectories = () => {
     const dirs = [
         'examples/exampleFiles/code',
         'examples/outputAfterConversion/code',
-        'examples/viewer'
     ];
     
     dirs.forEach(dir => {
@@ -136,27 +134,10 @@ const runTests = async () => {
         
         createDirectories();
         
-        // Use the shared createViewer module instead of setupViewer
-        const viewerResult = await createViewer({
-            targetDir: process.cwd(),
-            useExamplesStructure: true,
-            addGithubTheme: true,
-            useFsPromises: true
-        });
-        
-        if (viewerResult.completed) {
-            console.log(`✅ Viewer created: ${path.resolve(viewerResult.viewerHtmlPath)}`);
-            console.log(`✅ Bundle files copied to: ${path.resolve(viewerResult.srcDir)}`);
-        } else {
-            throw new Error('Failed to create viewer');
-        }
-
         console.log('\n📂 Project Structure:');
         console.log('├── examples/');
         console.log('│   ├── exampleFiles/');
         console.log('│   ├── outputAfterConversion/');
-        console.log('│   └── viewer/');
-        console.log('│       └── viewer.html');
         console.log('└── package.json\n');
 
         for (const test of testFiles) {
@@ -182,8 +163,6 @@ const runTests = async () => {
         }
 
         console.log('\n🎉 All conversions completed!');
-        console.log('\n🔗 Viewer Access Instructions:');
-        console.log('   - Open examples/viewer/viewer.html directly in your browser');
         console.log('   - Drag generated .md files from:');
         console.log('     examples/outputAfterConversion/');
 

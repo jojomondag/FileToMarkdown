@@ -3,6 +3,7 @@
 // Use the src/server.js directly instead of the dist version
 const path = require('path');
 const fs = require('fs');
+const express = require('express');
 
 console.log('\n🔔 IMPORTANT: This command only starts the API server.\n');
 
@@ -24,18 +25,40 @@ if (fs.existsSync(srcServerPath)) {
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const options = {};
+let sourceFilePath = '';
+let outputFilePath = '';
+let outputFileName = '';
+let serveStaticPath = '';
 
 for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--port' && i + 1 < args.length) {
-        options.port = parseInt(args[i + 1], 10);
+    if ((arg === '-f' || arg === '--file') && i + 1 < args.length) {
+        sourceFilePath = path.resolve(args[i + 1]);
         i++;
-    } else if (arg === '--static-path' && i + 1 < args.length) {
-        options.staticPath = args[i + 1];
+    } else if ((arg === '-o' || arg === '--output') && i + 1 < args.length) {
+        outputFilePath = path.resolve(args[i + 1]);
         i++;
-    } else if (arg === '--viewer-path' && i + 1 < args.length) {
+    } else if ((arg === '-n' || arg === '--name') && i + 1 < args.length) {
+        outputFileName = args[i + 1];
         i++;
+    } else if (arg === '--serve-static' && i + 1 < args.length) {
+        serveStaticPath = path.resolve(args[i + 1]);
+        i++;
+    } else {
+        console.error(`Unknown or incomplete argument: ${arg}`);
+        process.exit(1);
+    }
+}
+
+// Serve static files if path is provided
+if (serveStaticPath) {
+    if (fs.existsSync(serveStaticPath)) {
+        const app = express();
+        app.use(express.static(serveStaticPath));
+        console.log(`Serving static files from ${serveStaticPath}`);
+    } else {
+        console.error(`Static file path not found: ${serveStaticPath}`);
+        process.exit(1);
     }
 }
 
