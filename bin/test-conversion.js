@@ -85,16 +85,34 @@ const testFiles = [
         outputPath: 'examples/outputAfterConversion/exampleProjekt9.md'
     },
     {
+        type: 'odt',
+        localPath: 'examples/exampleFiles/exampleDocumentLibreOffice.odt',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleDocumentLibreOffice.odt`,
+        outputPath: 'examples/outputAfterConversion/exampleDocumentLibreOffice.md'
+    },
+    {
         type: 'pptx',
         localPath: 'examples/exampleFiles/exampleBruceLee.pptx',
         githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleBruceLee.pptx`,
         outputPath: 'examples/outputAfterConversion/exampleBruceLee.md'
     },
     {
+        type: 'odp',
+        localPath: 'examples/exampleFiles/examplePresentationLibreOffice.odp',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/examplePresentationLibreOffice.odp`,
+        outputPath: 'examples/outputAfterConversion/examplePresentationLibreOffice.md'
+    },
+    {
         type: 'xlsx',
         localPath: 'examples/exampleFiles/exampleProgrammeringYearPlan.xlsx',
         githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleProgrammeringYearPlan.xlsx`,
         outputPath: 'examples/outputAfterConversion/exampleProgrammeringYearPlan.md'
+    },
+    {
+        type: 'ods',
+        localPath: 'examples/exampleFiles/exampleSpreadsheetLibreOffice.ods',
+        githubPath: `${GITHUB_RAW_BASE}/exampleFiles/exampleSpreadsheetLibreOffice.ods`,
+        outputPath: 'examples/outputAfterConversion/exampleSpreadsheetLibreOffice.md'
     },
     {
         type: 'zip',

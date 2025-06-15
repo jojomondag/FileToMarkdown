@@ -10,8 +10,11 @@ class MarkitDown {
       'pdf': require('./converters/pdf'),
       'txt': require('./converters/txt'),
       'docx': require('./converters/docx'),
+      'odt': require('./converters/odt'),
       'pptx': require('./converters/pptx'),
+      'odp': require('./converters/odp'),
       'xlsx': require('./converters/xlsx'),
+      'ods': require('./converters/ods'),
       '7z': require('./converters/7zip'),
       'zip': require('./converters/zip'),
       ...Object.fromEntries(
@@ -28,8 +31,11 @@ class MarkitDown {
       'pdf': 'PDF Documents',
       'txt': 'Text Files',
       'docx': 'Word Documents',
+      'odt': 'LibreOffice Writer Documents',
       'pptx': 'PowerPoint Presentations',
+      'odp': 'LibreOffice Impress Presentations',
       'xlsx': 'Excel Spreadsheets',
+      'ods': 'LibreOffice Calc Spreadsheets',
       '7z': '7-Zip Archives',
       'zip': 'ZIP Archives',
       ...Object.fromEntries(
