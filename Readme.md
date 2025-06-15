@@ -15,7 +15,6 @@ FileToMarkdown comes with comprehensive documentation:
 
 ## Features
 
-<<<<<<< HEAD
 - 📄 Convert various file formats to Markdown
 - 👁️ Standalone viewer that works directly in the browser
 - 🔍 Syntax highlighting for code blocks
@@ -25,30 +24,28 @@ FileToMarkdown comes with comprehensive documentation:
 - 🛠️ Command-line tools for batch processing
 - 🔒 Security-focused with latest dependency updates
 - ⚡ Enhanced PDF text extraction and processing
+- 🗃️ Complete Microsoft Office and LibreOffice suite support
 
 ## Supported File Types
 
-### Documents
+### Microsoft Office Documents
 - **PDF** (.pdf) - Enhanced text extraction with `pdf-parse`
 - **Word** (.docx) - Full document formatting support
 - **PowerPoint** (.pptx) - Slide-by-slide conversion
 - **Excel** (.xlsx) - Table and data preservation
-- **Text** (.txt) - Smart formatting detection
 
-### Code Files
-JavaScript, TypeScript, Python, Java, C#, HTML, CSS, and 20+ more languages with syntax highlighting
+### LibreOffice Documents
+- **Writer** (.odt) - Text documents with headings, paragraphs, lists, and tables
+- **Calc** (.ods) - Spreadsheets with data preservation and table formatting
+- **Impress** (.odp) - Presentations with slide-by-slide content extraction
+
+### Text & Code Files
+- **Text** (.txt) - Smart formatting detection
+- JavaScript, TypeScript, Python, Java, C#, HTML, CSS, and 20+ more languages with syntax highlighting
 
 ### Archives
 - **ZIP** (.zip) - Extract and convert contained files
 - **7-Zip** (.7z) - Full archive structure preservation
-=======
-*   🚀 Converts various file types to Markdown
-*   📄 Supports PDF, DOCX, PPTX, XLSX, ZIP, 7z
-*   💻 Converts common code files with syntax highlighting (JS, Python, Java, C#, HTML)
-*   ⚙️ Simple CLI interface
-*   🔧 API for programmatic use
-*   📦 Bundled for both Node.js and browser environments
->>>>>>> 0014b0b6e0a7a58551792e200fa3a85859db0072
 
 ## Demo Video
 <div align="center">
