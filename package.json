@@ -7,10 +7,9 @@
   "browser": "dist/filetomarkdown.browser.js",
   "bin": {
     "filetomarkdown": "bin/cli.js",
-    "filetomarkdown-convert": "bin/convert.js",
     "filetomarkdown-server": "bin/server.js",
     "filetomarkdown-test": "bin/test-conversion.js",
-    "filetomarkdown-filetypes": "bin/list-filetypes.js"
+    "filetomarkdown-filetypes": "bin/filetypes.js"
   },
   "exports": {
     ".": {
@@ -37,7 +36,6 @@
     "test-github": "node bin/test-conversion.js --github",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "husky install",
     "docs": "jsdoc -c jsdoc.json"
   },
   "keywords": [
