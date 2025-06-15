@@ -1,6 +1,6 @@
 # FileToMarkdown
 
-Convert Files to Markdown. Supports Office documents, code files, and Ziparchives in the browser or as CLI Node.js integration.
+Convert Files to Markdown. Supports Office documents, code files, and ZIP archives in the browser or as CLI Node.js integration.
 
 ## Documentation
 
@@ -44,6 +44,24 @@ filetomarkdown-convert input.pdf output.md
 - 📂 File and folder structure navigation
 - 🔧 Direct file editing using File System Access API
 - 🛠️ Command-line tools for batch processing
+- 🔒 Security-focused with latest dependency updates
+- ⚡ Enhanced PDF text extraction and processing
+
+## Supported File Types
+
+### Documents
+- **PDF** (.pdf) - Enhanced text extraction with `pdf-parse`
+- **Word** (.docx) - Full document formatting support
+- **PowerPoint** (.pptx) - Slide-by-slide conversion
+- **Excel** (.xlsx) - Table and data preservation
+- **Text** (.txt) - Smart formatting detection
+
+### Code Files
+JavaScript, TypeScript, Python, Java, C#, HTML, CSS, and 20+ more languages with syntax highlighting
+
+### Archives
+- **ZIP** (.zip) - Extract and convert contained files
+- **7-Zip** (.7z) - Full archive structure preservation
 
 ## Demo Video
 <div align="center">

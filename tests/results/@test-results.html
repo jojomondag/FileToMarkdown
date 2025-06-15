@@ -464,7 +464,7 @@
     <h2>Test Summary</h2>
     <p>This test demonstrates the conversion of various Markdown features to HTML using the FileToMarkdown renderer. Each section below shows a specific Markdown feature with its input and rendered output side by side.</p>
     <div class="meta-info">
-      <div><strong>Test Run:</strong> 4/8/2025, 1:03:06 PM</div>
+      <div><strong>Test Run:</strong> 2025-06-15 22:21:10</div>
       <div><strong>Test File:</strong> @test-results.html</div>
       <div><strong>Renderer Version:</strong> 0.4.18</div>
       <div><strong>Total Features Tested:</strong> 19</div>
@@ -479,15 +479,15 @@
         <div class="stat-label">Total Tests</div>
       </div>
       <div class="stat-box stat-passed">
-        <div class="stat-value">19</div>
+        <div class="stat-value">16</div>
         <div class="stat-label">Passed</div>
       </div>
       <div class="stat-box stat-failed">
-        <div class="stat-value">0</div>
+        <div class="stat-value">3</div>
         <div class="stat-label">Failed</div>
       </div>
       <div class="stat-box stat-passed">
-        <div class="stat-value stat-percentage">100%</div>
+        <div class="stat-value stat-percentage">84%</div>
         <div class="stat-label">Pass Rate</div>
       </div>
     </div>
@@ -519,9 +519,9 @@
           </a>
         </li>
       
-        <li class="nav-passed">
+        <li class="nav-failed">
           <a href="#test-ordered-lists">
-            <span class="nav-status-dot dot-pass"></span>
+            <span class="nav-status-dot dot-fail"></span>
             Ordered Lists
           </a>
         </li>
@@ -540,9 +540,9 @@
           </a>
         </li>
       
-        <li class="nav-passed">
+        <li class="nav-failed">
           <a href="#test-code-blocks">
-            <span class="nav-status-dot dot-pass"></span>
+            <span class="nav-status-dot dot-fail"></span>
             Code Blocks
           </a>
         </li>
@@ -561,9 +561,9 @@
           </a>
         </li>
       
-        <li class="nav-passed">
+        <li class="nav-failed">
           <a href="#test-video-links">
-            <span class="nav-status-dot dot-pass"></span>
+            <span class="nav-status-dot dot-fail"></span>
             Video Links
           </a>
         </li>
@@ -713,22 +713,20 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         <div class="test-output">
           <div class="section-header">HTML Output</div>
           <ul>
-<li>Item 1</li><li>Item 2<ul>
-<li>Nested item 1</li><li>Nested item 2</li></ul>
-</li><li>Item 3</li></ul>
+<li>[object Object]</li><li>[object Object]</li><li>[object Object]</li></ul>
 <ul>
-<li>Alternative item 1</li><li>Alternative item 2</li></ul>
+<li>[object Object]</li><li>[object Object]</li></ul>
 <ul>
-<li>Another alternative item 1</li><li>Another alternative item 2</li></ul>
+<li>[object Object]</li><li>[object Object]</li></ul>
 
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-passed" id="test-ordered-lists">
+    <div class="test-section test-failed" id="test-ordered-lists">
       <div class="test-status">
-        <span class="status-badge status-pass">PASSED</span>
+        <span class="status-badge status-fail">FAILED</span>
         <h2 class="feature-title">Ordered Lists</h2>
       </div>
       <p class="feature-description">Creating numbered lists with automatic numbering</p>
@@ -745,9 +743,7 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         <div class="test-output">
           <div class="section-header">HTML Output</div>
           <ol>
-<li>First item</li><li>Second item<ol>
-<li>Nested item 1</li><li>Nested item 2</li></ol>
-</li><li>Third item</li></ol>
+<li>[object Object]</li><li>[object Object]</li><li>[object Object]</li></ol>
 
         </div>
       </div>
@@ -772,7 +768,7 @@ Also _italic_, __bold__, and ___bold italic___ using underscores.
         <div class="test-output">
           <div class="section-header">HTML Output</div>
           <li class="task-list-item"><input type="checkbox" checked disabled> Completed task</li><li class="task-list-item"><input type="checkbox"  disabled> Incomplete task</li><li class="task-list-item"><input type="checkbox" checked disabled> Another completed task</li><ul>
-<li class="task-list-item"><input type="checkbox"  disabled> <input disabled="" type="checkbox"> Nested task</li></ul>
+<li>[object Object]</li></ul>
 
         </div>
       </div>
@@ -803,9 +799,9 @@ The `console.log()` function outputs to the console.</code></pre>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-passed" id="test-code-blocks">
+    <div class="test-section test-failed" id="test-code-blocks">
       <div class="test-status">
-        <span class="status-badge status-pass">PASSED</span>
+        <span class="status-badge status-fail">FAILED</span>
         <h2 class="feature-title">Code Blocks</h2>
       </div>
       <p class="feature-description">Code blocks with triple backticks and optional language specification</p>
@@ -836,18 +832,9 @@ No syntax highlighting applied
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <pre><code class="language-javascript"><span class="token comment">// Code block with syntax highlighting</span>
-<span class="token keyword">function</span> <span class="token function">greet</span><span class="token punctuation">(</span><span class="token parameter">name</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-  <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">Hello, </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">!</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
-<span class="token punctuation">}</span>
-console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token function">greet</span><span class="token punctuation">(</span><span class="token string">'World'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
-<pre><code class="language-python"># Python example
-def greet(name):
-    return f"Hello, {name}!"
-    
-print(greet("World"))</code></pre>
-<pre><code>Plain code block without language specification
-No syntax highlighting applied</code></pre>
+          <pre><code>[object Object]</code></pre>
+<pre><code>[object Object]</code></pre>
+<pre><code>[object Object]</code></pre>
 
         </div>
       </div>
@@ -909,19 +896,19 @@ No syntax highlighting applied</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <p><a href="https://example.com" title="Example Website">Link to example</a></p>
-<p><a href="https://example.com">https://example.com</a> - Automatic URL linking</p>
-<p><a href="https://example.com" title="Reference Link">Reference link</a></p>
-<p><a href="https://www.youtube.com/watch?v=JstToSe6BsQ&t=700s">YouTube Video Link</a></p>
+          <p><a href="[object Object]">undefined</a></p>
+<p><a href="[object Object]">undefined</a> - Automatic URL linking</p>
+<p><a href="[object Object]">undefined</a></p>
+<p><a href="[object Object]">undefined</a></p>
 
         </div>
       </div>
     </div>
     <hr class="section-divider">
 
-    <div class="test-section test-passed" id="test-video-links">
+    <div class="test-section test-failed" id="test-video-links">
       <div class="test-status">
-        <span class="status-badge status-pass">PASSED</span>
+        <span class="status-badge status-fail">FAILED</span>
         <h2 class="feature-title">Video Links</h2>
       </div>
       <p class="feature-description">Embedding video links using standard Markdown link syntax and thumbnail syntax</p>
@@ -940,7 +927,7 @@ https://www.youtube.com/watch?v=AnotherVideoID</code></pre>
           <p>Thumbnail Link:<br><a href="https://www.youtube.com/watch?v=JstToSe6BsQ&t=700s" target="_blank" rel="noopener noreferrer" class="youtube-thumbnail-link">
   <img src="https://img.youtube.com/vi/JstToSe6BsQ/mqdefault.jpg" alt="YouTube Video Thumbnail (JstToSe6BsQ)" class="youtube-thumbnail-image">
 </a></p>
-<p>Bare Auto-Link:<br><a href="https://www.youtube.com/watch?v=AnotherVideoID">https://www.youtube.com/watch?v=AnotherVideoID</a></p>
+<p>Bare Auto-Link:<br><a href="[object Object]">undefined</a></p>
 
         </div>
       </div>
@@ -963,8 +950,8 @@ https://www.youtube.com/watch?v=AnotherVideoID</code></pre>
         </div>
         <div class="test-output">
           <div class="section-header">HTML Output</div>
-          <p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo" title="FileToMarkdown Logo"></p>
-<p><img src="https://raw.githubusercontent.com/jojomondag/MyLogo/5785b2f3063c9a9bd49cd7f45a3504a297586122/logo.png" alt="FileToMarkdown Logo with Size" title="Project Logo"></p>
+          <p><img src="[object Object]" alt="undefined"></p>
+<p><img src="[object Object]" alt="undefined"></p>
 
         </div>
       </div>
@@ -1138,9 +1125,7 @@ t
 e
 [
 </sup><br>2<br>]<br>.</p>
-<pre><code>Indent paragraphs to include them in the footnote.
-
-Like this paragraph.</code></pre>
+<pre><code>[object Object]</code></pre>
 <div class="footnotes">
                         <div class="footnote" id="fn-1">
                             <sup>1</sup>: This is the first footnote content.
@@ -1290,7 +1275,7 @@ sequenceDiagram
 
   <div class="footer">
     <p>Generated by FileToMarkdown Test Suite</p>
-    <p class="timestamp">Generated on 4/8/2025, 1:03:06 PM</p>
+    <p class="timestamp">Generated on 2025-06-15 22:21:10</p>
   </div>
 
   <script>

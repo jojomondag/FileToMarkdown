@@ -67,7 +67,7 @@ module.exports = {
       'express': 'commonjs express',
       'multer': 'commonjs multer',
       'cors': 'commonjs cors',
-      'pdfjs-dist': 'commonjs pdfjs-dist',
+      'pdf-parse': 'commonjs pdf-parse',
       'mammoth': 'commonjs mammoth',
       'xlsx-js-style': 'commonjs xlsx-js-style',
       '7zip-min': 'commonjs 7zip-min',
