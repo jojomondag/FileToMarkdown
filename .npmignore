@@ -1,6 +1,13 @@
 # Example files
 examples/
 
+# Test directories
+test-npm-package/
+tests/
+
+# Documentation (not needed in package)
+docs/
+
 # Development files
 .git/
 .github/
@@ -23,3 +30,13 @@ dist/
 
 # OS specific
 Thumbs.db
+
+# Development scripts and configs
+build.js
+extract-viewer.js
+test-api.js
+webpack.*.config.js
+
+# Viewer files (not needed in package)
+src/Viewer/
+examples/viewer/
