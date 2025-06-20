@@ -1,6 +1,5 @@
+**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
 # Browser Usage Guide
-
-[← Back to Main Documentation](../Readme.md)
 
 FileToMarkdown can also be used directly in web browsers, enabling client-side file conversion without needing a server.
 
@@ -15,15 +14,16 @@ You can include this script in your HTML file:
 ```html
 <script src="path/to/dist/filetomarkdown.browser.js"></script>
 <script>
-  // Access the library via the global `filetomarkdown` object
-  const { convertToMarkdown } = filetomarkdown;
+  // Create API client instance
+  const client = new FileToMarkdown.FileToMarkdownClient();
+  client.baseURL = 'http://localhost:3000'; // Your API server
 
   async function handleFileSelect(event) {
     const file = event.target.files[0];
     if (file) {
       try {
-        const markdown = await convertToMarkdown(file);
-        document.getElementById('output').textContent = markdown;
+        const result = await client.convertFile(file);
+        document.getElementById('output').textContent = result.markdown;
       } catch (error) {
         console.error('Conversion failed:', error);
         document.getElementById('output').textContent = `Error: ${error.message}`;
@@ -38,9 +38,10 @@ You can include this script in your HTML file:
 
 ## Key Differences in Browser
 
-*   **Input**: The `convertToMarkdown` function accepts a `File` object (from an `<input type="file">` or drag-and-drop) instead of a file path.
-*   **Dependencies**: External CLI tools like `7z` are not available. Archive conversion relies on JavaScript libraries (`adm-zip`).
-*   **Output**: By default, returns the Markdown string. Saving to a file requires additional browser-specific logic (e.g., creating a download link).
+*   **Requires Server**: The browser client sends files to your API server for conversion - it doesn't convert files directly in the browser.
+*   **Input**: The `convertFile` method accepts a `File` object (from an `<input type="file">` or drag-and-drop).
+*   **Server Dependency**: You must have `filetomarkdown-server` running to handle the conversion requests.
+*   **Output**: Returns a JSON object with `{ markdown: string }` containing the converted content.
 
 ---
 

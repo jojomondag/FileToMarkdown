@@ -1,6 +1,5 @@
+**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
 # FileToMarkdown API
-
-[← Back to Main Documentation](../Readme.md)
 
 ## Quick Start
 

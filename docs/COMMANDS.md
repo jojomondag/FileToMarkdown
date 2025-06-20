@@ -1,6 +1,5 @@
+**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
 # CLI Commands
-
-[← Back to Main Documentation](../Readme.md)
 
 The `filetomarkdown` package provides these command-line tools:
 

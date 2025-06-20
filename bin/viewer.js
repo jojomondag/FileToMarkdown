@@ -209,6 +209,44 @@ async function downloadViewer() {
     }
 }
 
+function attemptToStartViewer(attemptNumber) {
+    try {
+        const viewer = spawn(VIEWER_PATH, [], { 
+            detached: true, 
+            stdio: 'ignore' 
+        });
+        
+        viewer.on('error', (error) => {
+            if (error.code === 'EBUSY' && attemptNumber < 3) {
+                log(`Viewer busy, retrying in ${2 + attemptNumber} seconds... (attempt ${attemptNumber + 1}/3)`, 'yellow');
+                setTimeout(() => {
+                    attemptToStartViewer(attemptNumber + 1);
+                }, (2 + attemptNumber) * 1000);
+            } else {
+                log(`Failed to start Markdown Viewer: ${error.message}`, 'red');
+                if (error.code === 'EBUSY') {
+                    log('The file might be in use by antivirus software. Please try again in a few moments.', 'yellow');
+                }
+            }
+        });
+        
+        viewer.unref();
+        log('Markdown Viewer started successfully!', 'green');
+    } catch (error) {
+        if (error.code === 'EBUSY' && attemptNumber < 3) {
+            log(`Viewer busy, retrying in ${2 + attemptNumber} seconds... (attempt ${attemptNumber + 1}/3)`, 'yellow');
+            setTimeout(() => {
+                attemptToStartViewer(attemptNumber + 1);
+            }, (2 + attemptNumber) * 1000);
+        } else {
+            log(`Failed to start Markdown Viewer: ${error.message}`, 'red');
+            if (error.code === 'EBUSY') {
+                log('The file might be in use by antivirus software. Please try again in a few moments.', 'yellow');
+            }
+        }
+    }
+}
+
 function runViewer() {
     log('Starting Markdown Viewer...', 'green');
     
@@ -218,13 +256,12 @@ function runViewer() {
         return;
     }
     
-    const viewer = spawn(VIEWER_PATH, [], { 
-        detached: true, 
-        stdio: 'ignore' 
-    });
-    
-    viewer.unref();
-    log('Markdown Viewer started successfully!', 'green');
+    // Add a small delay to allow file system operations to complete
+    // This helps prevent EBUSY errors when the file was just downloaded
+    log('Waiting for file system to stabilize...', 'blue');
+    setTimeout(() => {
+        attemptToStartViewer(0);
+    }, 2000);
 }
 
 async function main() {

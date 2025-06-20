@@ -1,18 +1,7 @@
+**[Commands](docs/COMMANDS.md)** • **[API Reference](docs/API.md)** • **[Browser Usage](docs/BROWSER.md)** • **[File Types](docs/CONVERTERS.md)**
 # FileToMarkdown
 
 Convert files to Markdown format. Supports Office documents, PDFs, code files, and archives.
-
-## Quick Start
-
-### Install
-```bash
-npm install -g filetomarkdown
-```
-
-### Convert a file
-```bash
-filetomarkdown document.pdf output.md
-```
 
 ## Supported Files
 
@@ -23,6 +12,13 @@ filetomarkdown document.pdf output.md
 | **Code** | `.js` `.py` `.java` `.cs` `.html` + 60+ more |
 | **Archives** | `.zip` `.7z` |
 | **Text** | `.txt` `.md` |
+
+## Quick Start
+
+### Install
+```bash
+npm install -g filetomarkdown
+```
 
 ## Usage
 
@@ -40,9 +36,10 @@ filetomarkdown-test
 # List supported file types
 filetomarkdown-filetypes
 
-# Launch Markdown Viewer (downloads automatically)
+# Download and launch Markdown Viewer (auto-installs)
 filetomarkdown-viewer
 ```
+
 
 ### Node.js API
 ```javascript
@@ -55,12 +52,17 @@ const markdown = await convertToMarkdown('document.pdf');
 await convertToMarkdown('document.pdf', 'output.md');
 ```
 
-### Browser
+### Browser (API Client)
 ```html
 <script src="https://unpkg.com/filetomarkdown"></script>
 <script>
-  FileToMarkdown.convertFile(file).then(markdown => {
-    console.log(markdown);
+  // Create client instance (requires filetomarkdown-server running)
+  const client = new FileToMarkdown.FileToMarkdownClient();
+  client.baseURL = 'http://localhost:3000';
+  
+  // Convert file via API
+  client.convertFile(file).then(result => {
+    console.log(result.markdown);
   });
 </script>
 ```
@@ -73,7 +75,7 @@ After installation, you get these commands:
 - **`filetomarkdown-server`** - Start API server on port 3000  
 - **`filetomarkdown-test`** - Run conversion tests with example files
 - **`filetomarkdown-filetypes`** - List all supported file formats
-- **`filetomarkdown-viewer`** - Launch standalone Markdown Viewer
+- **`filetomarkdown-viewer`** - Download and launch standalone Markdown Viewer
 
 ## Features
 
@@ -88,14 +90,14 @@ After installation, you get these commands:
 
 For viewing and editing the converted markdown files, use our standalone **Markdown Viewer** application:
 
-- 🚀 **Quick Launch**: `filetomarkdown-viewer` (auto-downloads and runs)
+- 🚀 **Quick Install & Launch**: `filetomarkdown-viewer` (auto-downloads and runs)
 - 📱 **Manual Download**: [Download Latest Release](https://github.com/jojomondag/Markdown-Viewer/releases/latest)
 - 🎯 **Features**: File browser, live preview, syntax highlighting, and editing capabilities
 - 💻 **Platform**: Windows executable (no installation required)
 - 🔗 **Repository**: [Markdown-Viewer](https://github.com/jojomondag/Markdown-Viewer)
 - 🔄 **Auto-updates**: The viewer command automatically downloads the latest version
 
-**Easiest way**: Just run `filetomarkdown-viewer` after installing the package!
+**Easiest way**: Just run `filetomarkdown-viewer` after installing the package - it installs and launches automatically!
 
 ## Examples
 
@@ -121,13 +123,6 @@ filetomarkdown-server
 # Server runs on http://localhost:3000
 # API endpoints: /api/convert, /api/filetypes, /health
 ```
-
-## Documentation
-
-- [CLI Commands](docs/COMMANDS.md) - All command options
-- [API Reference](docs/API.md) - Complete API guide
-- [Browser Usage](docs/BROWSER.md) - Frontend integration
-- [File Types](docs/CONVERTERS.md) - Supported formats
 
 ## License
 

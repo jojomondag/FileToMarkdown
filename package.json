@@ -1,6 +1,6 @@
 {
   "name": "filetomarkdown",
-  "version": "0.6.1",
+  "version": "0.6.4",
   "description": "Convert various file types to markdown format with browser and Node.js support",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "dist/main.js",
@@ -22,6 +22,8 @@
   "files": [
     "dist/",
     "bin/",
+    "src/server/",
+    "src/api/",
     "README.md",
     "LICENSE"
   ],
@@ -53,14 +55,10 @@
     "adm-zip": "^0.5.16",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "jszip": "^3.10.1",
-    "katex": "^0.16.21",
     "mammoth": "^1.9.1",
-    "marked": "^15.0.12",
-    "mermaid": "^11.6.0",
     "multer": "^2.0.1",
     "pdf-parse": "^1.1.1",
-    "prismjs": "^1.29.0",
+    "prismjs": "^1.30.0",
     "xlsx-js-style": "^1.2.0",
     "xml2js": "^0.6.2"
   },
@@ -75,12 +73,11 @@
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
-    "terser-webpack-plugin": "^5.3.9",
+    "terser-webpack-plugin": "^5.3.14",
     "url": "^0.11.4",
     "util": "^0.12.5",
     "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "webpack-cli": "^6.0.1"
   },
   "engines": {
     "node": ">=14.0.0"
