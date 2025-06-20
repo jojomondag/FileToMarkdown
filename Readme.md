@@ -3,16 +3,6 @@
 
 Convert files to Markdown format. Supports Office documents, PDFs, code files, and archives.
 
-## Supported Files
-
-| Type | Formats |
-|------|---------|
-| **Office** | `.pdf` `.docx` `.pptx` `.xlsx` |
-| **LibreOffice** | `.odt` `.ods` `.odp` |
-| **Code** | `.js` `.py` `.java` `.cs` `.html` + 60+ more |
-| **Archives** | `.zip` `.7z` |
-| **Text** | `.txt` `.md` |
-
 ## Quick Start
 
 ### Install
@@ -24,14 +14,14 @@ npm install -g filetomarkdown
 
 ### Command Line
 ```bash
+# Test conversions with example files
+filetomarkdown-test
+
 # Convert single file
 filetomarkdown input.docx output.md
 
 # Start API server
 filetomarkdown-server
-
-# Test conversions with example files
-filetomarkdown-test
 
 # List supported file types
 filetomarkdown-filetypes
@@ -39,7 +29,6 @@ filetomarkdown-filetypes
 # Download and launch Markdown Viewer (auto-installs)
 filetomarkdown-viewer
 ```
-
 
 ### Node.js API
 ```javascript
