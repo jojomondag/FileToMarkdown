@@ -8,7 +8,7 @@ const express = require('express');
 console.log('\n🔔 IMPORTANT: This command only starts the API server.\n');
 
 // Check if we should use the development version (src) or the built version (dist)
-const srcServerPath = path.join(__dirname, '../src/server.js');
+const srcServerPath = path.join(__dirname, '../src/server/setup.js');
 const distServerPath = path.join(__dirname, '../dist/server/setup.js');
 
 let serverModule;
@@ -62,12 +62,20 @@ if (serveStaticPath) {
     }
 }
 
+// Create server options
+const options = {
+    sourceFilePath,
+    outputFilePath,
+    outputFileName,
+    serveStaticPath
+};
+
 // Create and start server
 const { createServer } = serverModule;
 const server = createServer(options);
 server.start()
     .then(() => {
-        // Server started successfully
+        console.log('✅ Server started successfully');
     })
     .catch(err => {
         console.error('Failed to start server:', err);

@@ -2,58 +2,111 @@
 
 [← Back to Main Documentation](../Readme.md)
 
+FileToMarkdown supports **60+ file formats** across multiple categories:
+
 ## Document Converters
-- **PDF** (.pdf)
-  - Converts PDF documents to markdown
-  - Preserves text content and basic formatting
-  - Maintains document structure
-  
-- **Word** (.docx)
-  - Converts Microsoft Word documents
-  - Supports headings, lists, and basic formatting
-  - Preserves tables and links
-  
-- **PowerPoint** (.pptx)
-  - Converts presentations to markdown
-  - Each slide becomes a section
-  - Maintains slide titles and content structure
-  
-- **Excel** (.xlsx)
-  - Converts spreadsheets to markdown tables
-  - Preserves cell formatting and alignment
-  - Supports multiple sheets
 
-- **Markdown** (.md)
-  - Converts between markdown formats
-  - Standardizes markdown syntax
-  - Preserves formatting and structure
-  - Supports GitHub Flavored Markdown
+### Office Documents
+- **PDF** (.pdf) - PDF documents with text extraction and formatting preservation
+- **Word** (.docx) - Microsoft Word documents with headings, lists, tables, and links
+- **PowerPoint** (.pptx) - Presentations converted to structured markdown sections
+- **Excel** (.xlsx) - Spreadsheets converted to markdown tables with multiple sheet support
 
-## Code Converters
+### LibreOffice Documents  
+- **Writer** (.odt) - LibreOffice Writer documents
+- **Impress** (.odp) - LibreOffice presentations
+- **Calc** (.ods) - LibreOffice spreadsheets
 
-Supports common programming languages:
+### Text Files
+- **Plain Text** (.txt) - Basic text files
+- **Markdown** (.md) - Markdown files with standardization and GitHub Flavored Markdown support
 
-*   JavaScript (`.js`, `.jsx`, `.ts`, `.tsx`)
-*   Python (`.py`)
-*   Java (`.java`)
-*   C# (`.cs`)
-*   HTML (`.html`, `.htm`)
-*   CSS (`.css`)
-*   ...and potentially others detected by `highlight.js`.
+## Code File Converters
 
-**Features:**
+Supports syntax highlighting for **40+ programming languages**:
 
-*   Syntax highlighting using `highlight.js`.
-*   Outputs code within a fenced code block with the detected language tag.
-*   Line numbering (optional, if supported by renderer).
+### Web Development
+- **JavaScript** (.js, .jsx) - With ES6+ syntax support
+- **TypeScript** (.ts, .tsx) - Full TypeScript support
+- **HTML** (.html, .htm) - Web markup
+- **CSS** (.css, .scss, .less) - Stylesheets and preprocessors
+- **Vue** (.vue) - Vue.js single file components
+- **Svelte** (.svelte) - Svelte components
+- **Astro** (.astro) - Astro components
+
+### Backend Languages
+- **Python** (.py) - Python scripts and modules
+- **Java** (.java) - Java source files
+- **C#** (.cs) - C# source files
+- **PHP** (.php) - PHP scripts
+- **Go** (.go) - Go source files
+- **Rust** (.rs) - Rust source files
+- **Swift** (.swift) - Swift source files
+- **Kotlin** (.kt) - Kotlin source files
+- **Scala** (.scala) - Scala source files
+- **Dart** (.dart) - Dart source files
+
+### System Languages
+- **C/C++** (.c, .cpp, .h, .hpp) - C and C++ source files
+- **Ruby** (.rb) - Ruby scripts
+- **Perl** (.pl) - Perl scripts
+- **Lua** (.lua) - Lua scripts
+- **R** (.r) - R statistical scripts
+- **MATLAB** (.m) - MATLAB scripts
+
+### Shell & Scripting
+- **Bash** (.sh, .bash, .zsh) - Shell scripts
+- **PowerShell** (.ps1) - PowerShell scripts  
+- **Batch** (.bat, .cmd) - Windows batch files
+
+### Database
+- **SQL** (.sql, .pgsql, .mysql) - SQL scripts for various databases
+
+### Configuration & Data
+- **JSON** (.json) - JavaScript Object Notation
+- **YAML** (.yml, .yaml) - YAML configuration files
+- **TOML** (.toml) - TOML configuration files
+- **XML** (.xml) - XML markup
+- **INI** (.ini, .conf) - Configuration files
+- **Docker** (.dockerfile, .docker) - Docker configuration
+- **GraphQL** (.graphql, .gql) - GraphQL schemas and queries
+- **LaTeX** (.tex) - LaTeX documents
 
 ## Archive Converters
-- **ZIP** (.zip)
-- **7-Zip** (.7z)
-  - Extracts and converts contained files
-  - Creates a directory structure in markdown
-  - Handles nested archives
-  - Preserves file hierarchy 
+
+- **ZIP** (.zip) - Standard ZIP archives
+- **7-Zip** (.7z) - 7-Zip compressed archives
+
+**Archive Features:**
+- Extracts and converts contained files
+- Creates directory structure in markdown
+- Handles nested archives
+- Preserves file hierarchy
+- Recursively processes supported files within archives
+
+## Conversion Features
+
+### All Converters
+- ✅ **Syntax highlighting** using Prism.js
+- ✅ **Language detection** for code files
+- ✅ **Proper formatting** with fenced code blocks
+- ✅ **File structure preservation** for archives
+- ✅ **Error handling** with graceful fallbacks
+
+### Document Converters
+- ✅ **Table preservation** in Word and Excel files
+- ✅ **Heading structure** maintenance
+- ✅ **List formatting** preservation
+- ✅ **Link extraction** and formatting
+- ✅ **Multi-sheet support** for spreadsheets
+
+### Code Converters
+- ✅ **Language-specific highlighting** 
+- ✅ **Comment preservation**
+- ✅ **Indentation maintenance**
+- ✅ **Special character handling**
+
+Use `filetomarkdown-filetypes` to see the complete list of supported extensions.
 
 ---
 

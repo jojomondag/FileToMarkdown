@@ -1,117 +1,133 @@
 # FileToMarkdown
 
-Convert Files to Markdown. Supports Office documents, code files, and ZIP archives in the browser or as CLI Node.js integration.
+Convert files to Markdown format. Supports Office documents, PDFs, code files, and archives.
 
-## Documentation
+## Quick Start
 
-FileToMarkdown comes with comprehensive documentation:
-
-| Document | Description |
-|----------|-------------|
-| [CLI Commands](docs/COMMANDS.md) | All available commands and usage |
-| [API Reference](docs/API.md) | REST API endpoints and integration |
-| [Browser Usage](docs/BROWSER.md) | JavaScript API for browsers |
-| [Converters](docs/CONVERTERS.md) | Supported file types and features |
-
-## Features
-
-- 📄 Convert various file formats to Markdown
-- 👁️ Standalone viewer that works directly in the browser
-- 🔍 Syntax highlighting for code blocks
-- 🔗 Proper rendering of Markdown links
-- 📂 File and folder structure navigation
-- 🔧 Direct file editing using File System Access API
-- 🛠️ Command-line tools for batch processing
-- 🔒 Security-focused with latest dependency updates
-- ⚡ Enhanced PDF text extraction and processing
-- 🗃️ Complete Microsoft Office and LibreOffice suite support
-
-## Supported File Types
-
-### Microsoft Office Documents
-- **PDF** (.pdf) - Enhanced text extraction with `pdf-parse`
-- **Word** (.docx) - Full document formatting support
-- **PowerPoint** (.pptx) - Slide-by-slide conversion
-- **Excel** (.xlsx) - Table and data preservation
-
-### LibreOffice Documents
-- **Writer** (.odt) - Text documents with headings, paragraphs, lists, and tables
-- **Calc** (.ods) - Spreadsheets with data preservation and table formatting
-- **Impress** (.odp) - Presentations with slide-by-slide content extraction
-
-### Text & Code Files
-- **Text** (.txt) - Smart formatting detection
-- JavaScript, TypeScript, Python, Java, C#, HTML, CSS, and 20+ more languages with syntax highlighting
-
-### Archives
-- **ZIP** (.zip) - Extract and convert contained files
-- **7-Zip** (.7z) - Full archive structure preservation
-
-## Demo Video
-<div align="center">
-  <a href="https://youtu.be/UkGT3DDPTGI">
-    <img src="https://img.youtube.com/vi/UkGT3DDPTGI/mqdefault.jpg" width="320" alt="Demo Video" />
-  </a>
-</div>
-
-## Installation
-
+### Install
 ```bash
 npm install -g filetomarkdown
 ```
 
-## Usage
-
-### CLI
-
+### Convert a file
 ```bash
-# Convert a single file
-filetomarkdown -f path/to/your/file.pdf -o path/to/output.md
-
-# Convert and specify output name (directory must exist)
-filetomarkdown -f path/to/your/file.docx -o output/dir -n myDocument
-
-# Start the conversion API server
-filetomarkdown-server --port 8080
-
-# Start the conversion API server and serve static files from a directory
-filetomarkdown-server --port 8080 --serve-static ./public_html
+filetomarkdown document.pdf output.md
 ```
 
-See [CLI Commands](docs/COMMANDS.md) for more details.
+## Supported Files
 
-### API
+| Type | Formats |
+|------|---------|
+| **Office** | `.pdf` `.docx` `.pptx` `.xlsx` |
+| **LibreOffice** | `.odt` `.ods` `.odp` |
+| **Code** | `.js` `.py` `.java` `.cs` `.html` + 60+ more |
+| **Archives** | `.zip` `.7z` |
+| **Text** | `.txt` `.md` |
 
+## Usage
+
+### Command Line
+```bash
+# Convert single file
+filetomarkdown input.docx output.md
+
+# Start API server
+filetomarkdown-server
+
+# Test conversions with example files
+filetomarkdown-test
+
+# List supported file types
+filetomarkdown-filetypes
+
+# Launch Markdown Viewer (downloads automatically)
+filetomarkdown-viewer
+```
+
+### Node.js API
 ```javascript
 const { convertToMarkdown } = require('filetomarkdown');
 
-async function convert() {
-  try {
-    const markdown = await convertToMarkdown('path/to/your/file.pptx');
-    console.log(markdown);
-    // Or save to a file:
-    // await convertToMarkdown('path/to/your/file.pptx', 'output/path/file.md');
-  } catch (error) {
-    console.error('Conversion failed:', error);
-  }
-}
+// Convert to string
+const markdown = await convertToMarkdown('document.pdf');
 
-convert();
+// Convert to file
+await convertToMarkdown('document.pdf', 'output.md');
 ```
 
-See [API Documentation](docs/API.md) for details.
+### Browser
+```html
+<script src="https://unpkg.com/filetomarkdown"></script>
+<script>
+  FileToMarkdown.convertFile(file).then(markdown => {
+    console.log(markdown);
+  });
+</script>
+```
 
-## Supported Formats
+## Available Commands
 
-See [Supported Formats & Converters](docs/CONVERTERS.md).
+After installation, you get these commands:
 
-## Browser Usage
+- **`filetomarkdown`** - Convert files to markdown
+- **`filetomarkdown-server`** - Start API server on port 3000  
+- **`filetomarkdown-test`** - Run conversion tests with example files
+- **`filetomarkdown-filetypes`** - List all supported file formats
+- **`filetomarkdown-viewer`** - Launch standalone Markdown Viewer
 
-See [Browser Usage Guide](docs/BROWSER.md).
+## Features
 
-## Contributing
+- ✅ Preserves formatting (tables, lists, headings)
+- ✅ Syntax highlighting for code
+- ✅ Archive extraction and conversion
+- ✅ CLI and API support
+- ✅ Browser compatible
+- ✅ 60+ file formats supported
 
-Contributions welcome! Please open an issue or submit a pull request.
+## Markdown Viewer
+
+For viewing and editing the converted markdown files, use our standalone **Markdown Viewer** application:
+
+- 🚀 **Quick Launch**: `filetomarkdown-viewer` (auto-downloads and runs)
+- 📱 **Manual Download**: [Download Latest Release](https://github.com/jojomondag/Markdown-Viewer/releases/latest)
+- 🎯 **Features**: File browser, live preview, syntax highlighting, and editing capabilities
+- 💻 **Platform**: Windows executable (no installation required)
+- 🔗 **Repository**: [Markdown-Viewer](https://github.com/jojomondag/Markdown-Viewer)
+- 🔄 **Auto-updates**: The viewer command automatically downloads the latest version
+
+**Easiest way**: Just run `filetomarkdown-viewer` after installing the package!
+
+## Examples
+
+### PDF → Markdown
+```bash
+filetomarkdown report.pdf report.md
+```
+
+### Word Document → Markdown
+```bash
+filetomarkdown presentation.docx presentation.md
+```
+
+### ZIP Archive → Multiple Files
+```bash
+filetomarkdown archive.zip
+# Creates markdown files for each supported file in the archive
+```
+
+### Start API Server
+```bash
+filetomarkdown-server
+# Server runs on http://localhost:3000
+# API endpoints: /api/convert, /api/filetypes, /health
+```
+
+## Documentation
+
+- [CLI Commands](docs/COMMANDS.md) - All command options
+- [API Reference](docs/API.md) - Complete API guide
+- [Browser Usage](docs/BROWSER.md) - Frontend integration
+- [File Types](docs/CONVERTERS.md) - Supported formats
 
 ## License
 
