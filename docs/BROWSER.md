@@ -1,7 +1,15 @@
 **[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
 # Browser Usage Guide
 
-FileToMarkdown can also be used directly in web browsers, enabling client-side file conversion without needing a server.
+FileToMarkdown can also be used directly in web browsers with **full TypeScript support**, enabling client-side file conversion without needing a server.
+
+## TypeScript Support
+
+Complete type definitions are included for browser usage:
+- Type-safe client configuration
+- Typed API responses and error handling  
+- IntelliSense support in modern IDEs
+- Full compatibility with TypeScript projects
 
 ## Using the Browser Bundle
 
@@ -11,6 +19,7 @@ A UMD (Universal Module Definition) bundle is provided in the `dist` directory:
 
 You can include this script in your HTML file:
 
+### JavaScript Example
 ```html
 <script src="path/to/dist/filetomarkdown.browser.js"></script>
 <script>
@@ -34,6 +43,43 @@ You can include this script in your HTML file:
 
 <input type="file" onchange="handleFileSelect(event)">
 <pre id="output"></pre>
+```
+
+### TypeScript Example
+
+For TypeScript projects, you can import the client directly with full type safety:
+
+```typescript
+import { FileToMarkdownClient } from 'filetomarkdown';
+import type { ConvertResponse, FileToMarkdownClientOptions } from 'filetomarkdown';
+
+// Create client with typed options
+const options: FileToMarkdownClientOptions = {
+  baseURL: 'http://localhost:3000'
+};
+const client = new FileToMarkdownClient(options);
+
+// Type-safe file handling
+async function handleFileSelect(event: Event): Promise<void> {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  
+  if (file) {
+    try {
+      const result: ConvertResponse = await client.convertFile(file);
+      const output = document.getElementById('output') as HTMLPreElement;
+      output.textContent = result.markdown;
+    } catch (error) {
+      console.error('Conversion failed:', error);
+      const output = document.getElementById('output') as HTMLPreElement;
+      output.textContent = `Error: ${(error as Error).message}`;
+    }
+  }
+}
+
+// Type-safe event binding
+const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+fileInput.addEventListener('change', handleFileSelect);
 ```
 
 ## Key Differences in Browser

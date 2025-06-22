@@ -1,4 +1,4 @@
-**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
+**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[TypeScript](TYPESCRIPT.md)** • **[File Types](CONVERTERS.md)**
 # Supported Converters
 
 FileToMarkdown supports **60+ file formats** across multiple categories:

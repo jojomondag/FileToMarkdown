@@ -1,6 +1,6 @@
 {
   "name": "filetomarkdown",
-  "version": "0.6.4",
+  "version": "0.6.6",
   "description": "Convert various file types to markdown format with browser and Node.js support",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "dist/main.js",
@@ -51,7 +51,9 @@
     "node",
     "pdf",
     "docx",
-    "webpack"
+    "webpack",
+    "typescript",
+    "types"
   ],
   "author": "Josef",
   "license": "MIT",
