@@ -1,7 +1,7 @@
-**[Commands](docs/COMMANDS.md)** • **[API Reference](docs/API.md)** • **[Browser Usage](docs/BROWSER.md)** • **[TypeScript](docs/TYPESCRIPT.md)** • **[File Types](docs/CONVERTERS.md)**
+**[Commands](docs/COMMANDS.md)** • **[API Reference](docs/API.md)** • **[Browser Usage](docs/BROWSER.md)** • **[File Types](docs/CONVERTERS.md)**
 # FileToMarkdown
 
-Convert files to Markdown format with **full TypeScript support**. Supports Office documents, PDFs, code files, and archives.
+Convert files to Markdown format. Supports Office documents, PDFs, code files, and archives.
 
 ## Quick Start
 
@@ -46,15 +46,13 @@ await convertToMarkdown('document.pdf', 'output.md');
 #### TypeScript
 ```typescript
 import { MarkitDown, convertToMarkdown } from 'filetomarkdown';
-import type { MarkitDownOptions } from 'filetomarkdown';
 
 // Using the class with options
-const options: MarkitDownOptions = { collapsible: true };
-const converter = new MarkitDown(options);
-const markdown: string = await converter.convertToMarkdown('document.pdf');
+const converter = new MarkitDown({ collapsible: true });
+const markdown = await converter.convertToMarkdown('document.pdf');
 
 // Using the convenience function
-const result: string = await convertToMarkdown('document.pdf', 'output.md');
+const result = await convertToMarkdown('document.pdf', 'output.md');
 ```
 
 ### Browser (API Client)
@@ -72,38 +70,7 @@ const result: string = await convertToMarkdown('document.pdf', 'output.md');
 </script>
 ```
 
-## TypeScript Support
 
-FileToMarkdown includes complete TypeScript type definitions for enhanced development experience:
-
-```typescript
-// All major interfaces are fully typed
-import { 
-  MarkitDown, 
-  convertToMarkdown, 
-  getFileTypes,
-  FileToMarkdownClient 
-} from 'filetomarkdown';
-import type { 
-  MarkitDownOptions, 
-  ConvertResponse,
-  FileTypeDescriptions 
-} from 'filetomarkdown';
-
-// Type-safe file operations
-const fileTypes: string[] = getFileTypes();
-const descriptions: FileTypeDescriptions = getFileTypeDescriptions();
-
-// Server API with full typing
-const client = new FileToMarkdownClient({ baseURL: 'http://localhost:3000' });
-const response: ConvertResponse = await client.convertFile(file);
-```
-
-### Benefits
-- 🎯 **IntelliSense Support** - Complete autocomplete in VS Code, WebStorm, etc.
-- 🛡️ **Type Safety** - Catch errors at compile time
-- 📚 **Rich Documentation** - JSDoc comments in IDE tooltips
-- 🏢 **Enterprise Ready** - Professional TypeScript integration
 
 ## Available Commands
 
@@ -117,12 +84,12 @@ After installation, you get these commands:
 
 ## Features
 
-- ✅ **TypeScript Support** - Full type definitions for enhanced development experience
 - ✅ Preserves formatting (tables, lists, headings)
 - ✅ Syntax highlighting for code
 - ✅ Archive extraction and conversion
 - ✅ CLI and API support
 - ✅ Browser compatible
+- ✅ TypeScript support
 - ✅ 60+ file formats supported
 
 ## Markdown Viewer

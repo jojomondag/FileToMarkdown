@@ -1,4 +1,4 @@
-**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[TypeScript](TYPESCRIPT.md)** • **[File Types](CONVERTERS.md)**
+**[Commands](COMMANDS.md)** • **[API Reference](API.md)** • **[Browser Usage](BROWSER.md)** • **[File Types](CONVERTERS.md)**
 # FileToMarkdown API
 
 ## Quick Start
@@ -8,18 +8,7 @@ Start the API server:
 npx filetomarkdown-server  # Runs on http://localhost:3000
 ```
 
-## TypeScript Support
 
-FileToMarkdown includes complete TypeScript type definitions for all API responses and client methods. Import types for enhanced development experience:
-
-```typescript
-import { FileToMarkdownClient } from 'filetomarkdown';
-import type { 
-  ConvertResponse, 
-  SupportedTypesResponse,
-  FileToMarkdownClientOptions 
-} from 'filetomarkdown';
-```
 ## Endpoints
 
 ### `GET /api/filetypes`
@@ -95,39 +84,16 @@ fetch('http://localhost:3000/api/convert', {
     .catch(error => console.error('Conversion failed:', error));
 ```
 
-**TypeScript Example:**
-```typescript
-import type { ConvertResponse, SupportedTypesResponse } from 'filetomarkdown';
-
-// Type-safe file conversion
-const formData = new FormData();
-formData.append('file', fileInput.files[0]);
-
-const response = await fetch('http://localhost:3000/api/convert', {
-    method: 'POST',
-    body: formData
-});
-
-const result: ConvertResponse = await response.json();
-console.log(result.markdown);
-
-// Type-safe file types fetching
-const typesResponse = await fetch('http://localhost:3000/api/filetypes');
-const types: SupportedTypesResponse = await typesResponse.json();
-console.log(types.fileTypes);
-```
-
 **Using the Built-in Client (Recommended):**
-```typescript
-import { FileToMarkdownClient } from 'filetomarkdown';
-import type { ConvertResponse } from 'filetomarkdown';
+```javascript
+const { FileToMarkdownClient } = require('filetomarkdown');
 
 const client = new FileToMarkdownClient({ 
     baseURL: 'http://localhost:3000' 
 });
 
-// Convert file with full type safety
-const result: ConvertResponse = await client.convertFile(file);
+// Convert file
+const result = await client.convertFile(file);
 console.log(result.markdown);
 
 // Get supported types

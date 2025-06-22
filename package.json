@@ -27,6 +27,7 @@
     "src/api/",
     "index.d.ts",
     "types/",
+    "docs/",
     "README.md",
     "LICENSE"
   ],
