@@ -1,6 +1,6 @@
 {
   "name": "filetomarkdown",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "description": "Convert various file types to markdown format with browser and Node.js support",
   "homepage": "https://github.com/jojomondag/FileToMarkdown",
   "main": "dist/main.js",
@@ -15,7 +15,7 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/filetomarkdown.browser.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/main.js"
     },
     "./client": "./dist/filetomarkdown.browser.js"
@@ -33,9 +33,10 @@
   ],
   "scripts": {
     "start": "node bin/server.js",
-    "build": "npm run build:browser && npm run build:node",
+    "build": "npm run build:browser && npm run build:node && npm run build:esm",
     "build:node": "webpack --config webpack.node.config.js",
     "build:browser": "webpack --config webpack.browser.config.js --env production",
+    "build:esm": "node -e \"require('fs').copyFileSync('src/index.mjs', 'dist/index.mjs')\"",
     "build:types": "tsc --emitDeclarationOnly",
     "check-types": "tsc --noEmit",
     "dev": "webpack --config webpack.node.config.js --watch",
