@@ -1,5 +1,5 @@
 const path = require('path');
-const webpack = require('webpack');
+// No plugins required
 
 //This builds and Packages the Browser compatible version of the library.
 module.exports = (env) => ({
@@ -28,29 +28,9 @@ module.exports = (env) => ({
     ]
   },
   resolve: {
-    extensions: ['.js'],
-    fallback: {
-      "path": false,
-      "fs": false,
-      "os": false,
-      "stream": false,
-      "crypto": false
-    }
+    extensions: ['.js']
   },
-  externals: {
-    'express': 'commonjs express',
-    'multer': 'commonjs multer',
-    'fs': 'commonjs fs',
-    'path': 'commonjs path',
-    'os': 'commonjs os'
-  },
-  plugins: [
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
-      Buffer: ['buffer', 'Buffer'],
-      Prism: 'prismjs'
-    })
-  ],
+  plugins: [],
   devServer: env.development ? {
     static: {
       directory: path.join(__dirname, 'dist'),

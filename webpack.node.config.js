@@ -1,6 +1,4 @@
 const path = require('path');
-const webpack = require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
@@ -72,10 +70,5 @@ module.exports = {
       'adm-zip': 'commonjs adm-zip'
     }
   ],
-  plugins: [
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
-      Buffer: ['buffer', 'Buffer']
-    }),
-  ]
+  plugins: []
 };

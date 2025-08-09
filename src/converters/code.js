@@ -1,4 +1,5 @@
 // Map of file extensions to markdown language identifiers
+const path = require('path');
 const langMap = {
   // Common web languages
   '.js': 'javascript',
@@ -74,7 +75,6 @@ class CodeConverter {
   
   async convert(f, options = {}) {
     const fs = require('fs').promises;
-    const path = require('path');
 
     try {
       const ext = path.extname(f).toLowerCase();

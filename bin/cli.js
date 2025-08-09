@@ -1,15 +1,21 @@
 #!/usr/bin/env node
 
-const { convertToMarkdown } = require('../dist/main.js');
+let convertToMarkdown;
+try {
+  ({ convertToMarkdown } = require('../dist/main.js'));
+} catch (_err) {
+  // Fallback to source during development
+  ({ convertToMarkdown } = require('../src/index.js'));
+}
 const fs = require('fs').promises;
 
 const usage = `
-Usage: markitdown-convert <input-file> [output-file]
+Usage: filetomarkdown <input-file> [output-file]
 
 Examples:
-  markitdown-convert document.pdf                    # Converts to document.md in current directory
-  markitdown-convert document.docx output.md         # Converts to specified output file
-  markitdown-convert ./src/code.py ./docs/code.md    # Works with paths
+  filetomarkdown document.pdf                    # Converts to document.md in current directory
+  filetomarkdown document.docx output.md         # Converts to specified output file
+  filetomarkdown ./src/code.py ./docs/code.md    # Works with paths
 
 Supported formats:
   - Documents: PDF, DOCX, PPTX, XLSX, TXT

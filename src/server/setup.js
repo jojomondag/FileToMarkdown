@@ -49,49 +49,7 @@ function createServer(options = {}) {
     }));
     console.log(`🌐 Serving static files from: ${staticPath}`);
 
-    // Root route
-    app.get('/', (_req, res) => {
-        res.send(`
-            <html>
-                <head>
-                    <title>FileToMarkdown API</title>
-                    <style>
-                        body {
-                            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-                            max-width: 800px;
-                            margin: 0 auto;
-                            padding: 2rem;
-                            line-height: 1.6;
-                        }
-                        h1 { color: #333; }
-                        .info {
-                            background-color: #e3f2fd;
-                            border-radius: 4px;
-                            padding: 1rem;
-                            margin-top: 1rem;
-                        }
-                        code {
-                            background: #f1f1f1;
-                            padding: 2px 4px;
-                            border-radius: 3px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>FileToMarkdown API</h1>
-                    <div class="info">
-                        <p>Available endpoints:</p>
-                        <ul>
-                            <li><code>GET /api/filetypes</code> - List supported file types</li>
-                            <li><code>POST /api/render</code> - Render markdown to HTML</li>
-                            <li><code>POST /api/convert</code> - Convert file to markdown</li>
-                            <li><code>GET /health</code> - Health check</li>
-                        </ul>
-                    </div>
-                </body>
-            </html>
-        `);
-    });
+    // Root route is registered in routes.js via registerRoutes
 
     // File upload configuration
     const upload = multer({

@@ -12,12 +12,12 @@ const srcServerPath = path.join(__dirname, '../src/server/setup.js');
 const distServerPath = path.join(__dirname, '../dist/server/setup.js');
 
 let serverModule;
-if (fs.existsSync(srcServerPath)) {
-    console.log('Using development server setup from src/server/setup.js');
-    serverModule = require('../src/server/setup');
-} else if (fs.existsSync(distServerPath)) {
+if (fs.existsSync(distServerPath)) {
     console.log('Using built server setup from dist/server/setup.js');
     serverModule = require('../dist/server/setup');
+} else if (fs.existsSync(srcServerPath)) {
+    console.log('Using development server setup from src/server/setup.js');
+    serverModule = require('../src/server/setup');
 } else {
     console.error('Error: Could not find server setup script in either src or dist directory');
     process.exit(1);
@@ -50,16 +50,10 @@ for (let i = 0; i < args.length; i++) {
     }
 }
 
-// Serve static files if path is provided
-if (serveStaticPath) {
-    if (fs.existsSync(serveStaticPath)) {
-        const app = express();
-        app.use(express.static(serveStaticPath));
-        console.log(`Serving static files from ${serveStaticPath}`);
-    } else {
-        console.error(`Static file path not found: ${serveStaticPath}`);
-        process.exit(1);
-    }
+// Validate static path if provided
+if (serveStaticPath && !fs.existsSync(serveStaticPath)) {
+    console.error(`Static file path not found: ${serveStaticPath}`);
+    process.exit(1);
 }
 
 // Create server options
@@ -67,7 +61,8 @@ const options = {
     sourceFilePath,
     outputFilePath,
     outputFileName,
-    serveStaticPath
+    // createServer expects "staticPath"
+    staticPath: serveStaticPath
 };
 
 // Create and start server

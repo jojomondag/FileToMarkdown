@@ -1,5 +1,8 @@
 export class FileToMarkdownClient {
-  
+    constructor(options = {}) {
+      this.baseURL = options.baseURL || this.baseURL || '';
+    }
+
     async convertFile(file) {
       const formData = new FormData();
       formData.append('file', file);
